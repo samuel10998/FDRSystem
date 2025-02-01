@@ -1,0 +1,89 @@
+/* src/components/footer/footer.css */
+.footer {
+    margin-top: auto;
+    background-color: #00203FFF;
+    color: #ADEFD1FF;
+    padding: 0rem;
+    text-align: center;
+    width: 100%;
+    font-size: 95%;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    max-width: 1235px;
+    margin: 0 auto;
+}
+
+.footer-left {
+    max-width: 47.5%;
+}
+
+.footer-left h2 {
+    margin-bottom: 0.95rem;
+}
+
+.footer-left p {
+    margin-bottom: 1.425rem;
+    line-height: 1.52;
+}
+
+.project-button {
+    background-color: #007b5e;
+    color: #ffffff;
+    padding: 0.7125rem 1.425rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 95%;
+    position: relative;
+    top: -3mm;
+}
+
+.project-button:hover {
+    background-color: #14b390;
+}
+
+
+.footer-right h3 {
+    margin-bottom: 0.95rem;
+    font-size: 95%;
+}
+
+.footer-right p {
+    margin-bottom: 0.475rem;
+    font-size: 95%;
+}
+
+.footer-right a {
+    color: #ADEFD1FF;
+    text-decoration: none;
+    font-size: 95%;
+}
+
+.footer-right a:hover {
+    text-decoration: underline;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7.6px;
+    position: relative;
+    top: -3mm;
+}
+
+.social-icons a {
+    margin-right: 2.85px;
+}
+
+.social-icons a:last-child {
+    margin-right: 0;
+}
+
+.social-icons i {
+    font-size: 23.75px;
+}

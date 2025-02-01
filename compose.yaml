@@ -1,0 +1,47 @@
+services:
+  mysql:
+    image: mysql:9.1.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: 'database'
+      MYSQL_PASSWORD: 'secret'
+      MYSQL_ROOT_PASSWORD: 'verysecret'
+      MYSQL_USER: 'user'
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - spring-network
+
+  phpmyadmin:
+    depends_on:
+      - mysql
+    image: phpmyadmin:5.2.1-apache
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: 'verysecret'
+    networks:
+      - spring-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    command: npm start # This starts the React development server
+    volumes:
+      - ./frontend:/app # Ensure volume is mounted for live updates
+    networks:
+      - spring-network
+
+volumes:
+  db-data:
+
+networks:
+  spring-network:
