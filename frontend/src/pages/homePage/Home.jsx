@@ -19,7 +19,7 @@ const Home = () => {
                         <p>
                             Nahrajte svoje dáta, vizualizujte trasu letu a generujte podrobné štatistiky, ktoré vám pomôžu lepšie pochopiť každý aspekt vášho letu.
                         </p>
-                        <Link to="/auth/login">
+                        <Link to="/api/login">
                             <button className="cta-button">Zaregistrujte sa teraz</button>
                         </Link>
                     </div>

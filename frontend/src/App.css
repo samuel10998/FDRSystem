@@ -1,7 +1,7 @@
 body, html, #root {
   height: 100%; /* Zabezpečí, že celé telo stránky má výšku obrazovky */
   margin: 0;
-  background-color: #590505; /* Farba pozadia */
+  background-color: #f6f6f6; /* Farba pozadia */
   font-family: 'Arial', sans-serif;
 }
 

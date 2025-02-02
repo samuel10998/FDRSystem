@@ -7,69 +7,59 @@ import './navbar.css';
 export default function Navbar() {
     const navigate = useNavigate();
 
-    //user based controll and tokens will work after implementing jwt
-    const user = JSON.parse(localStorage.getItem('user'));
-    console.log('User roles:', user ? user.roles : 'No user logged in');
+    // Načítanie údajov o používateľovi a tokenu
+    const user = JSON.parse(localStorage.getItem('user')) || null; // Ak nie je user, nastav na null
     const token = localStorage.getItem('jwtToken');
+    console.log('User roles:', user ? user.roles : 'No user logged in');
 
-    const isAdmin = user && user.role.includes('ROLE_ADMIN');
-    // const isUser = user && user.role.includes('ROLE_USER');
-    //const isHost = user && user.role.includes('ROLE_HOST');
+    // Extrakcia rolí používateľa
+    const roles = user?.roles ? user.roles.map(role => role.name) : [];
+    const isAdmin = roles.includes('ROLE_ADMIN');
+    const isUser = roles.includes('ROLE_USER');
 
+    // Položky pre navigáciu
     const items = [
         {
             label: 'Domov',
             icon: 'pi pi-home',
             command: () => navigate('/home'),
-            visible: true
+            visible: true, // Vždy viditeľné
         },
         {
             label: 'Moje lety',
             icon: 'pi pi-send',
             command: () => navigate('/my-flights'),
-            visible: true
+            visible: isAdmin || isUser, // Viditeľné pre ADMIN alebo USER
         },
         {
             label: 'Nahrať súbory',
             icon: 'pi pi-folder',
             command: () => navigate('/upload-files'),
-            visible: true
+            visible: isAdmin || isUser, // Viditeľné pre ADMIN alebo USER
         },
         {
-            label: 'Spravovať použivateľov',
+            label: 'Spravovať používateľov',
             icon: 'pi pi-cog',
             command: () => navigate('/manage-users'),
-            visible: true
-        }
+            visible: isAdmin, // Viditeľné len pre ADMIN
+        },
     ];
 
-    if (token) {
-
-        if (isAdmin) {
-            items.push({
-                label: 'Manage Users',
-                icon: 'pi pi-users',
-                command: () => navigate('/manage-users'),
-                visible: true
-            });
-        }
-    }
-
-    // Logout function
+    // Funkcia na odhlásenie
     const handleLogout = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('jwtToken');
-        navigate('/auth/login');
+        navigate('/api/login');
     };
 
-    // Render the Menubar with navigation items
+    // Renderovanie tlačidla pre prihlásenie/odhlásenie
     const end = (
         <div className="user-info">
             {token ? (
                 <>
-                    <span className="user-name">{`${user.name} ${user.lastName}`}</span>
+                    <span className="user-name">{`${user?.name || ''} ${user?.surname || ''}`}</span>
                     <Button
-                        label="Logout"
+                        label="Odhlásiť sa"
                         icon="pi pi-sign-out"
                         className="p-button-danger p-ml-2"
                         onClick={handleLogout}
@@ -80,15 +70,16 @@ export default function Navbar() {
                     label="Prihlásiť sa"
                     icon="pi pi-sign-in"
                     className="p-button-success"
-                    onClick={() => navigate('/auth/login')}
+                    onClick={() => navigate('/api/login')}
                 />
             )}
         </div>
     );
 
+    // Renderovanie navigačného panelu
     return (
         <div className="navbar">
-            <Menubar model={items} end={end} />
+            <Menubar model={items.filter(item => item.visible)} end={end} />
         </div>
     );
 }

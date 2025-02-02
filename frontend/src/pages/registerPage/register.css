@@ -1,0 +1,35 @@
+.register-container {
+    border-radius: 8px;
+    width: 100%;
+    max-width: 600px;
+    margin: 35px auto;
+    align-items: center;
+}
+
+.p-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+
+}
+
+.p-inputtext {
+    margin-top: 0.5rem;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+}
+
+.p-button-cancel {
+    background-color: #f44336;
+    border: none;
+}
+
+.p-toast {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
