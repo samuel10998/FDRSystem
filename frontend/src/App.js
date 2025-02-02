@@ -16,7 +16,7 @@ function App() {
             <Router>
                 <Navbar />
                 {/* Use a main 'content' area that grows to push footer down */}
-                <main className="content">
+                <div className="content-wrapper">
                     <Routes>
                         <Route path="/" element={<Navigate to="/auth/login" replace />} />
                         <Route path="/home" element={<Home />} />
@@ -25,7 +25,7 @@ function App() {
                         <Route path="/my-flights" element={<MyFlights />} />
                         <Route path="/upload-files" element={<Upload />} />
                     </Routes>
-                </main>
+                </div>
             </Router>
             <Footer />
         </div>

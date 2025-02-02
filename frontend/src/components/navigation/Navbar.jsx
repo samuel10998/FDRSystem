@@ -18,25 +18,25 @@ export default function Navbar() {
 
     const items = [
         {
-            label: 'Home',
+            label: 'Domov',
             icon: 'pi pi-home',
             command: () => navigate('/home'),
             visible: true
         },
         {
-            label: 'My Flights',
-            icon: 'pi pi-calendar',
+            label: 'Moje lety',
+            icon: 'pi pi-send',
             command: () => navigate('/my-flights'),
             visible: true
         },
         {
-            label: 'Upload files',
+            label: 'Nahrať súbory',
             icon: 'pi pi-folder',
             command: () => navigate('/upload-files'),
             visible: true
         },
         {
-            label: 'Manage Users',
+            label: 'Spravovať použivateľov',
             icon: 'pi pi-cog',
             command: () => navigate('/manage-users'),
             visible: true
@@ -77,7 +77,7 @@ export default function Navbar() {
                 </>
             ) : (
                 <Button
-                    label="Login"
+                    label="Prihlásiť sa"
                     icon="pi pi-sign-in"
                     className="p-button-success"
                     onClick={() => navigate('/auth/login')}
