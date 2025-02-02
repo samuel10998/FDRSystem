@@ -1,0 +1,80 @@
+/* Wrapper for the home page */
+.home-wrapper {
+    flex: 1; /* Toto zabezpečí, že sa sekcia roztiahne na dostupnú výšku */
+    padding: 2rem 0;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Main container with text and image */
+.home-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Text container */
+.text-container {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    padding: 2rem;
+    max-width: 60%;
+    z-index: 2; /* Ensure it is above the image */
+}
+
+.home-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #00203f;
+    margin-bottom: 1rem;
+}
+
+.home-subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.home-description h2 {
+    font-size: 1.8rem;
+    color: #00203f;
+    margin-bottom: 1rem;
+}
+
+.home-description p {
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.cta-button {
+    background-color: #ff0000;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #cc0000;
+}
+
+/* Image container */
+.image-container {
+    margin-left: 2rem; /* Adjusted margin for spacing */
+}
+
+.image-container img {
+    max-width: 650px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
