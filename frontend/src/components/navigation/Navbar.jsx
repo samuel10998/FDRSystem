@@ -13,8 +13,8 @@ export default function Navbar() {
     const token = localStorage.getItem('jwtToken');
 
     const isAdmin = user && user.role.includes('ROLE_ADMIN');
-    const isUser = user && user.role.includes('ROLE_USER');
-    const isHost = user && user.role.includes('ROLE_HOST');
+    // const isUser = user && user.role.includes('ROLE_USER');
+    //const isHost = user && user.role.includes('ROLE_HOST');
 
     const items = [
         {
