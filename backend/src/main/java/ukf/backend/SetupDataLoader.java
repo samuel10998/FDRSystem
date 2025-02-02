@@ -17,8 +17,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 @Component
-public class SetupDataLoader implements
-        ApplicationListener<ContextRefreshedEvent> {
+public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
     boolean alreadySetup = false;
 
@@ -41,33 +40,33 @@ public class SetupDataLoader implements
         if (alreadySetup)
             return;
 
+        // Povolené emailové domény
         createDomainIfNotFound("student.ukf.sk");
-        createDomainIfNotFound("stu.sk");
+        createDomainIfNotFound("gmail.com");
 
-        createRoleIfNotFound("ROLE_ADMIN");
-        createRoleIfNotFound("ROLE_USER");
+        // Role
+        Role adminRole = createRoleIfNotFound("ROLE_ADMIN");
+        Role userRole = createRoleIfNotFound("ROLE_USER");
 
-        Role adminRole = roleRepository.findByName("ROLE_ADMIN");
-
+        // Užívateľ
         createUserIfNotFound("Test", "Test", "test", "test@student.ukf.sk", adminRole);
 
         alreadySetup = true;
     }
 
     @Transactional
-    void createRoleIfNotFound(String name) {
-
+    Role createRoleIfNotFound(String name) {
         Role role = roleRepository.findByName(name);
         if (role == null) {
             role = new Role();
             role.setName(name);
             roleRepository.save(role);
         }
+        return role;
     }
 
     @Transactional
     void createDomainIfNotFound(String name) {
-
         Optional<AllowedEmailDomain> domains = allowedEmailDomainRepository.findByDomain(name);
         if (domains.isEmpty()) {
             AllowedEmailDomain allowedEmailDomain = new AllowedEmailDomain();
@@ -77,17 +76,19 @@ public class SetupDataLoader implements
     }
 
     @Transactional
-    void createUserIfNotFound(String name, String surname, String password, String email, Role role) {
-
+    User createUserIfNotFound(String name, String surname, String password, String email, Role role) {
         Optional<User> users = userRepository.findByEmail(email);
-        if (users.isEmpty()){
+        if (users.isEmpty()) {
             User user = new User();
             user.setName(name);
             user.setSurname(surname);
             user.setPassword(passwordEncoder.encode(password));
             user.setEmail(email);
             user.setRoles(Collections.singletonList(role));
+            user.setAccountVerified(true);
             userRepository.save(user);
+            return user;
         }
+        return users.get();
     }
 }
