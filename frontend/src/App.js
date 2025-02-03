@@ -9,6 +9,7 @@ import ManageUsers from './pages/manageUsersPage/ManageUsers';
 import Upload from './pages/uploadPage/Upload';
 import Footer from './components/footer/Footer';
 import PrivateRoute from './components/PrivateRoute';
+import EditUserDialog from './components/editUser/EditUserDialog';
 
 
 import axios from "axios";
@@ -34,6 +35,7 @@ function App() {
                         <Route path="/manage-users" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ManageUsers />} />} />
                         <Route path="/my-flights" element={<PrivateRoute roles={['ROLE_ADMIN','ROLE_USER']} page={<MyFlights />} />} />
                         <Route path="/upload-files" element={<PrivateRoute roles={['ROLE_ADMIN','ROLE_USER']} page={<Upload />} />} />
+                        <Route path="/edit-user/:id" element={<PrivateRoute roles={['ROLE_USER','ROLE_ADMIN']} page={<EditUserDialog />} />} />
                     </Routes>
                 </div>
             </Router>
