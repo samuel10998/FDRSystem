@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
@@ -6,16 +6,29 @@ import './navbar.css';
 
 export default function Navbar() {
     const navigate = useNavigate();
+    const [showMenu, setShowMenu] = useState(false);
 
-    // Načítanie údajov o používateľovi a tokenu
-    const user = JSON.parse(localStorage.getItem('user')) || null; // Ak nie je user, nastav na null
+    const getUserFromLocalStorage = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            return user && user.roles ? user : { roles: [] };
+        } catch (error) {
+            console.error("Error reading user from localStorage:", error);
+            return { roles: [] };
+        }
+    };
+
+    const extractRoleNames = (roles) => {
+        if (!roles || !Array.isArray(roles)) return [];
+        return roles.map(role => role.name);
+    };
+
+    const user = getUserFromLocalStorage();
     const token = localStorage.getItem('jwtToken');
-    console.log('User roles:', user ? user.roles : 'No user logged in');
+    const roleNames = user ? extractRoleNames(user.roles) : [];
 
-    // Extrakcia rolí používateľa
-    const roles = user?.roles ? user.roles.map(role => role.name) : [];
-    const isAdmin = roles.includes('ROLE_ADMIN');
-    const isUser = roles.includes('ROLE_USER');
+    const isAdmin = roleNames.includes('ROLE_ADMIN');
+    const isUser = roleNames.includes('ROLE_USER');
 
     // Položky pre navigáciu
     const items = [
@@ -45,29 +58,70 @@ export default function Navbar() {
         },
     ];
 
-    // Funkcia na odhlásenie
     const handleLogout = () => {
+        setShowMenu(false);
         localStorage.removeItem('user');
         localStorage.removeItem('jwtToken');
+        localStorage.removeItem('tokenExpiration');
         navigate('/api/login');
     };
 
-    // Renderovanie tlačidla pre prihlásenie/odhlásenie
+    const toggleMenu = () => {
+        setShowMenu((prevState) => !prevState);
+    };
+
+    const handleEditProfile = () => {
+        const userId = user?.id;
+        if (userId) {
+            setShowMenu(false);
+            navigate(`/edit-user/${userId}`);
+        } else {
+            console.error("User ID is not available.");
+        }
+    };
+
+    useEffect(() => {
+        const checkTokenExpiration = () => {
+            const expDate = new Date(localStorage.getItem('tokenExpiration'));
+            if (expDate) {
+                if (new Date() >= expDate) {
+                    handleLogout();
+                }
+            }
+        };
+
+        if (token) {
+            const interval = setInterval(checkTokenExpiration, 300000);
+            return () => clearInterval(interval);
+        }
+    }, [token]);
+
     const end = (
         <div className="user-info">
             {token ? (
                 <>
-                    <span className="user-name">{`${user?.name || ''} ${user?.surname || ''}`}</span>
-                    <Button
-                        label="Odhlásiť sa"
-                        icon="pi pi-sign-out"
-                        className="p-button-danger p-ml-2"
-                        onClick={handleLogout}
-                    />
+                    <div className="user-dropdown">
+                        <Button
+                            label={`${user.name} ${user.surname}`}
+                            icon="pi pi-user"
+                            className="user-button"
+                            onClick={toggleMenu}
+                        />
+                        {showMenu && (
+                            <div className="dropdown-menu">
+                                <button onClick={handleEditProfile} className="dropdown-item">
+                                    Upraviť profil
+                                </button>
+                                <button onClick={handleLogout} className="dropdown-item">
+                                    Odhlásiť sa
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </>
             ) : (
                 <Button
-                    label="Prihlásiť sa"
+                    label="Prihlásenie"
                     icon="pi pi-sign-in"
                     className="p-button-success"
                     onClick={() => navigate('/api/login')}
@@ -76,10 +130,9 @@ export default function Navbar() {
         </div>
     );
 
-    // Renderovanie navigačného panelu
     return (
         <div className="navbar">
-            <Menubar model={items.filter(item => item.visible)} end={end} />
+            <Menubar model={items} end={end} />
         </div>
     );
 }
