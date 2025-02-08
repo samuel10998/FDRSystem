@@ -46,7 +46,7 @@ export default function Register() {
 
     return (
         <div className="register-container">
-            <Panel header="Register">
+            <Panel header="Registrácia">
                 <div className="p-field">
                     <label htmlFor="name">Meno</label>
                     <InputText

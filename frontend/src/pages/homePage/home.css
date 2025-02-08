@@ -1,6 +1,12 @@
-/* Wrapper for the home page */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+
 .home-wrapper {
-    flex: 1; /* Toto zabezpečí, že sa sekcia roztiahne na dostupnú výšku */
+    /* Ak tento wrapper používame len v rámci Home, môžeš ho ponechať pre interné odsadenie */
     padding: 2rem 0;
     background-color: #ffffff;
     display: flex;
@@ -8,23 +14,22 @@
     justify-content: center;
 }
 
-/* Main container with text and image */
 .home-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     max-width: 1200px;
     margin: 0 auto;
+    width: 100%;
 }
 
-/* Text container */
 .text-container {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
     padding: 2rem;
     max-width: 60%;
-    z-index: 2; /* Ensure it is above the image */
+    z-index: 2;
 }
 
 .home-title {
@@ -67,9 +72,8 @@
     background-color: #cc0000;
 }
 
-/* Image container */
 .image-container {
-    margin-left: 2rem; /* Adjusted margin for spacing */
+    margin-left: 2rem;
 }
 
 .image-container img {
@@ -77,4 +81,61 @@
     height: auto;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.features-section {
+    margin-top: 50px;
+    text-align: center;
+    padding: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.features-title {
+    font-size: 2rem;
+    color: #00203f;
+    margin-bottom: 10px;
+}
+
+.features-description {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.features-list li {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 25px;
+}
+
+.features-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 195px;
+    color: #ff0000;
+}
+
+/* Responzívne nastavenie pre menšie obrazovky */
+@media (max-width: 768px) {
+    .home-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    .image-container {
+        margin-left: 0;
+        margin-top: 20px;
+    }
+    .text-container {
+        max-width: 100%;
+    }
 }

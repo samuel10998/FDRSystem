@@ -1,31 +1,65 @@
 .register-container {
-    border-radius: 8px;
-    width: 100%;
-    max-width: 600px;
-    margin: 35px auto;
-    align-items: center;
+    background-color: #ffffff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    margin: 25px auto;
+    padding: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.62);
+    text-align: left;
 }
 
 .p-field {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
 
+.p-field label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
 }
 
 .p-inputtext {
     margin-top: 0.5rem;
+    padding: 0.8rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
 }
 
 .button-group {
     display: flex;
-    justify-content: space-between;
-    margin-top: 1.5rem;
+    justify-content: space-around;
+    margin-top: 2rem;
 }
 
 .p-button-cancel {
     background-color: #f44336;
     border: none;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.p-button-cancel:hover {
+    background-color: #d32f2f;
+}
+
+.p-button-register {
+    background-color: #4caf50;
+    border: none;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.p-button-register:hover {
+    background-color: #388e3c;
 }
 
 .p-toast {

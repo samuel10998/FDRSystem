@@ -1,10 +1,11 @@
+// Home.jsx
 import React from "react";
-import { Link } from "react-router-dom"; // Import Link
+import { Link } from "react-router-dom";
 import "./home.css";
 
 const Home = () => {
     return (
-        <div className="home-wrapper">
+        <div className="home-content">
             <div className="home-container">
                 <div className="text-container">
                     <h1 className="home-title">Flight Data Recorder System</h1>
@@ -30,6 +31,19 @@ const Home = () => {
                         alt="Flight Data Visualization"
                     />
                 </div>
+            </div>
+
+            <div className="features-section">
+                <h2 className="features-title">Prečo si vybrať náš systém?</h2>
+                <p className="features-description">
+                    Náš systém prináša inovatívne riešenia, ktoré zvyšujú efektivitu a bezpečnosť vašich letových operácií.
+                </p>
+                <ul className="features-list">
+                    <li>Jednoduché nahrávanie a spracovanie letových dát</li>
+                    <li>Detailnú analýzu a vizualizáciu každého letu</li>
+                    <li>Bezpečné uchovávanie dát a spoľahlivé výsledky</li>
+                    <li>Intuitívne rozhranie pre rýchle získanie informácií</li>
+                </ul>
             </div>
         </div>
     );

@@ -24,7 +24,7 @@ export default function LoginPage() {
             <div className="login-box">
                 <div className="login-image">
                     <img
-                        src="https://images.unsplash.com/photo-1573646609328-01f50a125c0c?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                        src="https://images.unsplash.com/photo-1670348564705-6be8279f53a8?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                         alt="logimage"
                     />
                 </div>

@@ -13,7 +13,7 @@ const EditUserDialog = ({ onClose, onUpdate }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState(""); // New password
     const [confirmPassword, setConfirmPassword] = useState(""); // Confirm new password
-    const [oldPassword, setOldPassword] = useState(""); // Old password for verification
+    //const [oldPassword, setOldPassword] = useState(""); // Old password for verification
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 

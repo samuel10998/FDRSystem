@@ -33,7 +33,7 @@ export default function Navbar() {
     // Položky pre navigáciu
     const items = [
         {
-            label: 'Domov',
+            label: 'Domov',  //pi-phone
             icon: 'pi pi-home',
             command: () => navigate('/home'),
             visible: true, // Vždy viditeľné
@@ -55,6 +55,18 @@ export default function Navbar() {
             icon: 'pi pi-cog',
             command: () => navigate('/manage-users'),
             visible: isAdmin, // Viditeľné len pre ADMIN
+        },
+        {
+            label: 'Info',  //pi-phone
+            icon: 'pi pi-info-circle',
+            command: () => navigate('/info'),
+            visible: true, // Vždy viditeľné
+        },
+        {
+            label: 'Kontakt',  //pi-phone
+            icon: 'pi pi-phone',
+            command: () => navigate('/Contact'),
+            visible: true, // Vždy viditeľné
         },
     ];
 
