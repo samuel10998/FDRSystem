@@ -3,11 +3,10 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 100%;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    min-height: 50vh;
+    padding-top: 50px;
+    padding-bottom: 60px;
 }
-
 
 .login-box {
     display: flex;
@@ -31,7 +30,6 @@
     width: 100%;
     height: auto;
 }
-
 
 .login-form {
     flex: 1;
@@ -66,7 +64,6 @@
     border-radius: 4px;
 }
 
-
 .login-button-login {
     background-color: #28a745;
     color: white;
@@ -82,7 +79,6 @@
 .login-button-login:hover {
     background-color: #218838;
 }
-
 
 .login-button-register {
     background-color: #007bff;
@@ -100,7 +96,6 @@
     background-color: #0056b3;
 }
 
-
 .login-links {
     display: flex;
     flex-direction: column;
@@ -116,7 +111,6 @@
 .login-links a:hover {
     text-decoration: underline;
 }
-
 
 .login-terms {
     margin-top: 1.5rem;
