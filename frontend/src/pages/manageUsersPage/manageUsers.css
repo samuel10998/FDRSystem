@@ -1,0 +1,72 @@
+.manage-users-container {
+    padding: 20px;
+    background-color: #ffffff;  /* Biela farba pre jasný kontrast */
+    margin: 20px;
+    border: 1px solid #ddd;     /* Jemný okraj pre oddelenie */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);  /* Výraznejší tieň pre lepšiu viditeľnosť */
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.header-title {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.global-search,
+.text-filter,
+.role-filter {
+    width: 250px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.text-filter {
+    height: 35px;
+}
+
+.p-datatable {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 10px;
+    font-size: 14px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+    background-color: #f0f8ff;
+}
+
+/* Štýl pre tlačidlo na odstránenie používateľa */
+.delete-button {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.delete-button:hover {
+    background-color: #e60000;
+}
