@@ -1,0 +1,62 @@
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-dropdown {
+    position: relative;
+    cursor: pointer;
+}
+
+.user-name {
+    font-weight: bold;
+    color: black;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    min-width: 150px;
+    z-index: 1000;
+}
+
+.dropdown-menu button {
+    background: none;
+    border: none;
+    color: black;
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+    background-color: rgba(132, 161, 168, 0.84);
+}
+
+.logout-button {
+    margin-left: 10px;
+}
+
+.user-button {
+    background-color: transparent;
+    border: 2px solid #007b5e;
+    color: #007b5e;
+    font-weight: bold;
+    text-transform: capitalize;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logout-button {
+    margin-left: 10px;
+}

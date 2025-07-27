@@ -8,14 +8,12 @@ const Footer = () => {
         <footer className="footer">
             <div className="footer-content">
                 <div className="footer-left">
-                    <h2>Vitajte v našom FDR systéme!</h2>
                     <p>Táto platforma slúži na nahrávanie, správu a analýzu letových záznamov.
                         Nahrajte svoje dáta, prezrite si trasu letu na mape a vytvárajte rôzne štatistiky.
                         Sme radi, že ste tu, a tešíme sa na vaše príspevky!</p>
                     <button className="project-button">Pridajte sa k nám</button>
                 </div>
                 <div className="footer-right">
-                    <h3>Kontakt</h3>
                     <p>Email: <a href="mailto:info@fdr.sk">info@skola.sk</a></p>
                     <p>Telefón: <a href="tel:+421123456789">+421 123 456 789</a></p>
                     <p>Adresa: Tr. A. Hlinku 1, 949 01 Nitra, Slovensko</p>

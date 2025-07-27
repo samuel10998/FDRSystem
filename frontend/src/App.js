@@ -3,29 +3,42 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Navbar from './components/navigation/Navbar';
 import Home from './pages/homePage/Home';
 import LoginPage from './pages/loginPage/Login';
+import Register from './pages/registerPage/Register';
 import MyFlights from './pages/myFlightsPage/MyFlights';
 import ManageUsers from './pages/manageUsersPage/ManageUsers';
 import Upload from './pages/uploadPage/Upload';
 import Footer from './components/footer/Footer';
-
-import './App.css'; // Make sure to import the updated CSS
+import PrivateRoute from './components/PrivateRoute';
+import EditUserDialog from './components/editUser/EditUserDialog';
+import Info from "./pages/infoPage/Info";
+import Contact from "./pages/contactPage/Contact";
+import axios from "axios";
+import './App.css';
 
 function App() {
+    const jwtToken = localStorage.getItem('jwtToken');
+    if (jwtToken){
+        axios.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+    }
+
     return (
         <div className="App">
             <Router>
                 <Navbar />
-                {/* Use a main 'content' area that grows to push footer down */}
-                <main className="content">
+                <div className="content-wrapper">
                     <Routes>
-                        <Route path="/" element={<Navigate to="/auth/login" replace />} />
+                        <Route path="/" element={<Navigate to="/api/login" replace />} />
                         <Route path="/home" element={<Home />} />
-                        <Route path="/auth/login" element={<LoginPage />} />
-                        <Route path="/manage-users" element={<ManageUsers />} />
-                        <Route path="/my-flights" element={<MyFlights />} />
-                        <Route path="/upload-files" element={<Upload />} />
+                        <Route path="/api/login" element={<LoginPage />} />
+                        <Route path="/api/register" element={<Register />} />
+                        <Route path="/manage-users" element={<PrivateRoute roles={['ROLE_ADMIN']} page={<ManageUsers />} />} />
+                        <Route path="/my-flights" element={<PrivateRoute roles={['ROLE_ADMIN','ROLE_USER']} page={<MyFlights />} />} />
+                        <Route path="/upload-files" element={<PrivateRoute roles={['ROLE_ADMIN','ROLE_USER']} page={<Upload />} />} />
+                        <Route path="/edit-user/:id" element={<PrivateRoute roles={['ROLE_USER','ROLE_ADMIN']} page={<EditUserDialog />} />} />
+                        <Route path="/info" element={<Info />} />
+                        <Route path="/Contact" element={<Contact />} />
                     </Routes>
-                </main>
+                </div>
             </Router>
             <Footer />
         </div>

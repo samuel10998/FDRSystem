@@ -34,14 +34,23 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    command: npm start # This starts the React development server
     volumes:
-      - ./frontend:/app # Ensure volume is mounted for live updates
-    networks:
-      - spring-network
+      - ./frontend:/app
+      - /app/node_modules
+
+  smtp4dev:
+    image: rnwood/smtp4dev:3.7.0-ci20241017100
+    ports:
+      - "4000:80"
+      - "2525:25"
+    volumes:
+      - smtp4dev-data:/smtp4dev
+
+
 
 volumes:
   db-data:
+  smtp4dev-data:
 
 networks:
   spring-network:
