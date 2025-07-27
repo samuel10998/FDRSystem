@@ -42,31 +42,31 @@ export default function Navbar() {
             label: 'Moje lety',
             icon: 'pi pi-send',
             command: () => navigate('/my-flights'),
-            visible: isAdmin || isUser, // Viditeľné pre ADMIN alebo USER
+            visible: isAdmin || isUser,
         },
         {
             label: 'Nahrať súbory',
             icon: 'pi pi-folder',
             command: () => navigate('/upload-files'),
-            visible: isAdmin || isUser, // Viditeľné pre ADMIN alebo USER
+            visible: isAdmin || isUser,
         },
         {
             label: 'Spravovať používateľov',
             icon: 'pi pi-cog',
             command: () => navigate('/manage-users'),
-            visible: isAdmin, // Viditeľné len pre ADMIN
+            visible: isAdmin,
         },
         {
-            label: 'Info',  //pi-phone
+            label: 'Info',
             icon: 'pi pi-info-circle',
             command: () => navigate('/info'),
-            visible: true, // Vždy viditeľné
+            visible: !isAdmin, //Viditelne pre vsetkych okrem ADMINA (TOTO SOM PRIDAL)
         },
         {
-            label: 'Kontakt',  //pi-phone
+            label: 'Kontakt',
             icon: 'pi pi-phone',
             command: () => navigate('/Contact'),
-            visible: true, // Vždy viditeľné
+            visible: !isAdmin,  //Viditelne pre vsetkych okrem ADMINA (TOTO SOM PRIDAL)
         },
     ];
 
