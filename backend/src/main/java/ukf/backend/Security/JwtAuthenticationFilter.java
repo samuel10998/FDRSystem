@@ -4,79 +4,79 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;                              //  ← logovanie
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-
-    private final JwtService jwtService;
-
-
+    private final JwtService         jwtService;
     private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
+    public JwtAuthenticationFilter(JwtService jwtService,
+                                   UserDetailsService userDetailsService) {
+        this.jwtService        = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest  request,
+                                    HttpServletResponse response,
+                                    FilterChain         chain)
             throws ServletException, IOException {
 
-        final String authorizationHeader = request.getHeader("Authorization");
+        /* -------- 1. vyber token z hlavičky ------------------------------------ */
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            chain.doFilter(request, response);          // nič → pokračuj
+            return;
+        }
+        String jwt = header.substring(7);
 
-        String email = null;
-        String jwt = null;
-
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            email = jwtService.extractEmail(jwt);
+        /* -------- 2. z JWT vyčítaj email (== username) ------------------------- */
+        String email = jwtService.extractEmail(jwt);
+        if (email == null) {                 // token je pokazený
+            chain.doFilter(request, response);
+            return;
         }
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            try {
-                var userDetails = this.userDetailsService.loadUserByUsername(email); // Now using email to load user
-
-                String roles = jwtService.extractClaim(jwt, claims -> claims.get("roles", String.class));
-                String regex = "ROLE_\\w+"; // Matches words starting with ROLE_
-
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(roles);
-
-                Collection<GrantedAuthority> authorities = new ArrayList<>();
-                while (matcher.find()) {
-                    authorities.add(new SimpleGrantedAuthority(matcher.group()));
-                }
-
-                if (jwtService.validateToken(jwt, userDetails.getUsername())) {
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                }
-            } catch (UsernameNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+        /* -------- 3. over, či už nemáme plnohodnotné prihlásenie --------------- */
+        var current = SecurityContextHolder.getContext().getAuthentication();
+        if (current != null && !(current instanceof AnonymousAuthenticationToken)) {
+            chain.doFilter(request, response);
+            return;
         }
+
+        /* -------- 4. natiahni používateľa a validuj token ---------------------- */
+        var userDetails = userDetailsService.loadUserByUsername(email);
+
+        if (!jwtService.validateToken(jwt, userDetails.getUsername())) {
+            log.debug("JWT invalid – {} → {}", email, request.getRequestURI());
+            chain.doFilter(request, response);
+            return;
+        }
+
+        /* -------- 5. vytvor Authentication + zapíš do SecurityContext ---------- */
+        var authToken = new UsernamePasswordAuthenticationToken(
+                userDetails,                          // principal
+                null,                                 // credentials
+                userDetails.getAuthorities());        // ← použij hotové roly
+
+        authToken.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        log.debug("JWT OK  – {} → {}", email, request.getRequestURI());
         chain.doFilter(request, response);
     }
 }

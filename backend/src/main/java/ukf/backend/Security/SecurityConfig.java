@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,15 +26,18 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity          // ← umožní @PreAuthorize, ak to budeš chcieť
 public class SecurityConfig {
 
     private final UserService appUserService;
-    private final JwtService jwtService;
+    private final JwtService   jwtService;
 
     public SecurityConfig(UserService appUserService, JwtService jwtService) {
         this.appUserService = appUserService;
-        this.jwtService = jwtService;
+        this.jwtService     = jwtService;
     }
+
+    /* ---------- Beans ----------------------------------------------------- */
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -54,9 +58,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
     }
 
     @Bean
@@ -64,40 +68,49 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /* ---------- Security filter chain ------------------------------------ */
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        // Allow public access to these endpoints
+                .authorizeHttpRequests(auth -> auth
+                        // verejné endpointy
                         .requestMatchers("/api/login", "/api/register", "/confirm-email").permitAll()
 
-                        // Protected endpoints requiring authentication/authorization
+                        .requestMatchers(HttpMethod.POST, "/api/flights").hasAnyRole("USER", "ADMIN")
+
+
+                        // zvyšok podľa pôvodného nastavenia
                         .requestMatchers("/home").authenticated()
                         .requestMatchers("/manage-users").hasRole("ADMIN")
                         .requestMatchers("/my-flights").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/upload-files").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
-                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
-                        .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
+                        .requestMatchers(HttpMethod.GET,    "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
+                        .requestMatchers(HttpMethod.PUT,    "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
+                        .requestMatchers(HttpMethod.PATCH,  "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
+    /* ---------- CORS ------------------------------------------------------ */
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Allow frontend origin
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH")); // Allow these HTTP methods
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type")); // Allow these headers
-        configuration.setAllowCredentials(true); // Allow cookies/credentials
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
+        cfg.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","PATCH","HEAD","OPTIONS"));
+        cfg.setAllowedHeaders(Arrays.asList("Authorization","Content-Type"));
+        cfg.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", cfg);
+        return src;
     }
 }

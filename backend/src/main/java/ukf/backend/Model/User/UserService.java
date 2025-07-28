@@ -83,4 +83,10 @@ public class UserService implements UserDetailsService{
         emailConfirmationTokenRepository.delete(emailConfirmationToken);
         return true;
     }
+
+    public User getByEmail(String email) {
+        return repository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found: " + email));
+    }
 }
