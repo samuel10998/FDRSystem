@@ -1,0 +1,86 @@
+/* ---------------------------------------- */
+/*  MyFlights.css (updated shadow)               */
+/* ---------------------------------------- */
+.my-flights {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.my-flights h2 {
+    font-size: 1.75rem;
+    color: #023e73;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* ---------------------------------------- */
+/*  Karta / box                           */
+/* ---------------------------------------- */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    /* podrobnejší tieň pre výraznejší efekt */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25),
+    0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------------------------------------- */
+/*  Stavové správy                        */
+/* ---------------------------------------- */
+.loading,
+.no-data {
+    text-align: center;
+    color: #666;
+    font-size: 1rem;
+    padding: 2rem 0;
+}
+
+/* ---------------------------------------- */
+/*  Tabuľka lietov                        */
+/* ---------------------------------------- */
+.flights-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.flights-table th,
+.flights-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.flights-table th {
+    background: #f5f8fb;
+    color: #023e73;
+    font-weight: 600;
+}
+
+.flights-table tbody tr:hover {
+    background: #f9fafa;
+}
+
+/* ---------------------------------------- */
+/*  Tlačidlo zmazania                     */
+/* ---------------------------------------- */
+.delete-button {
+    background: #ff4d4f;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.delete-button:disabled {
+    background: #f8d7d9;
+    cursor: not-allowed;
+}
+
+.delete-button:not(:disabled):hover {
+    background: #d9363e;
+}
