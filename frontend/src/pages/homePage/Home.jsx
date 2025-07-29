@@ -27,7 +27,7 @@ const Home = () => {
                 </div>
                 <div className="image-container">
                     <img
-                        src="https://www.l3harris.com/sites/default/files/styles/625_x_570/public/2020-08/as-cas-product-cockpit-voice-and-data-recorders.jpg?itok=0Hg7eROr"
+                        src="https://www.ntsb.gov/news/PublishingImages/cvr_sidefront_lg.jpg"
                         alt="Flight Data Visualization"
                     />
                 </div>

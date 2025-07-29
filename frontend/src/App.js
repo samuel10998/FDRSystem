@@ -7,29 +7,32 @@ import {
 } from "react-router-dom";
 import axios from "axios";
 
-import Navbar from "./components/navigation/Navbar";
-import Footer from "./components/footer/Footer";
-
-import Home from "./pages/homePage/Home";
-import LoginPage from "./pages/loginPage/Login";
-import Register from "./pages/registerPage/Register";
-import MyFlights from "./pages/myFlightsPage/MyFlights";
-import ManageUsers from "./pages/manageUsersPage/ManageUsers";
-import Upload from "./pages/uploadPage/Upload";
+import Navbar         from "./components/navigation/Navbar";
+import Footer         from "./components/footer/Footer";
+import PrivateRoute   from "./components/PrivateRoute";
+import Home           from "./pages/homePage/Home";
+import LoginPage      from "./pages/loginPage/Login";
+import Register       from "./pages/registerPage/Register";
+import MyFlights      from "./pages/myFlightsPage/MyFlights";
+import ManageUsers    from "./pages/manageUsersPage/ManageUsers";
+import Upload         from "./pages/uploadPage/Upload";
 import EditUserDialog from "./components/editUser/EditUserDialog";
-import Info from "./pages/infoPage/Info";
-import Contact from "./pages/contactPage/Contact";
-import PrivateRoute from "./components/PrivateRoute";
+import Info           from "./pages/infoPage/Info";
+import Contact        from "./pages/contactPage/Contact";
 
 import "./App.css";
 
-/* ------- axios – globálna Authorization hlavička --------------------- */
-
+/* ------------------------------------------------------------------ *
+ *  Globálna axios Authorization hlavička                             *
+ * ------------------------------------------------------------------ */
 const jwt = localStorage.getItem("jwtToken");
 if (jwt) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
 }
 
+/* ------------------------------------------------------------------ *
+ *  Root komponenta                                                   *
+ * ------------------------------------------------------------------ */
 function App() {
     return (
         <div className="App">
@@ -38,12 +41,21 @@ function App() {
 
                 <div className="content-wrapper">
                     <Routes>
-                        <Route path="/" element={<Navigate to="/api/login" replace />} />
-                        <Route path="/home" element={<Home />} />
+                        {/* default redirect */}
+                        <Route path="/" element={<Navigate to="/home" replace />} />
+
+                        {/* aliasy starých ciest na nové */}
+                        <Route path="/api/login"    element={<Navigate to="/login"    replace />} />
+                        <Route path="/api/register" element={<Navigate to="/register" replace />} />
+
+                        {/* verejné stránky */}
+                        <Route path="/home"    element={<Home />} />
+                        <Route path="/info"    element={<Info />} />
+                        <Route path="/contact" element={<Contact />} />
 
                         {/* auth */}
-                        <Route path="/api/login" element={<LoginPage />} />
-                        <Route path="/api/register" element={<Register />} />
+                        <Route path="/login"    element={<LoginPage />} />
+                        <Route path="/register" element={<Register   />} />
 
                         {/* chránené cesty */}
                         <Route
@@ -52,6 +64,7 @@ function App() {
                                 <PrivateRoute roles={["ROLE_ADMIN"]} page={<ManageUsers />} />
                             }
                         />
+
                         <Route
                             path="/my-flights"
                             element={
@@ -61,6 +74,7 @@ function App() {
                                 />
                             }
                         />
+
                         <Route
                             path="/upload-files"
                             element={
@@ -70,6 +84,7 @@ function App() {
                                 />
                             }
                         />
+
                         <Route
                             path="/edit-user/:id"
                             element={
@@ -79,10 +94,6 @@ function App() {
                                 />
                             }
                         />
-
-                        {/* verejné informácie */}
-                        <Route path="/info" element={<Info />} />
-                        <Route path="/contact" element={<Contact />} />
                     </Routes>
                 </div>
             </Router>
