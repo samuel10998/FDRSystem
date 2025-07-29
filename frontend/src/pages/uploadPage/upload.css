@@ -1,0 +1,91 @@
+/* src/pages/uploadPage/upload.css */
+
+:root {
+    /* Prispôsob si podľa skutočnej výšky hlavičky/footera */
+    --header-height: 64px;
+    --footer-height: 100px;
+}
+
+.upload-page {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;   /* začína pri vrchu, nie úplné vertikálne centrovanie */
+    padding: /* viac hore, menej dole */
+            calc(var(--header-height) + 24px) /* padding-top */
+            16px                              /* padding-left/right */
+            24px                              /* padding-bottom */
+            16px;
+    background: #f5f7fa;
+    /* zabezpečí, aby stránka netreba scrollovať, ak je málo obsahu */
+    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+}
+
+.upload-card {
+    background: #fff;
+    border-radius: 16px;
+    /* zosilnený tieň */
+    box-shadow:
+            0 12px 24px rgba(0, 0, 0, 0.12),
+            0 4px 8px   rgba(0, 0, 0, 0.06);
+    padding: 32px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.upload-title {
+    margin: 0 0 24px;
+    font-size: 1.75rem;
+    color: #0b2545;
+    text-align: center;
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.file-label {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.file-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.btn-upload {
+    background: #0b2545;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-upload:disabled {
+    background: #aac0d0;
+    cursor: not-allowed;
+}
+
+.btn-upload:not(:disabled):hover {
+    background: #082038;
+}
+
+.upload-msg {
+    margin-top: 16px;
+    font-size: 0.95rem;
+    color: #333;
+    text-align: center;
+}
+
+.upload-error {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #c00;
+    text-align: center;
+}

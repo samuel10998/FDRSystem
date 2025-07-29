@@ -1,15 +1,14 @@
 package ukf.backend.Model.User;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.ToString;
 import ukf.backend.Model.Role.Role;
+import ukf.backend.Model.flight.Flight;   // <- uprav podľa reálneho balíka
 
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -18,18 +17,33 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String name;
-    private String surname;
-    private String email;
-    private String password;
+
+    private String  name;
+    private String  surname;
+    private String  email;
+    private String  password;
     private boolean accountVerified;
 
+    /* ---------- roly --------------------------------------------------- */
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "users_roles",
-            joinColumns = @JoinColumn(
-                    name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(
-                    name = "role_id", referencedColumnName = "id"))
+            name               = "users_roles",
+            joinColumns        = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
+    )
     private Collection<Role> roles;
+
+    /* ---------- lety (cascade delete) ---------------------------------- */
+    @OneToMany(mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)            // ← kaskádové mazanie
+    @JsonIgnore                                // ← zabráni nekonečnej rekurzii v JSONe
+    private List<Flight> flights = new ArrayList<>();
+
+    /* ---------- util ---------------------------------------------------- */
+    /** Rýchla kontrola, či má používateľ danú rolu. */
+    public boolean hasRole(String roleName) {
+        if (roles == null) return false;
+        return roles.stream().anyMatch(r -> roleName.equals(r.getName()));
+    }
 }
