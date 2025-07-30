@@ -19,6 +19,7 @@ import Upload         from "./pages/uploadPage/Upload";
 import EditUserDialog from "./components/editUser/EditUserDialog";
 import Info           from "./pages/infoPage/Info";
 import Contact        from "./pages/contactPage/Contact";
+import FlightDetails  from "./pages/flightDetailsPage/FlightDetails";
 
 import "./App.css";
 
@@ -91,6 +92,16 @@ function App() {
                                 <PrivateRoute
                                     roles={["ROLE_ADMIN", "ROLE_USER"]}
                                     page={<EditUserDialog />}
+                                />
+                            }
+                        />
+
+                        <Route
+                            path="/flights/:id"
+                            element={
+                                <PrivateRoute
+                                    roles={["ROLE_ADMIN", "ROLE_USER"]}
+                                    page={<FlightDetails />}
                                 />
                             }
                         />
