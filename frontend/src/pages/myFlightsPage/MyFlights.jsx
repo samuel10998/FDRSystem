@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import "./myFlights.css";
 
@@ -6,6 +7,7 @@ export default function MyFlights() {
     const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+    const navigate = useNavigate(); // 👈 na redirect
 
     /* ------------ načítanie po mounte ---------------- */
     useEffect(() => {
@@ -32,6 +34,11 @@ export default function MyFlights() {
         } finally {
             setDeletingId(null);
         }
+    }
+
+    /* ------------ redirect na detail ---------------- */
+    function handleDetail(id) {
+        navigate(`/flights/${id}`);
     }
 
     /* -------------------- UI ------------------------ */
@@ -63,6 +70,12 @@ export default function MyFlights() {
                                 <td>{new Date(f.endTime).toLocaleString()}</td>
                                 <td>{f.recordCount}</td>
                                 <td>
+                                    <button
+                                        onClick={() => handleDetail(f.id)}
+                                        className="detail-button"
+                                    >
+                                        🧭
+                                    </button>{" "}
                                     <button
                                         onClick={() => handleDelete(f.id)}
                                         disabled={deletingId === f.id}
