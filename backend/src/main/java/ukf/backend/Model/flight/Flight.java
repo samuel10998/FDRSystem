@@ -18,10 +18,9 @@ public class Flight {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /* ––––– majiteľ uploadu ––––– */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore                   // zabráni cyklu v JSONe
+    @JsonIgnore
     private User user;
 
     private String        name;
@@ -30,9 +29,6 @@ public class Flight {
     private Integer       recordCount;
     private Double        distanceKm;
 
-    /* ––––– záznamy z letu –––––
-       CascadeType.ALL  → všetky operácie (persist, merge, remove…)
-       orphanRemoval=true → vymaže detské entity, ktoré sa odstránia z kolekcie */
     @OneToMany(mappedBy = "flight",
             cascade = CascadeType.ALL,
             orphanRemoval = true)

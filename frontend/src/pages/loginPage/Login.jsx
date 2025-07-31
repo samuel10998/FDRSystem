@@ -30,7 +30,7 @@ export default function LoginPage() {
                 </div>
                 <div className="login-form">
                     <h1>Systém na vizualizáciu dát zo zapisovača letových údajov</h1>
-                    <p>Prihláste sa do svojho účtu</p><br />
+                    <p>Prihláste sa do svojho účtu</p>
                     <InputText
                         id="email"
                         value={email}
@@ -40,7 +40,8 @@ export default function LoginPage() {
                             setEmail(e.target.value);
                         }}
                         onBlur={() => {
-                            if (!email || !validateEmail(email)) setErrorFields((prev) => ({ ...prev, email: true }));
+                            if (!email || !validateEmail(email))
+                                setErrorFields((prev) => ({ ...prev, email: true }));
                         }}
                         className={errorFields.email ? "p-invalid" : ""}
                     />
@@ -54,12 +55,23 @@ export default function LoginPage() {
                             setPassword(e.target.value);
                         }}
                         onBlur={() => {
-                            if (!password) setErrorFields((prev) => ({ ...prev, password: true }));
+                            if (!password)
+                                setErrorFields((prev) => ({ ...prev, password: true }));
                         }}
                         className={errorFields.password ? "p-invalid" : ""}
                     />
-                    <Button label="Prihlásenie" icon="pi pi-sign-in" onClick={() => handleLogin({ email, password, toast, navigate })} className="login-button-login" />
-                    <Button label="Registrácia" icon="pi pi-user" onClick={() => handleRegister(navigate)} className="login-button-register" />
+                    <Button
+                        label="Prihlásenie"
+                        icon="pi pi-sign-in"
+                        onClick={() => handleLogin({ email, password, toast, navigate })}
+                        className="login-button-login"
+                    />
+                    <Button
+                        label="Registrácia"
+                        icon="pi pi-user"
+                        onClick={() => handleRegister(navigate)}
+                        className="login-button-register"
+                    />
                 </div>
             </div>
         </div>

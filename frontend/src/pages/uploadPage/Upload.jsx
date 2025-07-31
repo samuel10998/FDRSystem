@@ -1,7 +1,6 @@
-// src/pages/uploadPage/Upload.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import './upload.css';              // nový CSS súbor
+import './upload.css';
 
 const API_URL = 'http://localhost:8080';
 

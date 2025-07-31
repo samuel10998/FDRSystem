@@ -1,10 +1,10 @@
 .manage-users-container {
     padding: 20px;
-    background-color: #ffffff;  /* Biela farba pre jasný kontrast */
+    background-color: #ffffff;
     margin: 20px;
-    border: 1px solid #ddd;     /* Jemný okraj pre oddelenie */
+    border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);  /* Výraznejší tieň pre lepšiu viditeľnosť */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
 }
 
 .header-container {
@@ -56,7 +56,6 @@
     background-color: #f0f8ff;
 }
 
-/* Štýl pre tlačidlo na odstránenie používateľa */
 .delete-button {
     background-color: #ff4d4f;
     color: white;

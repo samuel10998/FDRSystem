@@ -15,10 +15,9 @@ public class FlightRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /* ––––– spätný odkaz na flight ––––– */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flight_id", nullable = false)
-    @JsonIgnore                 // zabráni nekonečnému seriálovaniu
+    @JsonIgnore
     private Flight flight;
 
     private LocalTime time;       // 09:35:24

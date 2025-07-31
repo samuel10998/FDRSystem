@@ -1,6 +1,6 @@
 .edit-user-dialog {
     position: fixed;
-    top: 43%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background: #fff;
@@ -8,6 +8,7 @@
     border-radius: 8px;
     width: 400px;
     padding: 20px;
+    z-index: 1100;
 }
 
 .dialog-content {
@@ -41,6 +42,7 @@ h2 {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+    margin-top: 1rem;
 }
 
 .dialog-actions button {
@@ -50,26 +52,20 @@ h2 {
     cursor: pointer;
 }
 
-.dialog-actions button:first-child {
+.btn-save {
     background-color: #4caf50;
     color: white;
 }
 
-.dialog-actions button:last-child {
+.btn-cancel {
     background-color: #f44336;
     color: white;
 }
 
-.error-message {
-    color: #f44336;
-    margin-bottom: 12px;
-    font-weight: bold;
-}
-
-.edit-user-dialog select {
-    width: 100%;
-    padding: 8px;
-    margin: 8px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+.p-toast.p-toast-top-right {
+    top: 80px !important;
+    right: 20px !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 1200 !important;
 }

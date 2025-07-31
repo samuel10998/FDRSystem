@@ -19,20 +19,16 @@ import Upload         from "./pages/uploadPage/Upload";
 import EditUserDialog from "./components/editUser/EditUserDialog";
 import Info           from "./pages/infoPage/Info";
 import Contact        from "./pages/contactPage/Contact";
+import FlightDetails  from "./pages/flightDetailsPage/FlightDetails";
 
 import "./App.css";
 
-/* ------------------------------------------------------------------ *
- *  Globálna axios Authorization hlavička                             *
- * ------------------------------------------------------------------ */
 const jwt = localStorage.getItem("jwtToken");
 if (jwt) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
 }
 
-/* ------------------------------------------------------------------ *
- *  Root komponenta                                                   *
- * ------------------------------------------------------------------ */
+
 function App() {
     return (
         <div className="App">
@@ -41,14 +37,14 @@ function App() {
 
                 <div className="content-wrapper">
                     <Routes>
-                        {/* default redirect */}
+                        {/* redirect na home */}
                         <Route path="/" element={<Navigate to="/home" replace />} />
 
-                        {/* aliasy starých ciest na nové */}
+                        {/* aliasy starych ciest na nove */}
                         <Route path="/api/login"    element={<Navigate to="/login"    replace />} />
                         <Route path="/api/register" element={<Navigate to="/register" replace />} />
 
-                        {/* verejné stránky */}
+                        {/* verejne stranky */}
                         <Route path="/home"    element={<Home />} />
                         <Route path="/info"    element={<Info />} />
                         <Route path="/contact" element={<Contact />} />
@@ -57,7 +53,7 @@ function App() {
                         <Route path="/login"    element={<LoginPage />} />
                         <Route path="/register" element={<Register   />} />
 
-                        {/* chránené cesty */}
+                        {/* chránene cesty */}
                         <Route
                             path="/manage-users"
                             element={
@@ -91,6 +87,16 @@ function App() {
                                 <PrivateRoute
                                     roles={["ROLE_ADMIN", "ROLE_USER"]}
                                     page={<EditUserDialog />}
+                                />
+                            }
+                        />
+
+                        <Route
+                            path="/flights/:id"
+                            element={
+                                <PrivateRoute
+                                    roles={["ROLE_ADMIN", "ROLE_USER"]}
+                                    page={<FlightDetails />}
                                 />
                             }
                         />
