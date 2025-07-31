@@ -23,5 +23,5 @@ public class FlightStatsDto {
     private double avgAltitudeM;
 
     private long recordCount;
-    private String duration; // vo formáte HH:mm:ss
+    private String duration; // NEZABUDNI formát tu mám: HH:mm:ss
 }

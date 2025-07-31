@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import ukf.backend.Model.Role.Role;
-import ukf.backend.Model.flight.Flight;   // <- uprav podľa reálneho balíka
+import ukf.backend.Model.flight.Flight;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +24,6 @@ public class User {
     private String  password;
     private boolean accountVerified;
 
-    /* ---------- roly --------------------------------------------------- */
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name               = "users_roles",
@@ -33,15 +32,12 @@ public class User {
     )
     private Collection<Role> roles;
 
-    /* ---------- lety (cascade delete) ---------------------------------- */
     @OneToMany(mappedBy = "user",
             cascade = CascadeType.ALL,
-            orphanRemoval = true)            // ← kaskádové mazanie
-    @JsonIgnore                                // ← zabráni nekonečnej rekurzii v JSONe
+            orphanRemoval = true)
+    @JsonIgnore
     private List<Flight> flights = new ArrayList<>();
 
-    /* ---------- util ---------------------------------------------------- */
-    /** Rýchla kontrola, či má používateľ danú rolu. */
     public boolean hasRole(String roleName) {
         if (roles == null) return false;
         return roles.stream().anyMatch(r -> roleName.equals(r.getName()));

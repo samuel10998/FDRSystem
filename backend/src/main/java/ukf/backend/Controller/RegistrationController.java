@@ -37,7 +37,6 @@ public class RegistrationController {
     @Autowired private JwtService jwtService;
     @Autowired private UserService userService;
 
-    /* -------- REGISTRÁCIA -------- */
     @PostMapping(value = "/api/register", consumes = "application/json")
     public ResponseEntity<String> createUser(@RequestBody User user) throws MessagingException {
 
@@ -62,7 +61,6 @@ public class RegistrationController {
         return ResponseEntity.ok("User registered successfully.");
     }
 
-    /* -------- PRIHLÁSENIE -------- */
     @PostMapping(value = "/api/login", consumes = "application/json")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody User user) {
 
@@ -110,7 +108,6 @@ public class RegistrationController {
         }
     }
 
-    /* -------- POTVRDENIE EMAILU -------- */
     @GetMapping("/confirm-email")
     public ResponseEntity<String> confirmEmail(@RequestParam("token") String token)
             throws InvalidTokenException {

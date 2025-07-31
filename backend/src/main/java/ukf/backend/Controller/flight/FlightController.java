@@ -25,7 +25,7 @@ public class FlightController {
     private final FlightService flightService;
     private final UserService   userService;
 
-    /* ────────────────────────── 1. upload súboru ───────────────────────── */
+    /* ────────────────────────── Upload toto ešte skontroluj ───────────────────────── */
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -38,7 +38,7 @@ public class FlightController {
                 .body(FlightDto.from(flight));
     }
 
-    /* ────────────────────────── 2. zoznam mojich letov ─────────────────── */
+    /* ────────────────────────── Zozname letov ─────────────────── */
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -50,7 +50,7 @@ public class FlightController {
                 .toList();
     }
 
-    /* ────────────────────────── 3. detail letu ─────────────────────────── */
+    /* ────────────────────────── Detaily letu ─────────────────────────── */
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -61,7 +61,7 @@ public class FlightController {
         return ResponseEntity.ok(FlightDto.from(flight));
     }
 
-    /* ────────────────────────── 4. vymazanie letu ──────────────────────── */
+    /* ────────────────────────── Mazanie letu ──────────────────────── */
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -72,7 +72,7 @@ public class FlightController {
         return ResponseEntity.noContent().build();
     }
 
-    /* ────────────────────────── 5. záznamy letu ────────────────────────── */
+    /* ────────────────────────── Zaznam letu ────────────────────────── */
 
     @GetMapping("/{id}/records")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -84,7 +84,7 @@ public class FlightController {
         return ResponseEntity.ok(records);
     }
 
-    /* ────────────────────────── 6. štatistiky letu ──────────────────────── */
+    /* ────────────────────────── Štatistika letu ──────────────────────── */
 
     @GetMapping("/{id}/stats")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")

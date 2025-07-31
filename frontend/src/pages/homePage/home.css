@@ -6,7 +6,6 @@ html, body {
 
 
 .home-wrapper {
-    /* Ak tento wrapper používame len v rámci Home, môžeš ho ponechať pre interné odsadenie */
     padding: 2rem 0;
     background-color: #ffffff;
     display: flex;

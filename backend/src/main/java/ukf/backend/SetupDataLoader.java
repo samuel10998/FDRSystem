@@ -48,7 +48,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         Role adminRole = createRoleIfNotFound("ROLE_ADMIN");
         Role userRole = createRoleIfNotFound("ROLE_USER");
 
-        // Užívateľ
+        // Admin má tuto prednastavené prihlasovacie údaje.
         createUserIfNotFound("Test", "Test", "test", "test@student.ukf.sk", adminRole);
 
         alreadySetup = true;
