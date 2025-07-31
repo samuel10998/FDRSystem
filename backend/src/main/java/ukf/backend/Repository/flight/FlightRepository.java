@@ -7,6 +7,5 @@ import ukf.backend.Model.flight.Flight;
 import java.util.List;
 
 public interface FlightRepository extends JpaRepository<Flight, Long> {
-    /** lety konkrétneho užívateľa (najnovšie prvé) */
     List<Flight> findAllByUserIdOrderByStartTimeDesc(Long userId);
 }

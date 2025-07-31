@@ -26,7 +26,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity          // ← umožní @PreAuthorize, ak to budeš chcieť
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final UserService appUserService;
@@ -36,8 +36,6 @@ public class SecurityConfig {
         this.appUserService = appUserService;
         this.jwtService     = jwtService;
     }
-
-    /* ---------- Beans ----------------------------------------------------- */
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -67,8 +65,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    /* ---------- Security filter chain ------------------------------------ */
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

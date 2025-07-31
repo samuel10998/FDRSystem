@@ -1,12 +1,13 @@
-import React, { useState } from "react"; // Odstránený useEffect
+import React, { useState, useRef } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Panel } from "primereact/panel";
+import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
 import {
     validateFields,
     handleRegisterSubmit,
-} from "../../services/handleRegister"; // Odstránené initializeSchools a handleSchoolChange
+} from "../../services/handleRegister";
 import "./register.css";
 
 export default function Register() {
@@ -22,12 +23,35 @@ export default function Register() {
     });
 
     const navigate = useNavigate();
+    const toast = useRef(null);
 
     const handleRegister = () => {
         const fields = { name, surname, email, password };
         const errors = validateFields(fields);
+
         if (Object.values(errors).every((error) => !error)) {
-            handleRegisterSubmit(fields, navigate);
+            handleRegisterSubmit(fields)
+                .then(() => {
+                    toast.current.show({
+                        severity: "success",
+                        summary: "Úspech",
+                        detail: "Úspešná registrácia. Skontrolujte svoj email.",
+                        life: 4000,
+                    });
+                    setTimeout(() => navigate("/api/login"), 3000);
+                })
+                .catch((err) => {
+                    const msg =
+                        err?.response?.status === 409
+                            ? "Email už existuje"
+                            : "Chyba pri registrácii skús nový email";
+                    toast.current.show({
+                        severity: "error",
+                        summary: "Chyba",
+                        detail: msg,
+                        life: 4000,
+                    });
+                });
         } else {
             setTouchedFields({
                 name: true,
@@ -46,6 +70,7 @@ export default function Register() {
 
     return (
         <div className="register-container">
+            <Toast ref={toast} />
             <Panel header="Registrácia">
                 <div className="p-field">
                     <label htmlFor="name">Meno</label>

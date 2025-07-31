@@ -55,7 +55,6 @@ public class UserService implements UserDetailsService{
         }
     }
 
-
     public void sendRegistrationConfirmationEmail(User user) throws MessagingException {
         // Generate the token
         String tokenValue = Base64.getUrlEncoder().encodeToString(DEFAULT_TOKEN_GENERATOR.generateKey());

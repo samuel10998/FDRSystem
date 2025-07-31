@@ -46,6 +46,9 @@ public class FlightService {
         List<FlightRecord> buf = new ArrayList<>(BATCH_SIZE);
         LocalTime first = null, last = null;
 
+        Double totalDistanceKm = 0.0;
+        Double prevLat = null, prevLon = null;
+
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
@@ -56,11 +59,21 @@ public class FlightService {
                 String[] t = line.trim().split("\\s+");
                 if (t.length < COLS) continue;
 
+                Double lat = toD(t[1]);
+                Double lon = toD(t[2]);
+
+                if (prevLat != null && prevLon != null && lat != null && lon != null) {
+                    totalDistanceKm += haversine(prevLat, prevLon, lat, lon);
+                }
+
+                prevLat = lat;
+                prevLon = lon;
+
                 FlightRecord rec = FlightRecord.builder()
                         .flight(flight)
                         .time(LocalTime.parse(t[0], TIME_FMT))
-                        .latitude(toD(t[1]))
-                        .longitude(toD(t[2]))
+                        .latitude(lat)
+                        .longitude(lon)
                         .temperatureC(toD(t[3]))
                         .pressureHpa(toD(t[4]))
                         .altitudeM(toD(t[5]))
@@ -85,6 +98,7 @@ public class FlightService {
         flight.setStartTime(first != null ? first.atDate(LocalDate.now()) : null);
         flight.setEndTime(last != null ? last.atDate(LocalDate.now()) : null);
         flight.setRecordCount(Math.toIntExact(recordRepo.countByFlightId(flight.getId())));
+        flight.setDistanceKm(Math.round(totalDistanceKm * 100.0) / 100.0);
 
         return flightRepo.save(flight);
     }
@@ -157,5 +171,20 @@ public class FlightService {
         if (s == null) return null;
         s = s.replace(',', '.').trim();
         return s.isEmpty() ? null : Double.parseDouble(s);
+    }
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371.0; // Polomer Zeme v kilometroch podla google
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double rLat1 = Math.toRadians(lat1);
+        double rLat2 = Math.toRadians(lat2);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(rLat1) * Math.cos(rLat2) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 }

@@ -4,7 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;                              //  ← logovanie
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,29 +34,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain         chain)
             throws ServletException, IOException {
 
-        /* -------- 1. vyber token z hlavičky ------------------------------------ */
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
-            chain.doFilter(request, response);          // nič → pokračuj
+            chain.doFilter(request, response);
             return;
         }
         String jwt = header.substring(7);
-
-        /* -------- 2. z JWT vyčítaj email (== username) ------------------------- */
         String email = jwtService.extractEmail(jwt);
-        if (email == null) {                 // token je pokazený
+        if (email == null) {
             chain.doFilter(request, response);
             return;
         }
 
-        /* -------- 3. over, či už nemáme plnohodnotné prihlásenie --------------- */
         var current = SecurityContextHolder.getContext().getAuthentication();
         if (current != null && !(current instanceof AnonymousAuthenticationToken)) {
             chain.doFilter(request, response);
             return;
         }
 
-        /* -------- 4. natiahni používateľa a validuj token ---------------------- */
         var userDetails = userDetailsService.loadUserByUsername(email);
 
         if (!jwtService.validateToken(jwt, userDetails.getUsername())) {
@@ -65,11 +60,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        /* -------- 5. vytvor Authentication + zapíš do SecurityContext ---------- */
         var authToken = new UsernamePasswordAuthenticationToken(
                 userDetails,                          // principal
                 null,                                 // credentials
-                userDetails.getAuthorities());        // ← použij hotové roly
+                userDetails.getAuthorities());
 
         authToken.setDetails(
                 new WebAuthenticationDetailsSource().buildDetails(request));

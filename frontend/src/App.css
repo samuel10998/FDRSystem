@@ -135,3 +135,9 @@ body, html, #root {
 .social-icons i {
   font-size: 23.75px;
 }
+
+.p-toast {
+  top: 80px !important;
+  right: 20px;
+  z-index: 2000;
+}

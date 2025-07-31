@@ -11,6 +11,5 @@ public interface FlightRecordRepository extends JpaRepository<FlightRecord, Long
 
     long countByFlightId(Long flightId);
 
-    /* nový – na vymazanie všetkých záznamov letu */
     void deleteByFlightId(Long flightId);
 }

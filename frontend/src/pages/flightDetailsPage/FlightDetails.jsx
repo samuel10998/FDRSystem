@@ -8,7 +8,6 @@ import {
 import "leaflet/dist/leaflet.css";
 import "./FlightDetails.css";
 
-// Pomocná funkcia na parsovanie času (HH:mm:ss) ako Date objekt
 const parseTimeOnly = (timeStr) => {
     if (!timeStr) return new Date("1970-01-01T00:00:00");
     return new Date(`1970-01-01T${timeStr}`);
