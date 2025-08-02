@@ -1,9 +1,6 @@
 package ukf.backend.Model.EmailConfirmationToken;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Id;
+
+import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 public class EmailConfirmationToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -24,6 +22,11 @@ public class EmailConfirmationToken {
     @ReadOnlyProperty
     private LocalDateTime timeStamp;
 
-    @OneToOne
+    /**
+     * Many tokens can point at one user.
+     * This lines up with the @OneToMany(mappedBy="user") in your User entity.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

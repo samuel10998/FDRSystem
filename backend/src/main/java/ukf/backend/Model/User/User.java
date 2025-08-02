@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.flight.Flight;
+// ← import your token entity here:
+import ukf.backend.Model.EmailConfirmationToken.EmailConfirmationToken;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,9 +34,27 @@ public class User {
     )
     private Collection<Role> roles;
 
-    @OneToMany(mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    /**
+     * All of this user’s confirmation tokens.
+     * We cascade all operations and remove orphans,
+     * so deleting the user will also delete these rows.
+     */
+    @OneToMany(
+            mappedBy      = "user",
+            cascade       = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JsonIgnore
+    private List<EmailConfirmationToken> confirmationTokens = new ArrayList<>();
+
+    /**
+     * All flight records for this user.
+     */
+    @OneToMany(
+            mappedBy      = "user",
+            cascade       = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @JsonIgnore
     private List<Flight> flights = new ArrayList<>();
 
