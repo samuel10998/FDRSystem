@@ -17,7 +17,7 @@ export default function Upload() {
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        if (!file)  return setMsg('Vyber súbor.');
+        if (!file) return setMsg('Vyber súbor.');
         if (!token) return setMsg('Nie si prihlásený.');
 
         try {
@@ -46,35 +46,48 @@ export default function Upload() {
     return (
         <div className="upload-page">
             <div className="upload-card">
-                <h2 className="upload-title">Nahrať letový súbor</h2>
+                <div className="upload-container">
+                    {/* —— IMAGE SIDE —— */}
+                    <div className="upload-image">
+                        <img
+                            src="https://th-thumbnailer.cdn-si-edu.com/3ntDdcSfIWsKCH8HCC06vuuG1VY=/fit-in/1600x0/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/2f/c2/2fc2e46b-2936-4f01-bbcf-315e37c76792/02z_fm2021_abstractairliner_678665749_live.jpg"
+                            alt="Aviation banner"
+                        />
+                    </div>
 
-                <form onSubmit={handleUpload} className="upload-form">
-                    <label htmlFor="fileInput" className="file-label">
-                        Vyberte .txt súbor
-                    </label>
-                    <input
-                        id="fileInput"
-                        type="file"
-                        accept=".txt"
-                        onChange={(e) => setFile(e.target.files[0])}
-                        className="file-input"
-                    />
+                    {/* —— FORM SIDE —— */}
+                    <div className="upload-form">
+                        <h2 className="upload-title">Nahrať letový súbor</h2>
 
-                    <button
-                        type="submit"
-                        className="btn-upload"
-                        disabled={!token}
-                    >
-                        Upload
-                    </button>
-                </form>
+                        <form onSubmit={handleUpload}>
+                            <label htmlFor="fileInput" className="file-label">
+                                Vyberte .txt súbor
+                            </label>
+                            <input
+                                id="fileInput"
+                                type="file"
+                                accept=".txt"
+                                onChange={(e) => setFile(e.target.files[0])}
+                                className="file-input"
+                            />
 
-                {msg && <p className="upload-msg">{msg}</p>}
-                {!token && (
-                    <p className="upload-error">
-                        Nie si prihlásený.
-                    </p>
-                )}
+                            <button
+                                type="submit"
+                                className="btn-upload"
+                                disabled={!token}
+                            >
+                                Upload
+                            </button>
+                        </form>
+
+                        {msg && <p className="upload-msg">{msg}</p>}
+                        {!token && (
+                            <p className="upload-error">
+                                Nie si prihlásený.
+                            </p>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
