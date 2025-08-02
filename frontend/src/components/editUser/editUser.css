@@ -1,71 +1,125 @@
-.edit-user-dialog {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    width: 400px;
-    padding: 20px;
-    z-index: 1100;
+/* make sure you have these in :root somewhere */
+:root {
+    --header-height: 64px;
+    --footer-height: 100px;
 }
 
-.dialog-content {
+/* full-page wrapper */
+.edit-user-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: calc(var(--header-height) + 2rem) 1rem calc(var(--footer-height) + 2rem);
+    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+    background: #f5f7fa;
+}
+
+/* card container */
+.edit-user-card {
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow:
+            0 12px 24px rgba(0, 0, 0, 0.12),
+            0 4px  8px rgba(0, 0, 0, 0.06);
+}
+
+/* left image panel */
+.edit-user-image {
+    flex: 1;
+    min-width: 200px;
+    background: #ddd;
+}
+
+.edit-user-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* right form panel */
+.edit-user-form {
+    flex: 1;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
 }
 
-h2 {
-    margin-bottom: 16px;
+.edit-user-form h2 {
+    margin: 0 0 1.5rem;
+    font-size: 1.75rem;
+    color: #0b2545;
     text-align: center;
 }
 
+/* form fields */
 .form-group {
-    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 4px;
-    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #00203f;
 }
 
 .form-group input {
-    width: 100%;
-    padding: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 8px;
+    transition: border-color 0.2s;
 }
 
-.dialog-actions {
+.form-group input:focus {
+    border-color: #0b2545;
+    outline: none;
+}
+
+/* action buttons */
+.form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 1rem;
+    gap: 1rem;
+    margin-top: 2rem;
 }
 
-.dialog-actions button {
-    padding: 8px 16px;
+.btn-save,
+.btn-cancel {
+    min-width: 120px;
+    padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
 .btn-save {
-    background-color: #4caf50;
-    color: white;
+    background-color: #28a745;
+    color: #fff;
+}
+.btn-save:hover {
+    background-color: #218838;
 }
 
 .btn-cancel {
-    background-color: #f44336;
-    color: white;
+    background-color: #ff4d4f;
+    color: #fff;
+}
+.btn-cancel:hover {
+    background-color: #d9363e;
 }
 
+/* prime-react toast position tweak */
 .p-toast.p-toast-top-right {
     top: 80px !important;
     right: 20px !important;
-    left: auto !important;
     bottom: auto !important;
-    z-index: 1200 !important;
 }
