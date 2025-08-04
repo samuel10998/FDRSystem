@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.flight.Flight;
-// ← import your token entity here:
 import ukf.backend.Model.EmailConfirmationToken.EmailConfirmationToken;
 
 import java.util.ArrayList;
@@ -26,6 +25,12 @@ public class User {
     private String  password;
     private boolean accountVerified;
 
+
+    private String region;
+
+
+    private String profilePicture;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name               = "users_roles",
@@ -34,11 +39,6 @@ public class User {
     )
     private Collection<Role> roles;
 
-    /**
-     * All of this user’s confirmation tokens.
-     * We cascade all operations and remove orphans,
-     * so deleting the user will also delete these rows.
-     */
     @OneToMany(
             mappedBy      = "user",
             cascade       = CascadeType.ALL,
@@ -47,9 +47,7 @@ public class User {
     @JsonIgnore
     private List<EmailConfirmationToken> confirmationTokens = new ArrayList<>();
 
-    /**
-     * All flight records for this user.
-     */
+
     @OneToMany(
             mappedBy      = "user",
             cascade       = CascadeType.ALL,

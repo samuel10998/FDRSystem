@@ -1,7 +1,6 @@
 package ukf.backend.dtos;
 
 import lombok.Data;
-
 import java.util.List;
 
 @Data
@@ -10,5 +9,6 @@ public class UpdateUserDTO {
     private String surname;
     private String email;
     private String password;
+    private String region;
     private List<Long> roleIds;
 }

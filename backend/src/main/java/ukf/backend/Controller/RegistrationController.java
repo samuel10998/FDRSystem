@@ -29,6 +29,9 @@ import java.util.Map;
 @RestController
 public class RegistrationController {
 
+    private static final String DEFAULT_AVATAR = "profile_picture_default.jpg";
+
+
     @Autowired private UserRepository userRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private AllowedEmailDomainRepository allowedEmailDomainRepository;
@@ -39,6 +42,13 @@ public class RegistrationController {
 
     @PostMapping(value = "/api/register", consumes = "application/json")
     public ResponseEntity<String> createUser(@RequestBody User user) throws MessagingException {
+
+        if (user.getEmail() == null || user.getPassword() == null ||
+                user.getName() == null  || user.getSurname() == null ||
+                user.getRegion() == null || user.getRegion().isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Name, surname, email, password a region sú povinné.");
+        }
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -52,14 +62,14 @@ public class RegistrationController {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Collections.singletonList(
-                roleRepository.findByName("ROLE_USER")
-        ));
+        user.setRoles(Collections.singletonList(roleRepository.findByName("ROLE_USER")));
+        user.setProfilePicture(DEFAULT_AVATAR);        // predvolený avatar
         userRepository.save(user);
 
         userService.sendRegistrationConfirmationEmail(user);
         return ResponseEntity.ok("User registered successfully.");
     }
+
 
     @PostMapping(value = "/api/login", consumes = "application/json")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody User user) {

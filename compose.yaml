@@ -1,32 +1,63 @@
+version: "3.9"
+
 services:
   mysql:
-    image: mysql:9.1.0
+    image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: 'database'
-      MYSQL_PASSWORD: 'secret'
-      MYSQL_ROOT_PASSWORD: 'verysecret'
-      MYSQL_USER: 'user'
+      MYSQL_DATABASE: database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: verysecret
     ports:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pverysecret"]
+      interval: 10s
+      retries: 5
     networks:
       - spring-network
+
 
   phpmyadmin:
-    depends_on:
-      - mysql
     image: phpmyadmin:5.2.1-apache
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
-    ports:
-      - "8081:80"
     environment:
       PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: 'verysecret'
+      MYSQL_ROOT_PASSWORD: verysecret
+    ports:
+      - "8081:80"
     networks:
       - spring-network
 
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/database?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: secret
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads/avatars:/app/uploads/avatars
+    networks:
+      - spring-network
+
+  # ------------------------ FRONTEND -------------------------
   frontend:
     build:
       context: ./frontend
@@ -37,16 +68,20 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    networks:
+      - spring-network
 
+  # ------------------------- SMTP ----------------------------
   smtp4dev:
-    image: rnwood/smtp4dev:3.7.0-ci20241017100
+    image: rnwood/smtp4dev:latest
+    restart: unless-stopped
     ports:
       - "4000:80"
       - "2525:25"
     volumes:
       - smtp4dev-data:/smtp4dev
-
-
+    networks:
+      - spring-network
 
 volumes:
   db-data:

@@ -25,7 +25,6 @@ public class FlightController {
     private final FlightService flightService;
     private final UserService   userService;
 
-    /* ────────────────────────── Upload toto ešte skontroluj ───────────────────────── */
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -38,7 +37,6 @@ public class FlightController {
                 .body(FlightDto.from(flight));
     }
 
-    /* ────────────────────────── Zozname letov ─────────────────── */
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -50,7 +48,6 @@ public class FlightController {
                 .toList();
     }
 
-    /* ────────────────────────── Detaily letu ─────────────────────────── */
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -61,7 +58,6 @@ public class FlightController {
         return ResponseEntity.ok(FlightDto.from(flight));
     }
 
-    /* ────────────────────────── Mazanie letu ──────────────────────── */
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -72,7 +68,6 @@ public class FlightController {
         return ResponseEntity.noContent().build();
     }
 
-    /* ────────────────────────── Zaznam letu ────────────────────────── */
 
     @GetMapping("/{id}/records")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
@@ -84,14 +79,13 @@ public class FlightController {
         return ResponseEntity.ok(records);
     }
 
-    /* ────────────────────────── Štatistika letu ──────────────────────── */
 
     @GetMapping("/{id}/stats")
     @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
     public ResponseEntity<FlightStatsDto> getFlightStats(@PathVariable Long id,
                                                          Principal principal) {
         User current = userService.getByEmail(principal.getName());
-        flightService.getFlight(id, current); // validácia vlastníka/ADMIN
+        flightService.getFlight(id, current); // validacia ADMIN
         FlightStatsDto stats = flightService.getStats(id);
         return ResponseEntity.ok(stats);
     }
