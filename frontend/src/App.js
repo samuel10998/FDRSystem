@@ -37,23 +37,14 @@ function App() {
 
                 <div className="content-wrapper">
                     <Routes>
-                        {/* redirect na home */}
                         <Route path="/" element={<Navigate to="/home" replace />} />
-
-                        {/* aliasy starych ciest na nove */}
                         <Route path="/api/login"    element={<Navigate to="/login"    replace />} />
                         <Route path="/api/register" element={<Navigate to="/register" replace />} />
-
-                        {/* verejne stranky */}
                         <Route path="/home"    element={<Home />} />
                         <Route path="/info"    element={<Info />} />
                         <Route path="/contact" element={<Contact />} />
-
-                        {/* auth */}
                         <Route path="/login"    element={<LoginPage />} />
                         <Route path="/register" element={<Register   />} />
-
-                        {/* chránene cesty */}
                         <Route
                             path="/manage-users"
                             element={

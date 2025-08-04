@@ -8,7 +8,6 @@ export default function Navbar() {
     const navigate = useNavigate();
     const [showMenu, setShowMenu] = useState(false);
 
-    /* ---------- pomôcky -------------------------------------------------- */
 
     const getUser = () => {
         try {
@@ -24,7 +23,6 @@ export default function Navbar() {
     const isUser    = roleNames.includes("ROLE_USER");
     const token     = localStorage.getItem("jwtToken");
 
-    /* ---------- navigačné položky --------------------------------------- */
 
     const items = [
         {
@@ -65,7 +63,6 @@ export default function Navbar() {
         }
     ];
 
-    /* ---------- handlers ------------------------------------------------- */
 
     const logout = () => {
         localStorage.removeItem("user");
@@ -85,7 +82,6 @@ export default function Navbar() {
         }
     };
 
-    /* ---------- token expirácie ----------------------------------------- */
 
     useEffect(() => {
         if (!token) return;
@@ -99,7 +95,6 @@ export default function Navbar() {
         return () => clearInterval(id);
     }, [token]);
 
-    /* ---------- pravý koniec menubaru ----------------------------------- */
 
     const end = (
         <div className="user-info">

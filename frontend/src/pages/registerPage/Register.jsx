@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Panel } from "primereact/panel";
 import { Toast } from "primereact/toast";
@@ -11,22 +12,37 @@ import {
 import "./register.css";
 
 export default function Register() {
-    const [name, setName] = useState("");
+    const [name, setName]       = useState("");
     const [surname, setSurname] = useState("");
-    const [email, setEmail] = useState("");
+    const [email, setEmail]     = useState("");
     const [password, setPassword] = useState("");
+    const [region, setRegion]   = useState("");
+
     const [touchedFields, setTouchedFields] = useState({
         name: false,
         surname: false,
         email: false,
         password: false,
+        region: false
     });
 
     const navigate = useNavigate();
-    const toast = useRef(null);
+    const toast    = useRef(null);
+
+    /* ---------- možnosti pre dropdown ---------- */
+    const regionOptions = [
+        { label: "Bratislavský kraj",   value: "Bratislavský kraj" },
+        { label: "Trnavský kraj",       value: "Trnavský kraj" },
+        { label: "Trenčiansky kraj",    value: "Trenčiansky kraj" },
+        { label: "Nitriansky kraj",     value: "Nitriansky kraj" },
+        { label: "Žilinský kraj",       value: "Žilinský kraj" },
+        { label: "Banskobystrický kraj",value: "Banskobystrický kraj" },
+        { label: "Prešovský kraj",      value: "Prešovský kraj" },
+        { label: "Košický kraj",        value: "Košický kraj" }
+    ];
 
     const handleRegister = () => {
-        const fields = { name, surname, email, password };
+        const fields = { name, surname, email, password, region };
         const errors = validateFields(fields);
 
         if (Object.values(errors).every((error) => !error)) {
@@ -35,7 +51,7 @@ export default function Register() {
                     toast.current.show({
                         severity: "success",
                         summary: "Úspech",
-                        detail: "Úspešná registrácia. Skontrolujte svoj email.",
+                        detail:  "Úspešná registrácia. Skontrolujte svoj email.",
                         life: 4000,
                     });
                     setTimeout(() => navigate("/api/login"), 3000);
@@ -58,6 +74,7 @@ export default function Register() {
                 surname: true,
                 email: true,
                 password: true,
+                region: true
             });
         }
     };
@@ -66,12 +83,13 @@ export default function Register() {
         setTouchedFields((prev) => ({ ...prev, [field]: true }));
     };
 
-    const errors = validateFields({ name, surname, email, password });
+    const errors = validateFields({ name, surname, email, password, region });
 
     return (
         <div className="register-container">
             <Toast ref={toast} />
             <Panel header="Registrácia">
+                {/* meno */}
                 <div className="p-field">
                     <label htmlFor="name">Meno</label>
                     <InputText
@@ -88,6 +106,7 @@ export default function Register() {
                         <small className="p-error">Name is required.</small>
                     )}
                 </div>
+
                 <div className="p-field">
                     <label htmlFor="surname">Priezvisko</label>
                     <InputText
@@ -106,6 +125,27 @@ export default function Register() {
                         <small className="p-error">Surname is required.</small>
                     )}
                 </div>
+
+                <div className="p-field">
+                    <label htmlFor="region">Región</label>
+                    <Dropdown
+                        id="region"
+                        value={region}
+                        options={regionOptions}
+                        placeholder="Vyberte kraj"
+                        onChange={(e) => setRegion(e.value)}
+                        onBlur={() => handleBlur("region")}
+                        className={
+                            touchedFields.region && errors.region
+                                ? "p-invalid"
+                                : ""
+                        }
+                    />
+                    {touchedFields.region && errors.region && (
+                        <small className="p-error">Región je povinný.</small>
+                    )}
+                </div>
+
                 <div className="p-field">
                     <label htmlFor="email">Email</label>
                     <InputText
@@ -127,6 +167,7 @@ export default function Register() {
                         </small>
                     )}
                 </div>
+
                 <div className="p-field">
                     <label htmlFor="password">Heslo</label>
                     <InputText
