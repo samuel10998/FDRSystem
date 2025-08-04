@@ -37,6 +37,8 @@ public class SecurityConfig {
         this.jwtService     = jwtService;
     }
 
+    // ----------------- Beans --------------------------------------------------
+
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtService, userDetailsService());
@@ -66,6 +68,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -73,21 +76,35 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // verejné endpointy
+                        // verejné end-pointy
                         .requestMatchers("/api/login", "/api/register", "/confirm-email").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/avatar").permitAll()
+                        // .requestMatchers("/avatars/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/flights").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/flights")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
+                        .requestMatchers(HttpMethod.POST, "/api/users/*/avatar")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
-                        // zvyšok podľa pôvodného nastavenia
                         .requestMatchers("/home").authenticated()
-                        .requestMatchers("/manage-users").hasRole("ADMIN")
-                        .requestMatchers("/my-flights").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/upload-files").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET,    "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
-                        .requestMatchers(HttpMethod.PUT,    "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
-                        .requestMatchers(HttpMethod.PATCH,  "/api/users/**").hasAnyRole("ADMIN", "HOST", "USER")
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+
+                        .requestMatchers("/manage-users")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/my-flights", "/upload-files")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        .requestMatchers(HttpMethod.GET,   "/api/users/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_HOST", "ROLE_USER")
+                        .requestMatchers(HttpMethod.PUT,   "/api/users/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_HOST", "ROLE_USER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_HOST", "ROLE_USER")
+
+                        // akakolvek ďalšia manipulácia s / api / users vyaduje ADMIN-a
+                        .requestMatchers("/api/users/**")
+                        .hasAuthority("ROLE_ADMIN")
 
                         .anyRequest().authenticated()
                 )
@@ -95,7 +112,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    /* ---------- CORS ------------------------------------------------------ */
+    // ----------------- CORS ------------
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

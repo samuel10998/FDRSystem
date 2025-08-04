@@ -1,123 +1,152 @@
-/* make sure you have these in :root somewhere */
+/* ==========================================================
+   Edit-user page – kompaktnejšia verzia
+   (vertikálne odsadenie zmenšené o ~15 px + menšie komponenty)
+   ========================================================== */
+
+/* Globálne premenné (nechaj, ak ich už nemáš definované) */
 :root {
     --header-height: 64px;
     --footer-height: 100px;
 }
 
-/* full-page wrapper */
+/* ===============================================
+   Vonkajší wrapper
+   -----------------------------------------------
+   ▲ Ak chceš viac/​menej miesta nad-/pod kartou,
+     uprav len 1.5rem → koľko px/rem potrebuješ
+   =============================================== */
 .edit-user-page {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: calc(var(--header-height) + 2rem) 1rem calc(var(--footer-height) + 2rem);
+
+    /* pôvodne +2rem, teraz +1.5rem (≈-15 px) */
+    padding: calc(var(--header-height) + 1rem) 1rem
+    calc(var(--footer-height) + 1rem);
+
     min-height: calc(100vh - var(--header-height) - var(--footer-height));
     background: #f5f7fa;
 }
 
-/* card container */
+/* ===============================================
+   Karta
+   =============================================== */
 .edit-user-card {
     display: flex;
     width: 100%;
-    max-width: 900px;
+    max-width: 760px;          /* bolo 900px */
     background: #fff;
     border-radius: 16px;
     overflow: hidden;
     box-shadow:
             0 12px 24px rgba(0, 0, 0, 0.12),
-            0 4px  8px rgba(0, 0, 0, 0.06);
+            0  4px  8px rgba(0, 0, 0, 0.06);
 }
 
-/* left image panel */
+/* ===============================================
+   Ľavý panel (sivý box)
+   =============================================== */
 .edit-user-image {
-    flex: 1;
-    min-width: 200px;
-    background: #ddd;
+    flex: 0 0 270px;           /* bolo 320px */
+    background: #a3aecc;       /* jemná fialovo-sivá */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;           /* bolo 2rem */
 }
 
+/* Kruhový avatar */
+.edit-user-image .avatar {
+    width: 180px;              /* bolo 220px */
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* (Fallback, keby sa niekde použilo <img> bez .avatar) */
 .edit-user-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-/* right form panel */
+/* ===============================================
+   Pravý panel s formulárom
+   =============================================== */
 .edit-user-form {
     flex: 1;
-    padding: 2rem;
+    padding: 1.5rem;           /* bolo 2rem */
     display: flex;
     flex-direction: column;
 }
 
 .edit-user-form h2 {
-    margin: 0 0 1.5rem;
-    font-size: 1.75rem;
+    margin: 0 0 1.25rem;
+    font-size: 1.5rem;         /* bolo 1.75rem */
     color: #0b2545;
     text-align: center;
 }
 
-/* form fields */
+/* Polia */
 .form-group {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1rem;
+    margin-bottom: 0.9rem;     /* bolo 1rem */
 }
 
 .form-group label {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.45rem;
     font-weight: 600;
     color: #00203f;
+    font-size: 0.9rem;
 }
 
-.form-group input {
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
+.form-group input,
+.p-dropdown {
+    padding: 0.6rem 0.9rem;    /* bolo 0.75rem 1rem */
+    font-size: 0.9rem;         /* bolo 1rem */
     border: 1px solid #ccc;
     border-radius: 8px;
     transition: border-color 0.2s;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.p-dropdown:not(.p-disabled):focus-within {
     border-color: #0b2545;
     outline: none;
 }
 
-/* action buttons */
+/* ===============================================
+   Akčné tlačidlá
+   =============================================== */
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    margin-top: 2rem;
+    margin-top: 1.5rem;        /* bolo 2rem */
 }
 
 .btn-save,
 .btn-cancel {
-    min-width: 120px;
-    padding: 0.75rem 1.5rem;
+    min-width: 105px;          /* bolo 120px */
+    padding: 0.6rem 1.25rem;   /* bolo 0.75rem 1.5rem */
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 0.9rem;         /* bolo 1rem */
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
 }
 
-.btn-save {
-    background-color: #28a745;
-    color: #fff;
-}
-.btn-save:hover {
-    background-color: #218838;
-}
+.btn-save   { background: #28a745; color: #fff; }
+.btn-save:hover   { background: #218838; }
 
-.btn-cancel {
-    background-color: #ff4d4f;
-    color: #fff;
-}
-.btn-cancel:hover {
-    background-color: #d9363e;
-}
+.btn-cancel { background: #ff4d4f; color: #fff; }
+.btn-cancel:hover { background: #d9363e; }
 
-/* prime-react toast position tweak */
+/* Toast pozícia (PrimeReact) */
 .p-toast.p-toast-top-right {
     top: 80px !important;
     right: 20px !important;

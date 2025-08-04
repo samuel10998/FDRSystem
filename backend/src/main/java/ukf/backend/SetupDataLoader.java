@@ -19,40 +19,37 @@ import java.util.Optional;
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
-    boolean alreadySetup = false;
+    private boolean alreadySetup = false;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private AllowedEmailDomainRepository allowedEmailDomainRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private UserRepository               userRepository;
+    @Autowired private RoleRepository               roleRepository;
+    @Autowired private AllowedEmailDomainRepository allowedEmailDomainRepository;
+    @Autowired private PasswordEncoder              passwordEncoder;
 
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
-        if (alreadySetup)
-            return;
+        if (alreadySetup) return;
 
-        // Povolené emailové domény
+        /* povolené domény */
         createDomainIfNotFound("student.ukf.sk");
         createDomainIfNotFound("gmail.com");
 
-        // Role
         Role adminRole = createRoleIfNotFound("ROLE_ADMIN");
-        Role userRole = createRoleIfNotFound("ROLE_USER");
+        createRoleIfNotFound("ROLE_USER");
 
-        // Admin má tuto prednastavené prihlasovacie údaje.
-        createUserIfNotFound("Test", "Test", "test", "test@student.ukf.sk", adminRole);
+        createUserIfNotFound(
+                "Test",
+                "Test",
+                "test",
+                "test@student.ukf.sk",
+                adminRole
+        );
 
         alreadySetup = true;
     }
+
 
     @Transactional
     Role createRoleIfNotFound(String name) {
@@ -69,16 +66,22 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     void createDomainIfNotFound(String name) {
         Optional<AllowedEmailDomain> domains = allowedEmailDomainRepository.findByDomain(name);
         if (domains.isEmpty()) {
-            AllowedEmailDomain allowedEmailDomain = new AllowedEmailDomain();
-            allowedEmailDomain.setDomain(name);
-            allowedEmailDomainRepository.save(allowedEmailDomain);
+            AllowedEmailDomain allowed = new AllowedEmailDomain();
+            allowed.setDomain(name);
+            allowedEmailDomainRepository.save(allowed);
         }
     }
 
     @Transactional
-    User createUserIfNotFound(String name, String surname, String password, String email, Role role) {
-        Optional<User> users = userRepository.findByEmail(email);
-        if (users.isEmpty()) {
+    User createUserIfNotFound(String name,
+                              String surname,
+                              String password,
+                              String email,
+                              Role role) {
+
+        Optional<User> opt = userRepository.findByEmail(email);
+
+        if (opt.isEmpty()) {
             User user = new User();
             user.setName(name);
             user.setSurname(surname);
@@ -86,9 +89,30 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             user.setEmail(email);
             user.setRoles(Collections.singletonList(role));
             user.setAccountVerified(true);
+
+            user.setRegion("Nitriansky kraj");
+            user.setProfilePicture("profile_picture_default.jpg");
+
             userRepository.save(user);
             return user;
         }
-        return users.get();
+
+        User user = opt.get();
+        boolean changed = false;
+
+        if (user.getRegion() == null) {
+            user.setRegion("Nitriansky kraj");
+            changed = true;
+        }
+        if (user.getProfilePicture() == null) {
+            user.setProfilePicture("profile_picture_default.jpg");
+            changed = true;
+        }
+
+        if (changed) {
+            userRepository.save(user);
+        }
+
+        return user;
     }
 }
