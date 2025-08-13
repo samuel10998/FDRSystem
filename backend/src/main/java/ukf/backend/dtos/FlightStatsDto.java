@@ -22,6 +22,11 @@ public class FlightStatsDto {
     private double maxAltitudeM;
     private double avgAltitudeM;
 
+    // Turbulence (G)
+    private double minTurbulenceG;
+    private double maxTurbulenceG;
+    private double avgTurbulenceG;
+
     private long recordCount;
     private String duration;
 }
