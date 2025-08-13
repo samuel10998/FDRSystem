@@ -29,4 +29,7 @@ public class FlightRecord {
     private Double imuX;
     private Double imuY;
     private Double imuZ;
+
+    @Column(name = "turbulence_g")
+    private Double turbulenceG;   // napr. 0.012
 }
