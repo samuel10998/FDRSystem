@@ -1,9 +1,16 @@
+/* ------------- NOVÉ – horná medzera pod navbarom ------------ */
+/* ak chceš iný rozostup, uprav len túto hodnotu */
+.home-content {
+    padding-top: 30px;   /* ← pôvodne nebolo, pridá 30 px priestoru */
+}
+
+/* ============================================================= */
+/* doterajší obsah súboru (nezmenený) --------------------------- */
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
 }
-
 
 .home-wrapper {
     padding: 2rem 0;

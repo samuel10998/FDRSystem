@@ -32,7 +32,7 @@ public class FlightService {
     private final FlightRepository flightRepo;
     private final FlightRecordRepository recordRepo;
 
-    private static final int COLS = 9;
+    private static final int COLS = 10;
     private static final int BATCH_SIZE = 500;
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("H:mm:ss");
 
@@ -80,6 +80,7 @@ public class FlightService {
                         .imuX(toD(t[6]))
                         .imuY(toD(t[7]))
                         .imuZ(toD(t[8]))
+                        .turbulenceG(toD(t[9]))
                         .build();
 
                 buf.add(rec);
@@ -118,6 +119,7 @@ public class FlightService {
         DoubleSummaryStatistics tempStats = records.stream().mapToDouble(FlightRecord::getTemperatureC).summaryStatistics();
         DoubleSummaryStatistics pressureStats = records.stream().mapToDouble(FlightRecord::getPressureHpa).summaryStatistics();
         DoubleSummaryStatistics altitudeStats = records.stream().mapToDouble(FlightRecord::getAltitudeM).summaryStatistics();
+        DoubleSummaryStatistics turbulenceStats = records.stream().mapToDouble(FlightRecord::getTurbulenceG).summaryStatistics();
 
         Flight flight = flightRepo.findById(flightId)
                 .orElseThrow(() -> new RuntimeException("Flight not found: " + flightId));
@@ -134,6 +136,9 @@ public class FlightService {
                 .minAltitudeM(altitudeStats.getMin())
                 .maxAltitudeM(altitudeStats.getMax())
                 .avgAltitudeM(altitudeStats.getAverage())
+                .minTurbulenceG(turbulenceStats.getMin())
+                .maxTurbulenceG(turbulenceStats.getMax())
+                .avgTurbulenceG(turbulenceStats.getAverage())
                 .recordCount(records.size())
                 .duration(String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart()))
                 .build();
@@ -174,7 +179,7 @@ public class FlightService {
     }
 
     private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        final double R = 6371.0; // Polomer Zeme v kilometroch podla google
+        final double R = 6371.0;
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
         double rLat1 = Math.toRadians(lat1);
