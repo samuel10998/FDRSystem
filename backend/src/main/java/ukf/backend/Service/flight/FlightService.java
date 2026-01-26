@@ -32,7 +32,7 @@ public class FlightService {
     private final FlightRepository flightRepo;
     private final FlightRecordRepository recordRepo;
 
-    private static final int COLS = 10;
+    private static final int COLS = 14;
     private static final int BATCH_SIZE = 500;
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("H:mm:ss");
 
@@ -81,6 +81,7 @@ public class FlightService {
                         .imuY(toD(t[7]))
                         .imuZ(toD(t[8]))
                         .turbulenceG(toD(t[9]))
+                        .speedKn(toD(t[13]))
                         .build();
 
                 buf.add(rec);
@@ -120,6 +121,7 @@ public class FlightService {
         DoubleSummaryStatistics pressureStats = records.stream().mapToDouble(FlightRecord::getPressureHpa).summaryStatistics();
         DoubleSummaryStatistics altitudeStats = records.stream().mapToDouble(FlightRecord::getAltitudeM).summaryStatistics();
         DoubleSummaryStatistics turbulenceStats = records.stream().mapToDouble(FlightRecord::getTurbulenceG).summaryStatistics();
+        DoubleSummaryStatistics speedStats = records.stream().mapToDouble(FlightRecord::getSpeedKn).summaryStatistics();
 
         Flight flight = flightRepo.findById(flightId)
                 .orElseThrow(() -> new RuntimeException("Flight not found: " + flightId));
@@ -139,6 +141,9 @@ public class FlightService {
                 .minTurbulenceG(turbulenceStats.getMin())
                 .maxTurbulenceG(turbulenceStats.getMax())
                 .avgTurbulenceG(turbulenceStats.getAverage())
+                .minSpeedKn(speedStats.getMin())
+                .maxSpeedKn(speedStats.getMax())
+                .avgSpeedKn(speedStats.getAverage())
                 .recordCount(records.size())
                 .duration(String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart()))
                 .build();
