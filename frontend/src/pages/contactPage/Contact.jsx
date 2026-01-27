@@ -31,33 +31,35 @@ const Contact = () => {
     };
 
     return (
-        <section className="contact">
-            <div className="contact-container">
-                <div className="contact-info">
-                    <h2>Kontaktujte nás</h2>
-                    <p>Email: <strong>info@skola.sk</strong></p>
-                    <p>Telefón: <strong>+421 123 456 789</strong></p>
+        <div className="page-wrapper">
+            <section className="contact">
+                <div className="contact-container">
+                    <div className="contact-info">
+                        <h2>Kontaktujte nás</h2>
+                        <p>Email: <strong>info@skola.sk</strong></p>
+                        <p>Telefón: <strong>+421 123 456 789</strong></p>
+                    </div>
+                    <div className="contact-form">
+                        <form onSubmit={onSubmit}>
+                            <h2>Kontakt fórum</h2>
+                            <div className="input-box">
+                                <label>Celé meno</label>
+                                <input type="text" className="field" placeholder="Zadaj svoje meno" name="meno" required />
+                            </div>
+                            <div className="input-box">
+                                <label>Emailová adresa</label>
+                                <input type="email" className="field" placeholder="Zadaj svoj email" name="email" required />
+                            </div>
+                            <div className="input-box">
+                                <label>Tvoja správa</label>
+                                <textarea name="message" className="field mess" placeholder="Zadaj svoju správu" required></textarea>
+                            </div>
+                            <button type="submit">Send Message</button>
+                        </form>
+                    </div>
                 </div>
-                <div className="contact-form">
-                    <form onSubmit={onSubmit}>
-                        <h2>Kontakt fórum</h2>
-                        <div className="input-box">
-                            <label>Celé meno</label>
-                            <input type="text" className="field" placeholder="Zadaj svoje meno" name="meno" required />
-                        </div>
-                        <div className="input-box">
-                            <label>Emailová adresa</label>
-                            <input type="email" className="field" placeholder="Zadaj svoj email" name="email" required />
-                        </div>
-                        <div className="input-box">
-                            <label>Tvoja správa</label>
-                            <textarea name="message" className="field mess" placeholder="Zadaj svoju správu" required></textarea>
-                        </div>
-                        <button type="submit">Send Message</button>
-                    </form>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
     );
 };
 
