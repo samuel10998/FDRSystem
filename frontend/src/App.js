@@ -45,59 +45,28 @@ function App() {
                         <Route path="/contact" element={<Contact />} />
                         <Route path="/login"    element={<LoginPage />} />
                         <Route path="/register" element={<Register   />} />
-                        <Route
-                            path="/manage-users"
-                            element={
-                                <PrivateRoute roles={["ROLE_ADMIN"]} page={<ManageUsers />} />
-                            }
+                        <Route path="/manage-users"
+                               element={<PrivateRoute roles={["ROLE_ADMIN"]} page={<ManageUsers />} />}
                         />
-
-                        <Route
-                            path="/my-flights"
-                            element={
-                                <PrivateRoute
-                                    roles={["ROLE_ADMIN", "ROLE_USER"]}
-                                    page={<MyFlights />}
-                                />
-                            }
+                        <Route path="/my-flights"
+                               element={<PrivateRoute roles={["ROLE_ADMIN", "ROLE_USER"]} page={<MyFlights />} />}
                         />
-
-                        <Route
-                            path="/upload-files"
-                            element={
-                                <PrivateRoute
-                                    roles={["ROLE_ADMIN", "ROLE_USER"]}
-                                    page={<Upload />}
-                                />
-                            }
+                        <Route path="/upload-files"
+                               element={<PrivateRoute roles={["ROLE_ADMIN", "ROLE_USER"]} page={<Upload />} />}
                         />
-
-                        <Route
-                            path="/edit-user/:id"
-                            element={
-                                <PrivateRoute
-                                    roles={["ROLE_ADMIN", "ROLE_USER"]}
-                                    page={<EditUserDialog />}
-                                />
-                            }
+                        <Route path="/edit-user/:id"
+                               element={<PrivateRoute roles={["ROLE_ADMIN", "ROLE_USER"]} page={<EditUserDialog />} />}
                         />
-
-                        <Route
-                            path="/flights/:id"
-                            element={
-                                <PrivateRoute
-                                    roles={["ROLE_ADMIN", "ROLE_USER"]}
-                                    page={<FlightDetails />}
-                                />
-                            }
+                        <Route path="/flights/:id"
+                               element={<PrivateRoute roles={["ROLE_ADMIN", "ROLE_USER"]} page={<FlightDetails />} />}
                         />
                     </Routes>
                 </div>
+                <Footer />
             </Router>
-
-            <Footer />
         </div>
     );
 }
+
 
 export default App;

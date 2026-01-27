@@ -3,18 +3,27 @@
 html, body, #root {
   height: 100%;
   margin: 0;
-  background-color: #f6f6f6;
+  padding: 0;
   font-family: 'Arial', sans-serif;
+  background-color: #f6f6f6;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 1) App as flex column filling viewport */
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* 1) App layout – vertikálny flex s minimálnou výškou viewportu */
 .App {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  flex: 1;
 }
 
-/* 2) Navbar stays fixed at top */
+/* 2) Navbar je pevne hore */
 .navbar {
   position: fixed;
   top: 0;
@@ -24,85 +33,71 @@ html, body, #root {
   z-index: 1000;
 }
 
-/* 3) Main content grows and scrolls */
 .content-wrapper {
-  flex: 1;                      /* takes all remaining space */
-  padding-top: 60px;            /* avoid the fixed navbar */
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-bottom: 20px;         /* some breathing room before footer */
+  flex: 1 0 auto;
+  margin-top: 60px; /* výška navbaru */
+  padding: 20px;
   background-color: #f6f6f6;
-  overflow-y: auto;             /* scroll if it overflows */
-  -webkit-overflow-scrolling: touch;
 }
 
-/* 4) Footer becomes a normal block at the very end */
+/* 4) Footer na spodku obrazovky */
 .footer {
-  position: static;             /* no longer fixed */
-  background-color: #00203FFF;
-  color: #ADEFD1FF;
-  text-align: center;
-  font-size: 95%;
-}
-
-/* keep rest of footer styles */
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  max-width: 1235px;
-  margin: 0 auto;
-}
-
-.footer-left {
-  max-width: 47.5%;
-}
-
-.footer-left p {
-  margin-bottom: 1.425rem;
-  line-height: 1.52;
-}
-
-.project-button {
-  background-color: #007b5e;
+  margin-top: auto;
+  background-color: #00203f;
   color: #ffffff;
-  padding: 0.7125rem 1.425rem;
-  border: none;
-  border-radius: 4px;
+  padding: 1.5rem 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+/* Odkazy vo footeri */
+.footer-links {
+  margin-bottom: 0.5rem;
+}
+
+.footer-links span {
+  color: #ffffff;
+  text-decoration: none;
+  margin: 0 1rem;
+  font-weight: bold;
   cursor: pointer;
-  font-size: 95%;
-  position: relative;
-  top: -3mm;
 }
 
-.project-button:hover {
-  background-color: #14b390;
-}
-
-.footer-right p,
-.footer-right a {
-  margin-bottom: 0.475rem;
-  font-size: 95%;
-  color: #ADEFD1FF;
-}
-
-.footer-right a:hover {
+.footer-links span:hover {
   text-decoration: underline;
 }
 
+/* Ikony sociálnych sietí */
 .social-icons {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 7.6px;
-  position: relative;
-  top: 1mm;
+  gap: 1rem;
+  margin: 0.5rem 0;
 }
 
 .social-icons a {
-  margin-right: 2.85px;
+  color: #ffffff;
+  transition: transform 0.2s;
 }
 
-.social-icons a:last-child {
-  margin-right: 0;
+.social-icons a:hover {
+  transform: scale(1.1);
+}
+
+/* Copyright text */
+.footer-copy {
+  color: #aaaaaa;
+  font-size: 0.85rem;
+}
+
+/* Wrapper pre každú stránku */
+.page-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.p-menubar .p-menuitem-link {
+  -webkit-tap-highlight-color: transparent;
 }

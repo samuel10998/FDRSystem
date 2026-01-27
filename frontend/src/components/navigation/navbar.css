@@ -1,62 +1,144 @@
-.user-info {
+/* Navbar pozadie */
+.navbar {
+    background-color: #00203f !important;
+}
+
+/* Menubar celkovo */
+.p-menubar {
+    background-color: #00203f !important;
+    border: none !important;
+}
+
+/* Základné štýlovanie položiek */
+.p-menubar .p-menuitem-link {
+    background-color: transparent !important;
+    color: #ffffff !important;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
-    gap: 15px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease-in-out, color 0.2s;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Hover efekt */
+.p-menubar .p-menuitem-link:hover {
+    background-color: #1f4069 !important;
+    color: #ffffff !important;
+}
+
+/* Aktívna položka */
+.p-menubar .p-menuitem.p-menuitem-active > .p-menuitem-link,
+.p-menubar .p-menuitem-link:focus,
+.p-menubar .p-menuitem-link:active,
+.p-menubar .p-menuitem-link:focus-visible,
+.p-menubar .p-menuitem-link:target {
+    background-color: #2e5c85 !important;
+    color: #ffffff !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Ikony */
+.p-menubar .pi {
+    color: #ffffff !important;
+    margin-right: 8px;
+}
+
+.p-menubar .p-menuitem-link span,
+.p-menubar .p-menuitem-link .p-menuitem-icon,
+.p-menubar .p-menuitem-link .p-menuitem-text {
+    background-color: transparent !important;
+    color: inherit !important;
+}
+
+/* Tap highlight */
+.p-menubar .p-menuitem-link {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Hover efekt fix */
+body .p-menubar .p-menuitem-link:hover {
+    background-color: #1f4069 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+/* Mobilné menu */
+body .p-menubar-root-list {
+    background-color: #00203f !important;
+}
+body .p-menubar-root-list .p-menuitem-link {
+    background-color: transparent !important;
+    color: #ffffff !important;
+}
+body .p-menubar-root-list .p-menuitem-link:hover {
+    background-color: #1f4069 !important;
+    color: #ffffff !important;
+}
+body .p-menubar .p-menuitem-link:focus,
+body .p-menubar .p-menuitem-link:active {
+    background-color: #2e5c85 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* 👤 User dropdown */
+.user-info {
+    position: relative;
 }
 
 .user-dropdown {
     position: relative;
+}
+
+.user-button {
+    background-color: #2196f3 !important;
+    border: none !important;
+    color: #fff !important;
+    padding: 0.4rem 1rem !important;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
     cursor: pointer;
 }
 
-.user-name {
-    font-weight: bold;
-    color: black;
+.user-button:hover {
+    background-color: #1f4069 !important;
+    color: #ffffff !important;
 }
 
+/* Dropdown menu */
 .dropdown-menu {
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
-    min-width: 150px;
-    z-index: 1000;
+    background-color: #00203f; /* rovnaká ako navbar */
+    border-radius: 6px;
+    margin-top: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    min-width: 160px;
+    overflow: hidden;
 }
 
-.dropdown-menu button {
-    background: none;
-    border: none;
-    color: black;
+.dropdown-item {
+    padding: 0.5rem 1rem;
     width: 100%;
     text-align: left;
-    padding: 10px;
-    cursor: pointer;
-}
-
-.dropdown-menu button:hover {
-    background-color: rgba(132, 161, 168, 0.84);
-}
-
-.logout-button {
-    margin-left: 10px;
-}
-
-.user-button {
     background-color: transparent;
-    border: 2px solid #007b5e;
-    color: #007b5e;
-    font-weight: bold;
-    text-transform: capitalize;
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #ffffff;
+    transition: background-color 0.2s ease-in-out;
 }
 
-.logout-button {
-    margin-left: 10px;
+.dropdown-item:hover {
+    background-color: #1f4069;
+    color: #ffffff;
 }
