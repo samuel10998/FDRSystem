@@ -67,3 +67,29 @@
     top: 1rem;
     right: 1rem;
 }
+
+.password-toggle {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.password-toggle input {
+    flex: 1;
+    padding-right: 3rem; /* viac priestoru pre ikonku */
+    height: 100%;
+    font-size: 1rem;
+    padding: 0.8rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.password-toggle .toggle-icon {
+    position: absolute;
+    right: 0.75rem; /* 12px od okraja inputu */
+    top: 60%; /* jemne posunutie nižšie pre lepšie zarovnanie */
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+    font-size: 1.2rem;
+}

@@ -14,7 +14,7 @@ export default function EditUserDialog() {
     const [lastName,  setLastName]  = useState("");
     const [email,     setEmail]     = useState("");
     const [region,    setRegion]    = useState("");
-    const [profilePic, setProfilePic] = useState("profile_picture_default.jpg"); // default
+    const [profilePic, setProfilePic] = useState("profile_picture_default.jpg");
     const [password,  setPassword]  = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [file, setFile] = useState(null);
@@ -30,7 +30,6 @@ export default function EditUserDialog() {
         { label: "Košický kraj",         value: "Košický kraj" }
     ];
 
-    /* ----------- načítanie údajov ----------- */
     useEffect(() => {
         axios.get(`http://localhost:8080/api/users/${id}`)
             .then(({ data }) => {
@@ -44,13 +43,18 @@ export default function EditUserDialog() {
                 toast.current.show({
                     severity: "error",
                     summary:  "Chyba",
-                    detail:   "Nepodarilo sa načítať údaje používateľa.",
+                    detail:   "Nepodarilo sa načítať údeje používateľa.",
                     life: 4000,
                 })
             );
     }, [id]);
 
-    /* ----------- uloženie ----------- */
+    const isPasswordValid = (pwd) => {
+        const letters = (pwd.match(/[A-Za-z]/g) || []).length;
+        const digits  = (pwd.match(/[0-9]/g)   || []).length;
+        return letters >= 6 && digits >= 4;
+    };
+
     const handleSave = async () => {
         if (password && password !== confirmPassword) {
             toast.current.show({
@@ -58,6 +62,16 @@ export default function EditUserDialog() {
                 summary:  "Upozornenie",
                 detail:   "Heslá sa musia zhodovať.",
                 life: 3000,
+            });
+            return;
+        }
+
+        if (password && !isPasswordValid(password)) {
+            toast.current.show({
+                severity: "error",
+                summary:  "Neplatné heslo",
+                detail:   "Heslo musí obsahovať aspoň 6 písmen a 4 čísla.",
+                life: 4000,
             });
             return;
         }
@@ -89,7 +103,7 @@ export default function EditUserDialog() {
 
             toast.current.show({
                 severity: "success",
-                summary:  "Úspech",
+                summary:  "Úpspech",
                 detail:   "Zmeny boli úspešne uložené.",
                 life: 3000,
             });
@@ -105,13 +119,11 @@ export default function EditUserDialog() {
         }
     };
 
-    /* ----------- JSX ----------- */
     return (
         <>
             <Toast ref={toast} position="top-right" />
             <section className="edit-user-page">
                 <div className="edit-user-card">
-                    {/* ľavý panel – fotka v kruhu */}
                     <div className="edit-user-image">
                         <img
                             className="avatar"
@@ -120,7 +132,6 @@ export default function EditUserDialog() {
                         />
                     </div>
 
-                    {/* pravý panel – formulár */}
                     <div className="edit-user-form">
                         <h2>Upraviť profil</h2>
 
