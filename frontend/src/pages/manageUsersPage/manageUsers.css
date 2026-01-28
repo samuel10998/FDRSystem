@@ -1,12 +1,21 @@
+/* Hlavný kontajner s výškou prispôsobenou viewportu */
 .manage-users-container {
-    padding: 20px;
-    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px; /* ↑ horný a dolný padding = 40px, ľavý a pravý = 20px */
     margin: 20px;
+    background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
+
+    /* Namiesto pevnej výšky len minimálna výška */
+    min-height: calc(85vh - 110px); /* nastav podľa výšky navbaru + footeru */
+    box-sizing: border-box;
 }
 
+
+/* Header sekcia */
 .header-container {
     display: flex;
     justify-content: space-between;
@@ -38,11 +47,21 @@
     height: 35px;
 }
 
+/* DataTable */
 .p-datatable {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     background-color: white;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.p-datatable-wrapper {
+    flex-grow: 1; /* vyplní zvyšný priestor */
+    overflow-y: auto;
 }
 
 .p-datatable .p-datatable-tbody > tr > td {
@@ -50,6 +69,7 @@
     font-size: 14px;
     text-align: left;
     vertical-align: middle;
+    min-height: 50px;
 }
 
 .p-datatable .p-datatable-tbody > tr:hover {

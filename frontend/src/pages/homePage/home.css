@@ -89,6 +89,16 @@ html, body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/*.features-section {
+    margin-top: 50px;
+    text-align: center;
+    padding: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+*/
+
 .features-section {
     margin-top: 50px;
     text-align: center;
@@ -114,22 +124,33 @@ html, body {
     list-style: none;
     padding: 0;
     margin: 0 auto;
+    width: 100%;
+    max-width: 600px;
+
+    /* nový offset – môžeš meniť v CSS podľa potreby */
+    --feature-offset: 100px;       /* ← nastav si napr. 20px ak chceš posun doprava */
+    padding-left: var(--feature-offset);
 }
 
 .features-list li {
     font-size: 1rem;
     color: #444;
     margin-bottom: 10px;
-    position: relative;
-    padding-left: 25px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
 }
 
-.features-list li:before {
+.features-list li::before {
     content: "✓";
-    position: absolute;
-    left: 195px;
     color: #ff0000;
+    flex-shrink: 0;
+    margin-top: 2px;
 }
+
+
+
 
 /* Responzívne nastavenie pre menšie obrazovky */
 @media (max-width: 768px) {

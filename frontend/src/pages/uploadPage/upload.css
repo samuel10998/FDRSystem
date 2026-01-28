@@ -4,17 +4,16 @@
 }
 
 .upload-page {
+    flex: 1;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding:
-            calc(var(--header-height) + 24px)
-            16px
-            24px
-            16px;
+    align-items: center;
     background: #f5f7fa;
-    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+    padding-top: 140px;
+    padding-bottom: 40px;
+    box-sizing: border-box;
 }
+
 
 .upload-card {
     background: #fff;

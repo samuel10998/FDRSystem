@@ -1,11 +1,15 @@
 .contact {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 60vh;
     background: rgba(248, 246, 246, 0.76);
-    padding: 35px;
+    box-sizing: border-box;
+    padding-top: 75px;
+    padding-bottom: 40px;
 }
+
+
 
 .contact-container {
     display: flex;
