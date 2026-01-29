@@ -24,7 +24,7 @@
     padding: calc(var(--header-height) + 1rem) 1rem
     calc(var(--footer-height) + 1rem);
 
-    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+    min-height: calc(50vh - var(--header-height) - var(--footer-height));
     background: #f5f7fa;
 }
 

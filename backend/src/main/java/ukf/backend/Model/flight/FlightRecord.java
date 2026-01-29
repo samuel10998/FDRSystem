@@ -32,4 +32,6 @@ public class FlightRecord {
 
     @Column(name = "turbulence_g")
     private Double turbulenceG;   // napr. 0.012
+
+    private Double speedKn;       // nova hodnota - rychlost v uzloch
 }

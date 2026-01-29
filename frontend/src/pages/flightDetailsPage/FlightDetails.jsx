@@ -169,6 +169,12 @@ export default function FlightDetails() {
                             <td>{stats.maxTurbulenceG.toFixed(3)}</td>
                             <td>{stats.avgTurbulenceG.toFixed(3)}</td>
                         </tr>
+                        <tr>
+                            <td>Rýchlosť (kn)</td>
+                            <td>{stats.minSpeedKn.toFixed(1)}</td>
+                            <td>{stats.maxSpeedKn.toFixed(1)}</td>
+                            <td>{stats.avgSpeedKn.toFixed(1)}</td>
+                        </tr>
                         </tbody>
                         <tfoot>
                         <tr>
@@ -212,6 +218,7 @@ export default function FlightDetails() {
                                     <p><strong>Tlak:</strong> {clickRecord.pressureHpa} hPa</p>
                                     <p><strong>Výška:</strong> {clickRecord.altitudeM} m</p>
                                     <p><strong>Turbulencia:</strong> {clickRecord.turbulenceG} G</p>
+                                    <p><strong>Rýchlosť:</strong> {clickRecord.speedKn} kn</p>
                                 </div>
                             </Popup>
                         )}
@@ -276,6 +283,32 @@ export default function FlightDetails() {
                             dataKey="turbulenceG"
                             stroke="#6c43f3"
                             name="Turbulencia (G)"
+                            dot={false}
+                        />
+                    </LineChart>
+                </div>
+            )}
+
+            {records.length > 0 && (
+                <div className="card">
+                    <h3>Rýchlosť počas letu</h3>
+                    <LineChart width={800} height={300} data={records}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                            dataKey="time"
+                            type="category"
+                            tickFormatter={v => parseTimeOnly(v).toLocaleTimeString()}
+                        />
+                        <YAxis />
+                        <Tooltip
+                            labelFormatter={v => parseTimeOnly(v).toLocaleTimeString()}
+                        />
+                        <Legend />
+                        <Line
+                            type="monotone"
+                            dataKey="speedKn"
+                            stroke="#cc00cc"
+                            name="Rýchlosť (kn)"
                             dot={false}
                         />
                     </LineChart>

@@ -1,10 +1,14 @@
 .login-container {
+    flex: 1;
     display: flex;
+    align-items: center;
     justify-content: center;
-    padding: 2rem 1rem;
-    margin-top: 30px;
+    padding: 4rem 1rem 2rem; /* horný padding jemne vyšší */
     box-sizing: border-box;
+    margin-top: 60px; /* výška navbaru */
 }
+
+
 
 .login-box {
     display: flex;
@@ -14,6 +18,7 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.44);
+    margin: auto;
 }
 
 .login-image {

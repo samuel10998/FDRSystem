@@ -24,16 +24,13 @@ export default function ManageUsers() {
         try {
             const response = await axios.get("http://localhost:8080/api/users");
             const users = await Promise.all(
-                response.data.map(async (user) => {
-                    return {
-                        id: user.id,
-                        firstName: user.name,
-                        lastName: user.surname,
-                        email: user.email,
-                        role: user.roles.map((role) => ({ id: role.id, name: role.name })),
-
-                    };
-                })
+                response.data.map(async (user) => ({
+                    id: user.id,
+                    firstName: user.name,
+                    lastName: user.surname,
+                    email: user.email,
+                    role: user.roles.map((role) => ({ id: role.id, name: role.name }))
+                }))
             );
             setData(users);
         } catch (error) {
@@ -96,7 +93,7 @@ export default function ManageUsers() {
             firstName: { value: "", matchMode: FilterMatchMode.CONTAINS },
             lastName: { value: "", matchMode: FilterMatchMode.CONTAINS },
             email: { value: "", matchMode: FilterMatchMode.CONTAINS },
-            role: { value: [], matchMode: FilterMatchMode.IN },
+            role: { value: [], matchMode: FilterMatchMode.IN }
         });
         setGlobalFilterValue("");
     };
@@ -148,16 +145,14 @@ export default function ManageUsers() {
         }
     };
 
-    const actionBodyTemplate = (rowData) => {
-        return (
-            <Button
-                label="Odstrániť"
-                icon="pi pi-trash"
-                className="delete-button"
-                onClick={() => handleDelete(rowData.id)}
-            />
-        );
-    };
+    const actionBodyTemplate = (rowData) => (
+        <Button
+            label="Odstrániť"
+            icon="pi pi-trash"
+            className="delete-button"
+            onClick={() => handleDelete(rowData.id)}
+        />
+    );
 
     const header = (
         <div className="header-container">
@@ -176,16 +171,17 @@ export default function ManageUsers() {
 
     return (
         <div className="manage-users-container">
+            {header}
             <DataTable
                 value={data}
                 editMode="row"
                 onRowEditComplete={onRowEditComplete}
                 paginator
-                rows={10}
+                paginatorPosition="bottom"
+                rows={8}
                 dataKey="id"
                 filters={filters}
                 globalFilterFields={["firstName", "lastName", "email", "role.name"]}
-                header={header}
                 emptyMessage="Žiadne údaje neboli nájdené."
             >
                 <Column field="firstName" header="Meno" editor={textEditor} sortable filter />
