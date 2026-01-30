@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import "./myFlights.css";
@@ -17,6 +17,11 @@ export default function MyFlights() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+
+    // ✅ NEW: sorting state
+    // key: "name" | "startTime" | "endTime" | "distanceKm" | "recordCount"
+    // dir: "asc" | "desc" | null
+    const [sort, setSort] = useState({ key: null, dir: null });
 
     const navigate = useNavigate();
 
@@ -43,7 +48,9 @@ export default function MyFlights() {
             })
             .catch((err) => console.error("GET /api/users/{id}/analytics →", err?.response?.status));
 
-        return () => { alive = false; };
+        return () => {
+            alive = false;
+        };
     }, []);
 
     useEffect(() => {
@@ -88,11 +95,64 @@ export default function MyFlights() {
         navigate(`/flights/${id}`);
     }
 
-    const totalPages = Math.ceil(filteredFlights.length / itemsPerPage);
-    const pageFlights = filteredFlights.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // ✅ NEW: toggle sort for a column: off -> asc -> desc -> off
+    function toggleSort(key) {
+        setSort((prev) => {
+            if (prev.key !== key) return { key, dir: "asc" };
+            if (prev.dir === "asc") return { key, dir: "desc" };
+            return { key: null, dir: null };
+        });
+        setCurrentPage(1);
+    }
+
+    // ✅ NEW: apply sorting to filteredFlights BEFORE pagination
+    const sortedFlights = useMemo(() => {
+        const arr = [...filteredFlights];
+        if (!sort.key || !sort.dir) return arr;
+
+        const dirMul = sort.dir === "asc" ? 1 : -1;
+
+        const getVal = (f) => {
+            switch (sort.key) {
+                case "name":
+                    return (f.name ?? "").toLowerCase();
+                case "startTime":
+                    return new Date(f.startTime).getTime();
+                case "endTime":
+                    return new Date(f.endTime).getTime();
+                case "distanceKm":
+                    // missing distance sorts as -Infinity so it goes to start in asc / end in desc
+                    return typeof f.distanceKm === "number" ? f.distanceKm : Number.NEGATIVE_INFINITY;
+                case "recordCount":
+                    return typeof f.recordCount === "number" ? f.recordCount : Number.NEGATIVE_INFINITY;
+                default:
+                    return 0;
+            }
+        };
+
+        arr.sort((a, b) => {
+            const av = getVal(a);
+            const bv = getVal(b);
+
+            // string compare
+            if (typeof av === "string" && typeof bv === "string") {
+                return av.localeCompare(bv) * dirMul;
+            }
+            // number compare
+            return (av - bv) * dirMul;
+        });
+
+        return arr;
+    }, [filteredFlights, sort]);
+
+    const totalPages = Math.max(1, Math.ceil(sortedFlights.length / itemsPerPage));
+
+    const pageFlights = useMemo(() => {
+        return sortedFlights.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+    }, [sortedFlights, currentPage]);
 
     function handlePageChange(e) {
         const value = parseInt(e.target.value, 10);
@@ -101,146 +161,251 @@ export default function MyFlights() {
         }
     }
 
+    const resultsLabel = loading
+        ? "Načítavam…"
+        : sortedFlights.length === 0
+            ? "Žiadne lety."
+            : `${sortedFlights.length} výsledkov`;
+
+    // ✅ NEW: helper for arrow icon in header
+    function sortIcon(key) {
+        if (sort.key !== key || !sort.dir) return <span className="mf-sortIcon">↕</span>;
+        return sort.dir === "asc"
+            ? <span className="mf-sortIcon mf-sortIcon--active">↑</span>
+            : <span className="mf-sortIcon mf-sortIcon--active">↓</span>;
+    }
+
     return (
-        <section className="my-flights">
-            <h2>Moje lety</h2>
-
-            {analytics && (
-                <div className="analytics-summary">
-                    <h3>📊 Štatistiky používateľa</h3>
-                    <p><strong>Počet letov:</strong> {analytics.totalFlights}</p>
-                    <p><strong>Počet kilometrov:</strong> {analytics.totalDistanceKm?.toFixed(2)} km</p>
-                    <p><strong>Priemerné trvanie letu:</strong> {Math.round(analytics.averageDurationSeconds / 60)} minút</p>
-                </div>
-            )}
-
-            <div className="card">
-                <div className="filters">
-                    <input
-                        type="text"
-                        placeholder="🔍 Hľadať podľa názvu letu…"
-                        className="search-input"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-
-                    <div className="filter-group">
-                        <label><strong>Vzdialenosť (km):</strong></label>
-                        <input
-                            type="number"
-                            placeholder="min(km):"
-                            value={minDistance}
-                            onChange={(e) => setMinDistance(e.target.value)}
-                        />
-                        <input
-                            type="number"
-                            placeholder="max(km):"
-                            value={maxDistance}
-                            onChange={(e) => setMaxDistance(e.target.value)}
-                        />
+        <section className="mf-page">
+            <div className="mf-report">
+                {/* Header */}
+                <div className="mf-header">
+                    <div>
+                        <div className="mf-titleSmall">Flights</div>
+                        <h2 className="mf-title">Moje lety</h2>
+                        <div className="mf-sub">{resultsLabel}</div>
                     </div>
 
-                    <div className="filter-group">
-                        <label><strong>Počet záznamov:</strong></label>
-                        <input
-                            type="number"
-                            placeholder="min:"
-                            value={minRecords}
-                            onChange={(e) => setMinRecords(e.target.value)}
-                        />
-                        <input
-                            type="number"
-                            placeholder="max:"
-                            value={maxRecords}
-                            onChange={(e) => setMaxRecords(e.target.value)}
-                        />
-                    </div>
+                    {analytics && (
+                        <div className="mf-kpis">
+                            <div className="mf-kpi">
+                                <div className="mf-kpiLabel">Počet letov</div>
+                                <div className="mf-kpiValue">{analytics.totalFlights}</div>
+                            </div>
+                            <div className="mf-kpi">
+                                <div className="mf-kpiLabel">Počet kilometrov</div>
+                                <div className="mf-kpiValue">
+                                    {analytics.totalDistanceKm?.toFixed(2)} km
+                                </div>
+                            </div>
+                            <div className="mf-kpi">
+                                <div className="mf-kpiLabel">Priem. trvanie</div>
+                                <div className="mf-kpiValue">
+                                    {Math.round(analytics.averageDurationSeconds / 60)} min
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {loading ? (
-                    <p className="loading">Načítavam…</p>
-                ) : filteredFlights.length === 0 ? (
-                    <p className="no-data">Žiadne lety.</p>
-                ) : (
-                    <>
-                        <table className="flights-table">
-                            <thead>
-                            <tr>
-                                <th>Názov</th>
-                                <th>Začiatok</th>
-                                <th>Koniec</th>
-                                <th>Vzdialenosť</th>
-                                <th># záznamov</th>
-                                <th>Akcia</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {pageFlights.map((f) => (
-                                <tr key={f.id}>
-                                    <td>{f.name}</td>
-                                    <td>{new Date(f.startTime).toLocaleString()}</td>
-                                    <td>{new Date(f.endTime).toLocaleString()}</td>
-                                    <td>
-                                        {typeof f.distanceKm === "number"
-                                            ? `${f.distanceKm.toFixed(2)} km`
-                                            : "—"}
-                                    </td>
-                                    <td style={{ verticalAlign: "middle", whiteSpace: "nowrap" }}>
-                                        {f.recordCount}
-                                    </td>
-                                    <td>
-                                        <button
-                                            onClick={() => handleDetail(f.id)}
-                                            className="detail-button"
-                                        >
-                                            Detaily
-                                        </button>{" "}
-                                        <button
-                                            onClick={() => handleDelete(f.id)}
-                                            disabled={deletingId === f.id}
-                                            className="delete-button"
-                                        >
-                                            {deletingId === f.id ? "Mazanie…" : "🗑"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-
-                        <div className="pagination">
-                            <button
-                                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                                disabled={currentPage === 1}
-                            >
-                                Späť
-                            </button>
-                            <span>
-                                Strana {currentPage} / {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                                disabled={currentPage === totalPages}
-                            >
-                                Ďalej
-                            </button>
-                            <button
-                                onClick={() => setCurrentPage(totalPages)}
-                                disabled={currentPage === totalPages}
-                            >
-                                Posledná
-                            </button>
+                {/* Filters */}
+                <div className="mf-panel">
+                    <div className="mf-filters">
+                        <div className="mf-field mf-field--full">
+                            <label className="mf-label">Vyhľadávanie</label>
                             <input
-                                type="number"
-                                min="1"
-                                max={totalPages}
-                                placeholder="Choď na stranu"
-                                onChange={handlePageChange}
-                                style={{ width: "100px", marginLeft: "10px" }}
+                                type="text"
+                                placeholder="Hľadať podľa názvu letu…"
+                                className="mf-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                    </>
-                )}
+
+                        <div className="mf-field">
+                            <label className="mf-label">Vzdialenosť (km) – min</label>
+                            <input
+                                type="number"
+                                placeholder="0"
+                                className="mf-input"
+                                value={minDistance}
+                                onChange={(e) => setMinDistance(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="mf-field">
+                            <label className="mf-label">Vzdialenosť (km) – max</label>
+                            <input
+                                type="number"
+                                placeholder="∞"
+                                className="mf-input"
+                                value={maxDistance}
+                                onChange={(e) => setMaxDistance(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="mf-field">
+                            <label className="mf-label">Počet záznamov – min</label>
+                            <input
+                                type="number"
+                                placeholder="0"
+                                className="mf-input"
+                                value={minRecords}
+                                onChange={(e) => setMinRecords(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="mf-field">
+                            <label className="mf-label">Počet záznamov – max</label>
+                            <input
+                                type="number"
+                                placeholder="∞"
+                                className="mf-input"
+                                value={maxRecords}
+                                onChange={(e) => setMaxRecords(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="mf-tableCard">
+                    {loading ? (
+                        <p className="mf-state">Načítavam…</p>
+                    ) : sortedFlights.length === 0 ? (
+                        <p className="mf-state">Žiadne lety.</p>
+                    ) : (
+                        <>
+                            <div className="mf-tableWrap">
+                                <table className="mf-table">
+                                    <thead>
+                                    <tr>
+                                        <th
+                                            className="mf-sortable"
+                                            onClick={() => toggleSort("name")}
+                                            title="Zoradiť"
+                                        >
+                                            <span className="mf-thLabel">Názov</span>
+                                            {sortIcon("name")}
+                                        </th>
+
+                                        <th
+                                            className="mf-sortable"
+                                            onClick={() => toggleSort("startTime")}
+                                            title="Zoradiť"
+                                        >
+                                            <span className="mf-thLabel">Začiatok</span>
+                                            {sortIcon("startTime")}
+                                        </th>
+
+                                        <th
+                                            className="mf-sortable"
+                                            onClick={() => toggleSort("endTime")}
+                                            title="Zoradiť"
+                                        >
+                                            <span className="mf-thLabel">Koniec</span>
+                                            {sortIcon("endTime")}
+                                        </th>
+
+                                        <th
+                                            className="mf-num mf-sortable"
+                                            onClick={() => toggleSort("distanceKm")}
+                                            title="Zoradiť"
+                                        >
+                                            <span className="mf-thLabel">Vzdialenosť</span>
+                                            {sortIcon("distanceKm")}
+                                        </th>
+
+                                        <th
+                                            className="mf-num mf-sortable"
+                                            onClick={() => toggleSort("recordCount")}
+                                            title="Zoradiť"
+                                        >
+                                            <span className="mf-thLabel"># záznamov</span>
+                                            {sortIcon("recordCount")}
+                                        </th>
+
+                                        <th className="mf-actions">Akcia</th>
+                                    </tr>
+                                    </thead>
+
+                                    <tbody>
+                                    {pageFlights.map((f) => (
+                                        <tr key={f.id}>
+                                            <td className="mf-name">{f.name}</td>
+                                            <td>{new Date(f.startTime).toLocaleString()}</td>
+                                            <td>{new Date(f.endTime).toLocaleString()}</td>
+                                            <td className="mf-num">
+                                                {typeof f.distanceKm === "number"
+                                                    ? `${f.distanceKm.toFixed(2)} km`
+                                                    : "—"}
+                                            </td>
+                                            <td className="mf-num">{f.recordCount}</td>
+                                            <td className="mf-actions">
+                                                <button
+                                                    onClick={() => handleDetail(f.id)}
+                                                    className="mf-btn mf-btn--primary"
+                                                >
+                                                    Detaily
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(f.id)}
+                                                    disabled={deletingId === f.id}
+                                                    className="mf-btn mf-btn--danger"
+                                                    aria-label="Zmazať let"
+                                                    title="Zmazať"
+                                                >
+                                                    {deletingId === f.id ? "Mazanie…" : "🗑"}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination */}
+                            <div className="mf-pagination">
+                                <button
+                                    className="mf-pageBtn"
+                                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    Späť
+                                </button>
+
+                                <div className="mf-pageInfo">
+                                    Strana <strong>{currentPage}</strong> / {totalPages}
+                                </div>
+
+                                <button
+                                    className="mf-pageBtn"
+                                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Ďalej
+                                </button>
+
+                                <button
+                                    className="mf-pageBtn mf-pageBtn--ghost"
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Posledná
+                                </button>
+
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={totalPages}
+                                    placeholder="Choď na stranu"
+                                    onChange={handlePageChange}
+                                    className="mf-pageInput"
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </section>
     );
