@@ -104,7 +104,10 @@ export default function ManageUsers() {
 
     const onGlobalFilterChange = (e) => {
         const value = e.target.value;
-        const updatedFilters = { ...filters, global: { value, matchMode: FilterMatchMode.CONTAINS } };
+        const updatedFilters = {
+            ...filters,
+            global: { value, matchMode: FilterMatchMode.CONTAINS }
+        };
         setGlobalFilterValue(value);
         setFilters(updatedFilters);
     };
@@ -173,6 +176,7 @@ export default function ManageUsers() {
         <div className="manage-users-container">
             {header}
             <DataTable
+                className="mu-table"
                 value={data}
                 editMode="row"
                 onRowEditComplete={onRowEditComplete}
