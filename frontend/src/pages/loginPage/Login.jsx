@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
-import { useNavigate } from "react-router-dom";
-import { handleLogin, handleRegister } from "../../services/handleLogin";
+import { useNavigate, useLocation } from "react-router-dom";
+import { handleLogin } from "../../services/handleLogin";
 import "./login.css";
 
 export default function LoginPage() {
@@ -11,11 +11,17 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [errorFields, setErrorFields] = useState({ email: false, password: false });
     const toast = React.useRef(null);
+
     const navigate = useNavigate();
+    const location = useLocation();
 
     const validateEmail = (email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
+    };
+
+    const openRegisterModal = () => {
+        navigate("/register", { state: { backgroundLocation: location } });
     };
 
     return (
@@ -28,9 +34,11 @@ export default function LoginPage() {
                         alt="logimage"
                     />
                 </div>
+
                 <div className="login-form">
                     <h1>Systém na vizualizáciu dát zo zapisovača letových údajov</h1>
                     <p>Prihláste sa do svojho účtu</p>
+
                     <InputText
                         id="email"
                         value={email}
@@ -45,6 +53,7 @@ export default function LoginPage() {
                         }}
                         className={errorFields.email ? "p-invalid" : ""}
                     />
+
                     <InputText
                         id="password"
                         type="password"
@@ -60,16 +69,18 @@ export default function LoginPage() {
                         }}
                         className={errorFields.password ? "p-invalid" : ""}
                     />
+
                     <Button
                         label="Prihlásenie"
                         icon="pi pi-sign-in"
                         onClick={() => handleLogin({ email, password, toast, navigate })}
                         className="login-button-login"
                     />
+
                     <Button
                         label="Registrácia"
                         icon="pi pi-user"
-                        onClick={() => handleRegister(navigate)}
+                        onClick={openRegisterModal}
                         className="login-button-register"
                     />
                 </div>

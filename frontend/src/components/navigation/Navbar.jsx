@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Menubar } from "primereact/menubar";
 import { Button } from "primereact/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ useLocation
 import "./navbar.css";
 
 export default function Navbar() {
     const navigate = useNavigate();
+    const location = useLocation(); // ✅ current location (pozadie modalu)
     const [showMenu, setShowMenu] = useState(false);
-
 
     const getUser = () => {
         try {
@@ -19,10 +19,9 @@ export default function Navbar() {
     };
 
     const roleNames = (getUser().roles || []).map((r) => r.name);
-    const isAdmin   = roleNames.includes("ROLE_ADMIN");
-    const isUser    = roleNames.includes("ROLE_USER");
-    const token     = localStorage.getItem("jwtToken");
-
+    const isAdmin = roleNames.includes("ROLE_ADMIN");
+    const isUser = roleNames.includes("ROLE_USER");
+    const token = localStorage.getItem("jwtToken");
 
     const items = [
         {
@@ -63,7 +62,6 @@ export default function Navbar() {
         }
     ];
 
-
     const logout = () => {
         localStorage.removeItem("user");
         localStorage.removeItem("jwtToken");
@@ -78,10 +76,13 @@ export default function Navbar() {
         const id = getUser()?.id;
         if (id) {
             setShowMenu(false);
-            navigate(`/edit-user/${id}`);
+
+            // ✅ otvorí /edit-user/:id ako modal nad aktuálnou stránkou
+            navigate(`/edit-user/${id}`, {
+                state: { backgroundLocation: location }
+            });
         }
     };
-
 
     useEffect(() => {
         if (!token) return;
@@ -91,10 +92,10 @@ export default function Navbar() {
             if (Date.now() >= exp) logout();
         };
 
-        const id = setInterval(check, 300_000);         // každých 5 min
+        const id = setInterval(check, 300_000); // každých 5 min
         return () => clearInterval(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
-
 
     const end = (
         <div className="user-info">
@@ -127,8 +128,6 @@ export default function Navbar() {
             )}
         </div>
     );
-
-    /* ---------- render --------------------------------------------------- */
 
     return (
         <div className="navbar">
