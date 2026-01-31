@@ -1,100 +1,373 @@
-/* src/pages/flightDetailsPage/FlightDetails.css */
+:root {
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --brand: #0a3364;
+
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+
+    --radius: 14px;
+    --radius-lg: 18px;
+    --gap: 14px;
+}
+
+body {
+    background: var(--bg);
+}
+
 .flight-details {
-    padding: 2rem;
-    max-width: 900px;
+    padding: 22px;
+    max-width: 1440px;
     margin: 0 auto;
-}
-
-.flight-details h2 {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #0a3364;
-}
-
-.card {
-    background-color: #ffffff;
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    transition: box-shadow 0.3s ease;
-}
-
-.card:hover {
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-}
-
-.card h3 {
-    color: #0a3364;
-    margin-bottom: 1rem;
-}
-
-.card p {
-    margin: 0.5rem 0;
-    font-size: 1rem;
-    color: #333;
-}
-
-.stats-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-    font-size: 0.95rem;
-}
-
-.stats-table th,
-.stats-table td {
-    padding: 0.75rem 1rem;
-    border: 1px solid #ddd;
-    text-align: center;
-}
-
-.stats-table th {
-    background-color: #f1f4f8;
-    font-weight: bold;
-    color: #0a3364;
-}
-
-.stats-table tfoot td {
-    font-weight: bold;
-    background-color: #e9edf2;
 }
 
 .loading,
 .error {
     text-align: center;
-    font-size: 1.1rem;
-    color: #0a3364;
-    padding: 2rem;
+    font-size: 14px;
+    color: var(--muted);
+    padding: 20px;
+}
+
+/* ONE BIG REPORT CONTAINER */
+.report {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 18px;
+}
+
+/* HEADER */
+.report-header {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    align-items: end;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+}
+
+.report-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+}
+
+.report-subtitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-top: 6px;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 8px 18px;
+    margin-top: 10px;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meta-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.meta-value {
+    font-size: 13px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* KPI ROW */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.kpi {
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 10px 12px;
+}
+
+.kpi-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kpi-value {
+    margin-top: 4px;
+    font-size: 16px;
+    font-weight: 750;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* SECTIONS GRID */
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--gap);
+    margin-bottom: 14px;
+}
+
+.section {
+    grid-column: span 4;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--card);
+}
+
+.section--wide {
+    grid-column: span 8;
+}
+
+.section--full {
+    grid-column: 1 / -1;
+}
+
+.section-header {
+    background: #f1f5f9;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.section-body {
+    padding: 10px 12px;
+}
+
+/* KV rows (Max observed style like screenshot) */
+.kv-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-top: 1px solid var(--border);
+}
+
+.kv-row:first-child {
+    border-top: none;
+}
+
+.kv-key {
+    color: var(--text);
+    font-weight: 650;
+    font-size: 13px;
+}
+
+.kv-val {
+    color: var(--text);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Safety badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+}
+
+.badge--ok {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.badge--warn {
+    background: #fff7ed;
+    color: #9a3412;
+    border-color: #fed7aa;
+}
+
+.safety-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.events-list {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.event-item {
+    margin: 8px 0;
+}
+
+.event-title {
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--text);
+}
+
+.event-time {
+    font-weight: 700;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.event-detail {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* Stats table */
+.stats-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+.stats-table th {
+    background: #f8fafc;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.stats-table tbody tr:nth-child(even) td {
+    background: #fbfdff;
+}
+
+.stats-table tfoot td {
+    background: #f1f5f9;
+    font-weight: 900;
+    border-top: 1px solid var(--border);
+}
+
+/* MAP + BLOCKS */
+.report-block {
+    margin-top: 14px;
+}
+
+.block-title {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 8px 0 10px;
 }
 
 .flight-map {
-    height: 400px;
+    height: 460px;
     width: 100%;
-    margin-top: 1rem;
-    border-radius: 15px;
+    border-radius: 14px;
     overflow: hidden;
-    border: 1px solid #ccc;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
 }
 
-.flight-graph {
+.route-popup p {
+    margin: 4px 0;
+    font-size: 13px;
+}
+
+/* CHARTS GRID */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--gap);
+    margin-top: 14px;
+}
+
+.chart-card {
+    grid-column: span 6;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+    padding: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.chart-card--full {
+    grid-column: 1 / -1;
+}
+
+.chart-wrap {
+    height: 330px;
     width: 100%;
-    height: 300px;
-    margin-top: 2rem;
 }
 
-.graph-container {
-    background-color: #ffffff;
-    padding: 1.5rem;
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+    .report-header {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-row {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+    }
+
+    .section,
+    .section--wide,
+    .chart-card {
+        grid-column: 1 / -1;
+    }
+
+    .flight-map {
+        height: 390px;
+    }
 }
 
-/* optional helper if you swap to ResponsiveContainer in future */
-.chart-fullwidth {
-    width: 100%;
-    height: 300px;
+@media (max-width: 520px) {
+    .flight-details {
+        padding: 14px;
+    }
+
+    .meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-row {
+        grid-template-columns: 1fr 1fr;
+    }
 }

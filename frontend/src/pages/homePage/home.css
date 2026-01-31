@@ -1,168 +1,363 @@
-/* ------------- NOVÉ – horná medzera pod navbarom ------------ */
-/* ak chceš iný rozostup, uprav len túto hodnotu */
-.home-content {
-    padding-top: 30px;   /* ← pôvodne nebolo, pridá 30 px priestoru */
+:root {
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --brand: #0a3364;
+
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 10px 25px rgba(15, 23, 42, 0.10);
+
+    --radius: 14px;
+    --radius-lg: 18px;
+
+    /* ✅ zmeň podľa paddingu okolo Outlet/page wrappera */
+    --page-pad: 20px;
 }
 
-/* ============================================================= */
-/* doterajší obsah súboru (nezmenený) --------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 html, body {
-    height: 100%;
     margin: 0;
     padding: 0;
 }
 
-.home-wrapper {
-    padding: 2rem 0;
-    background-color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+body {
+    background: var(--bg);
+    overflow-x: hidden; /* poistka proti 1-2px horizontálnemu posunu */
 }
 
-.home-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.home {
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+
+    /* ❌ overflow-x: clip;  -> toto orezávalo full-bleed hero */
+    overflow-x: visible; /* ✅ nech hero môže ísť "mimo" wrapper */
+}
+
+/* ===== HERO (FULL BLEED) ===== */
+.home-hero {
+    position: relative;
+    height: 60vh;
+    min-height: 420px;
+    max-height: 530px;
+    overflow: hidden;
+    background: #0b1220;
+
+    /* ✅ ak máš okolo stránky padding (napr. wrapper okolo <Outlet/>),
+       tak toto zruší medzeru medzi navbarom a hero */
+    margin-top: calc(-1 * var(--page-pad));
+
+    /* ✅ FULL-BLEED (zruší bočné pásy z wrapperov) */
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+}
+
+/* stacked slides */
+.home-heroSlides {
+    position: absolute;
+    inset: 0;
+}
+
+.home-heroSlide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transform: scale(1.03);
+    transition: opacity 900ms ease;
+    will-change: opacity;
+}
+
+.home-heroSlide.is-active {
+    opacity: 1;
+}
+
+/* overlay (gradient for readability) */
+.home-heroOverlay {
+    position: absolute;
+    inset: 0;
+    background:
+            linear-gradient(
+                    90deg,
+                    rgba(10, 51, 100, 0.65) 0%,
+                    rgba(10, 51, 100, 0.15) 55%,
+                    rgba(10, 51, 100, 0.08) 100%
+            ),
+            linear-gradient(
+                    180deg,
+                    rgba(2, 6, 23, 0.25) 0%,
+                    rgba(2, 6, 23, 0.45) 100%
+            );
+}
+
+/* inner container */
+.home-heroInner {
+    position: relative;
+    height: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    width: 100%;
+    padding: 22px;
+    display: flex;
+    align-items: center;
 }
 
-.text-container {
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-    padding: 2rem;
-    max-width: 60%;
-    z-index: 2;
+.home-heroText {
+    max-width: 640px;
+    color: #fff;
+}
+
+.home-kicker {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(2, 6, 23, 0.35);
+    border: 1px solid rgba(226, 232, 240, 0.25);
+    padding: 7px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
 }
 
 .home-title {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #00203f;
-    margin-bottom: 1rem;
+    margin: 0 0 10px;
+    font-size: 38px;
+    line-height: 1.1;
+    font-weight: 850;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 10px rgba(2, 6, 23, 0.35);
 }
 
-.home-subtitle {
-    font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 2rem;
-}
-
-.home-description h2 {
-    font-size: 1.8rem;
-    color: #00203f;
-    margin-bottom: 1rem;
-}
-
-.home-description p {
+.home-desc {
+    margin: 0 0 16px;
+    font-size: 15px;
     line-height: 1.6;
-    margin-bottom: 1.5rem;
+    color: rgba(255, 255, 255, 0.90);
+    max-width: 560px;
 }
 
-.cta-button {
-    background-color: #ff0000;
-    color: #ffffff;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.cta-button:hover {
-    background-color: #cc0000;
-}
-
-.image-container {
-    margin-left: 2rem;
-}
-
-.image-container img {
-    max-width: 650px;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/*.features-section {
-    margin-top: 50px;
-    text-align: center;
-    padding: 20px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-}
-*/
-
-.features-section {
-    margin-top: 50px;
-    text-align: center;
-    padding: 20px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.features-title {
-    font-size: 2rem;
-    color: #00203f;
-    margin-bottom: 10px;
-}
-
-.features-description {
-    font-size: 1.1rem;
-    color: #666;
-    margin-bottom: 20px;
-}
-
-.features-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 600px;
-
-    /* nový offset – môžeš meniť v CSS podľa potreby */
-    --feature-offset: 100px;       /* ← nastav si napr. 20px ak chceš posun doprava */
-    padding-left: var(--feature-offset);
-}
-
-.features-list li {
-    font-size: 1rem;
-    color: #444;
-    margin-bottom: 10px;
-
+/* CTA buttons */
+.home-cta {
     display: flex;
-    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.home-btn {
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.home-btn:active {
+    transform: translateY(1px);
+}
+
+.home-btn--primary {
+    background: #ffffff;
+    color: var(--brand);
+    box-shadow: var(--shadow-md);
+}
+
+.home-btn--primary:hover {
+    box-shadow: 0 14px 30px rgba(2, 6, 23, 0.25);
+}
+
+/* arrows */
+.home-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(2, 6, 23, 0.25);
+    color: #fff;
+    font-size: 28px;
+    line-height: 40px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+    z-index: 5;
+}
+
+.home-nav:hover {
+    background: rgba(2, 6, 23, 0.38);
+    box-shadow: 0 10px 20px rgba(2, 6, 23, 0.35);
+}
+
+.home-nav--left { left: 16px; }
+.home-nav--right { right: 16px; }
+
+/* dots */
+.home-dots {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+}
+
+.home-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.20);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.home-dot.is-active {
+    background: #ffffff;
+    transform: scale(1.15);
+}
+
+/* ===== INTRO ===== */
+.home-intro {
+    min-height: 40vh;
+    display: flex;
+    align-items: center;
+    padding: 24px 0 36px;
+}
+
+.home-introCard {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 18px;
+
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.home-logoWrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--border);
+
+    /* trochu viac priestoru pri deliacej čiare (posunie logo opticky doľava) */
+    padding: 0 48px 0 24px;
+}
+
+.home-logo {
+    width: 360px;     /* tvoje veľké logo */
+    max-width: 100%;  /* ✅ nech nikdy neprelezie mimo stĺpca */
+    height: auto;
+}
+
+
+
+.home-introText h2 {
+    margin: 0 0 10px;
+    font-size: 26px;
+    font-weight: 850;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.home-introText p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    line-height: 1.65;
+    font-size: 14px;
+}
+
+/* ✅ krajší “bullets” dizajn ako karty */
+.home-features {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.home-feature {
+    border: 1px solid var(--border);
+    background: #fbfdff;
+    border-radius: 14px;
+    padding: 12px 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.home-featureTitle {
+    font-size: 14px;
+    font-weight: 850;
+    color: var(--text);
+    display: flex;
+    align-items: center;
     gap: 8px;
 }
 
-.features-list li::before {
+.home-featureTitle::before {
     content: "✓";
-    color: #ff0000;
-    flex-shrink: 0;
-    margin-top: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: rgba(10, 51, 100, 0.10);
+    color: var(--brand);
+    font-weight: 900;
+    flex: 0 0 auto;
 }
 
+.home-featureDesc {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    padding-left: 30px; /* zarovnanie pod text za check ikonou */
+}
 
-
-
-/* Responzívne nastavenie pre menšie obrazovky */
-@media (max-width: 768px) {
-    .home-container {
-        flex-direction: column;
-        text-align: center;
+/* Responsive */
+@media (max-width: 900px) {
+    .home-title {
+        font-size: 30px;
     }
-    .image-container {
-        margin-left: 0;
-        margin-top: 20px;
+
+    .home-introCard {
+        grid-template-columns: 1fr;
     }
-    .text-container {
-        max-width: 100%;
+
+    .home-logoWrap {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-right: 0;
+        padding-bottom: 14px;
+    }
+
+    .home-features {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .home-heroSlide {
+        transition: none;
     }
 }

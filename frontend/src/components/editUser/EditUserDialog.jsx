@@ -5,45 +5,45 @@ import { Toast } from "primereact/toast";
 import { Dropdown } from "primereact/dropdown";
 import "./editUser.css";
 
-export default function EditUserDialog() {
-    const { id }  = useParams();
+export default function EditUserDialog({ isModal = false }) {
+    const { id } = useParams();
     const navigate = useNavigate();
-    const toast    = useRef(null);
+    const toast = useRef(null);
 
     const [firstName, setFirstName] = useState("");
-    const [lastName,  setLastName]  = useState("");
-    const [email,     setEmail]     = useState("");
-    const [region,    setRegion]    = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [region, setRegion] = useState("");
     const [profilePic, setProfilePic] = useState("profile_picture_default.jpg");
-    const [password,  setPassword]  = useState("");
+    const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [file, setFile] = useState(null);
 
     const regionOptions = [
-        { label: "Bratislavský kraj",    value: "Bratislavský kraj" },
-        { label: "Trnavský kraj",        value: "Trnavský kraj" },
-        { label: "Trenčiansky kraj",     value: "Trenčiansky kraj" },
-        { label: "Nitriansky kraj",      value: "Nitriansky kraj" },
-        { label: "Žilinský kraj",        value: "Žilinský kraj" },
+        { label: "Bratislavský kraj", value: "Bratislavský kraj" },
+        { label: "Trnavský kraj", value: "Trnavský kraj" },
+        { label: "Trenčiansky kraj", value: "Trenčiansky kraj" },
+        { label: "Nitriansky kraj", value: "Nitriansky kraj" },
+        { label: "Žilinský kraj", value: "Žilinský kraj" },
         { label: "Banskobystrický kraj", value: "Banskobystrický kraj" },
-        { label: "Prešovský kraj",       value: "Prešovský kraj" },
-        { label: "Košický kraj",         value: "Košický kraj" }
+        { label: "Prešovský kraj", value: "Prešovský kraj" },
+        { label: "Košický kraj", value: "Košický kraj" }
     ];
 
     useEffect(() => {
         axios.get(`http://localhost:8080/api/users/${id}`)
             .then(({ data }) => {
-                setFirstName(data.name     || "");
-                setLastName( data.surname  || "");
-                setEmail(     data.email   || "");
-                setRegion(    data.region  || "");
+                setFirstName(data.name || "");
+                setLastName(data.surname || "");
+                setEmail(data.email || "");
+                setRegion(data.region || "");
                 setProfilePic(data.profilePicture || "profile_picture_default.jpg");
             })
             .catch(() =>
-                toast.current.show({
+                toast.current?.show({
                     severity: "error",
-                    summary:  "Chyba",
-                    detail:   "Nepodarilo sa načítať údeje používateľa.",
+                    summary: "Chyba",
+                    detail: "Nepodarilo sa načítať údaje používateľa.",
                     life: 4000,
                 })
             );
@@ -51,26 +51,26 @@ export default function EditUserDialog() {
 
     const isPasswordValid = (pwd) => {
         const letters = (pwd.match(/[A-Za-z]/g) || []).length;
-        const digits  = (pwd.match(/[0-9]/g)   || []).length;
+        const digits = (pwd.match(/[0-9]/g) || []).length;
         return letters >= 6 && digits >= 4;
     };
 
     const handleSave = async () => {
         if (password && password !== confirmPassword) {
-            toast.current.show({
+            toast.current?.show({
                 severity: "warn",
-                summary:  "Upozornenie",
-                detail:   "Heslá sa musia zhodovať.",
+                summary: "Upozornenie",
+                detail: "Heslá sa musia zhodovať.",
                 life: 3000,
             });
             return;
         }
 
         if (password && !isPasswordValid(password)) {
-            toast.current.show({
+            toast.current?.show({
                 severity: "error",
-                summary:  "Neplatné heslo",
-                detail:   "Heslo musí obsahovať aspoň 6 písmen a 4 čísla.",
+                summary: "Neplatné heslo",
+                detail: "Heslo musí obsahovať aspoň 6 písmen a 4 čísla.",
                 life: 4000,
             });
             return;
@@ -78,11 +78,12 @@ export default function EditUserDialog() {
 
         try {
             const payload = {
-                name:    firstName,
+                name: firstName,
                 surname: lastName,
-                region:  region,
+                region: region,
                 ...(password.trim() && { password })
             };
+
             await axios.patch(`http://localhost:8080/api/users/${id}`, payload);
 
             if (file) {
@@ -101,19 +102,44 @@ export default function EditUserDialog() {
                 );
             }
 
-            toast.current.show({
+            toast.current?.show({
                 severity: "success",
-                summary:  "Úpspech",
-                detail:   "Zmeny boli úspešne uložené.",
-                life: 3000,
+                summary: "Úspech",
+                detail: "Zmeny boli úspešne uložené.",
+                life: 2500,
             });
 
-            setTimeout(() => navigate("/my-flights"), 1500);
+            // ✅ 1) Aktualizuj localStorage user (aby sa zmenilo meno v navbare bez re-loginu)
+            // ✅ 2) Pošli event, aby Navbar hneď re-renderol
+            try {
+                const lsUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+                if (lsUser && String(lsUser.id) === String(id)) {
+                    const updated = {
+                        ...lsUser,
+                        name: firstName,
+                        surname: lastName,
+                        region: region,
+                    };
+                    localStorage.setItem("user", JSON.stringify(updated));
+                    window.dispatchEvent(new Event("userUpdated"));
+                }
+            } catch (e) {
+                // ignore
+            }
+
+            // ✅ Modal: zavri sa späť na pôvodnú stránku
+            if (isModal) {
+                setTimeout(() => navigate(-1), 900);
+            } else {
+                // ✅ Page: pôvodné správanie
+                setTimeout(() => navigate("/my-flights"), 1500);
+            }
         } catch (err) {
-            toast.current.show({
+            toast.current?.show({
                 severity: "error",
-                summary:  "Chyba",
-                detail:   err.response?.data || "Zlyhala aktualizácia.",
+                summary: "Chyba",
+                detail: err.response?.data || "Zlyhala aktualizácia.",
                 life: 4000,
             });
         }
@@ -122,7 +148,7 @@ export default function EditUserDialog() {
     return (
         <>
             <Toast ref={toast} position="top-right" />
-            <section className="edit-user-page">
+            <section className={`edit-user-page ${isModal ? "is-modal" : ""}`}>
                 <div className="edit-user-card">
                     <div className="edit-user-image">
                         <img
@@ -193,12 +219,12 @@ export default function EditUserDialog() {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => setFile(e.target.files[0])}
+                                onChange={(e) => setFile(e.target.files?.[0] || null)}
                             />
                         </div>
 
                         <div className="form-actions">
-                            <button className="btn-save"   onClick={handleSave}>Uložiť</button>
+                            <button className="btn-save" onClick={handleSave}>Uložiť</button>
                             <button className="btn-cancel" onClick={() => navigate(-1)}>Zrušiť</button>
                         </div>
                     </div>

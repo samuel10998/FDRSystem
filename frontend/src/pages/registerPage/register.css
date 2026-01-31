@@ -93,3 +93,27 @@
     color: #666;
     font-size: 1.2rem;
 }
+
+/* ✅ keď je register v modale, nech sa správa ako obsah modalu */
+.register-container.is-modal {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: transparent;
+    border-radius: 0;
+}
+
+/* panel v modale - bez extra tieňov */
+.register-container.is-modal .p-panel {
+    box-shadow: none;
+}
+
+/* toast v modale nech je fixed (aby neodchádzal mimo) */
+.register-container.is-modal .p-toast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    left: auto;
+}
