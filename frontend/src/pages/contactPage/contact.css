@@ -5,16 +5,19 @@
     align-items: center;
     background: rgba(248, 246, 246, 0.76);
     box-sizing: border-box;
-    padding-top: 55px;
-    padding-bottom: 40px;
+
+    /* bolo 55/40 -> jemne menej */
+    padding-top: 40px;
+    padding-bottom: 36px;
 }
-
-
 
 .contact-container {
     display: flex;
-    max-width: 1000px;
+
+    /* bolo 1000px -> cca -5% */
+    max-width: 950px;
     width: 100%;
+
     background: #ffffff;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -27,7 +30,10 @@
     background: url("https://images.unsplash.com/photo-1516387938699-a93567ec168e?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") no-repeat center center;
     background-size: cover;
     color: #fff;
-    padding: 40px;
+
+    /* bolo 40px -> trochu menej */
+    padding: 38px;
+
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -44,7 +50,6 @@
     z-index: 1;
 }
 
-
 .contact-info h2,
 .contact-info p {
     position: relative;
@@ -53,18 +58,22 @@
 
 .contact-form {
     width: 60%;
-    padding: 25px;
+
+    /* bolo 25px -> trochu menej */
+    padding: 22px;
+
     color: #00203FFF;
 }
 
 .contact-form form h2 {
-    font-size: 30px;
+    /* bolo 30px */
+    font-size: 28px;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .input-box {
-    margin-top: 20px;
+    margin-top: 18px;
 }
 
 .input-box label {
@@ -73,13 +82,19 @@
 
 .input-box .field {
     width: 100%;
-    height: 50px;
+
+    /* bolo 50px -> mierne menšie */
+    height: 48px;
+
     background: transparent;
     border: 2px solid #ddd;
     outline: none;
     border-radius: 6px;
-    padding: 15px;
-    font-size: 16px;
+    padding: 14px;
+
+    /* bolo 16px -> trochu menšie */
+    font-size: 15px;
+
     color: #333;
     margin-top: 8px;
     transition: border-color 0.5s;
@@ -90,27 +105,48 @@
 }
 
 .input-box .field.mess {
-    height: 200px;
+    /* bolo 200px */
+    height: 190px;
     resize: none;
+}
+
+/* captcha */
+.captcha-wrap {
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
 }
 
 button[type="submit"] {
     width: 100%;
-    height: 55px;
+
+    /* bolo 55px */
+    height: 52px;
+
     background: rgb(17, 47, 106);
     border: none;
     border-radius: 6px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    font-size: 16px;
+
+    /* bolo 16px */
+    font-size: 15px;
+
     color: #fff;
-    font-weight: 500;
-    margin-top: 25px;
-    transition: background 0.3s ease;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: background 0.3s ease, opacity 0.2s ease;
 }
 
 button[type="submit"]:hover {
     background: rgb(91, 91, 135);
+}
+
+/* ✅ disabled stav – keď captcha nie je potvrdená alebo sa odosiela */
+button[type="submit"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    background: rgb(17, 47, 106);
 }
 
 @media (max-width: 768px) {
