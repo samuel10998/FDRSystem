@@ -1,5 +1,6 @@
 package ukf.backend.Security;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,14 +31,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserService appUserService;
-    private final JwtService   jwtService;
+    private final JwtService jwtService;
 
     public SecurityConfig(UserService appUserService, JwtService jwtService) {
         this.appUserService = appUserService;
-        this.jwtService     = jwtService;
+        this.jwtService = jwtService;
     }
-
-    // ----------------- Beans --------------------------------------------------
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -58,8 +57,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration cfg) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
         return cfg.getAuthenticationManager();
     }
 
@@ -68,7 +66,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -76,43 +73,50 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // verejné end-pointy
-                        .requestMatchers("/api/login", "/api/register", "/confirm-email").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/*/avatar").permitAll()
-                        // .requestMatchers("/avatars/**").permitAll()
 
+                        // ✅ Allow Spring Boot error dispatch + /error endpoint
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers("/error", "/error/**").permitAll()
+
+                        // ----------- PUBLIC -----------
+                        .requestMatchers("/api/login", "/api/register").permitAll()
+                        .requestMatchers("/favicon.ico").permitAll()
+                        .requestMatchers("/.well-known/**").permitAll()
+
+                        // email confirmation must be public (token in query string)
+                        .requestMatchers(HttpMethod.GET, "/confirm-email").permitAll()
+                        .requestMatchers("/confirm-email", "/confirm-email/**").permitAll()
+
+                        // avatar public
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/avatar").permitAll()
+
+                        // ----------- FLIGHTS -----------
                         .requestMatchers(HttpMethod.POST, "/api/flights")
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
+                        // ----------- AVATAR UPLOAD -----------
                         .requestMatchers(HttpMethod.POST, "/api/users/*/avatar")
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
+                        // ----------- FRONTEND ROUTES (if any) -----------
                         .requestMatchers("/home").authenticated()
+                        .requestMatchers("/manage-users").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/my-flights", "/upload-files").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
-                        .requestMatchers("/manage-users")
-                        .hasAuthority("ROLE_ADMIN")
+                        // ----------- USERS API -----------
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
-                        .requestMatchers("/my-flights", "/upload-files")
-                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users/**").hasAuthority("ROLE_ADMIN")
 
-                        .requestMatchers(HttpMethod.GET,   "/api/users/**")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_HOST", "ROLE_USER")
-                        .requestMatchers(HttpMethod.PUT,   "/api/users/**")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_HOST", "ROLE_USER")
-                        .requestMatchers(HttpMethod.PATCH, "/api/users/**")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_HOST", "ROLE_USER")
-
-                        // akakolvek ďalšia manipulácia s / api / users vyaduje ADMIN-a
-                        .requestMatchers("/api/users/**")
-                        .hasAuthority("ROLE_ADMIN")
-
+                        // ----------- DEFAULT -----------
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-    // ----------------- CORS ------------
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
