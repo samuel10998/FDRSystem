@@ -6,6 +6,9 @@ import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
+// ✅ Font Awesome (lokálne cez npm, bez CDN)
+import "@fortawesome/fontawesome-free/css/all.min.css";
+
 // 👉 potom tvoje vlastné štýly
 import './index.css';
 import './App.css'; // nezabudni ak ho máš

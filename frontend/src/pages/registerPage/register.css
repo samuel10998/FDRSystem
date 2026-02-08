@@ -117,3 +117,55 @@
     right: 20px;
     left: auto;
 }
+
+/* ensure the form itself doesn't add spacing */
+.register-container form {
+    margin: 0;
+}
+
+/* ✅ Button row (force perfect alignment) */
+.register-container .button-group {
+    display: flex !important;
+    gap: 1rem !important;
+    justify-content: space-between !important;
+    align-items: stretch !important;
+}
+
+/* each button sits inside a flex item */
+.register-container .button-group .register-btnWrap {
+    flex: 1 1 0;
+    display: flex;
+}
+
+/* the actual PrimeReact button */
+.register-container .button-group .register-btnWrap .register-btn.p-button {
+    width: 100% !important;
+    height: 52px !important;          /* both same height */
+    margin: 0 !important;             /* remove any theme margin */
+    padding: 0 1.25rem !important;    /* same padding */
+    box-sizing: border-box !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    line-height: 1 !important;
+}
+
+/* normalize icon/label so baseline doesn't shift */
+.register-container .button-group .register-btnWrap .register-btn.p-button .p-button-icon,
+.register-container .button-group .register-btnWrap .register-btn.p-button .p-button-label {
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* keep a consistent gap between icon and text */
+.register-container .button-group .register-btnWrap .register-btn.p-button .p-button-icon {
+    margin-right: 0.5rem !important;
+}
+
+
+
+
+
