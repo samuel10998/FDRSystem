@@ -15,13 +15,29 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const validateEmail = (email) => {
+    const validateEmail = (value) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(String(email).toLowerCase());
+        return re.test(String(value).toLowerCase());
     };
 
     const openRegisterModal = () => {
         navigate("/register", { state: { backgroundLocation: location } });
+    };
+
+    const onSubmit = (e) => {
+        e.preventDefault();
+
+        const emailOk = !!email && validateEmail(email);
+        const pwdOk = !!password;
+
+        setErrorFields({
+            email: !emailOk,
+            password: !pwdOk,
+        });
+
+        if (!emailOk || !pwdOk) return;
+
+        handleLogin({ email, password, toast, navigate });
     };
 
     return (
@@ -35,7 +51,7 @@ export default function LoginPage() {
                     />
                 </div>
 
-                <div className="login-form">
+                <form className="login-form" onSubmit={onSubmit}>
                     <h1>Systém na vizualizáciu dát zo zapisovača letových údajov</h1>
                     <p>Prihláste sa do svojho účtu</p>
 
@@ -43,13 +59,16 @@ export default function LoginPage() {
                         id="email"
                         value={email}
                         placeholder="Email"
+                        autoComplete="email"
+                        name="email"
                         onChange={(e) => {
                             setErrorFields((prev) => ({ ...prev, email: false }));
                             setEmail(e.target.value);
                         }}
                         onBlur={() => {
-                            if (!email || !validateEmail(email))
+                            if (!email || !validateEmail(email)) {
                                 setErrorFields((prev) => ({ ...prev, email: true }));
+                            }
                         }}
                         className={errorFields.email ? "p-invalid" : ""}
                     />
@@ -59,31 +78,36 @@ export default function LoginPage() {
                         type="password"
                         value={password}
                         placeholder="Heslo"
+                        autoComplete="current-password"
+                        name="password"
                         onChange={(e) => {
                             setErrorFields((prev) => ({ ...prev, password: false }));
                             setPassword(e.target.value);
                         }}
                         onBlur={() => {
-                            if (!password)
+                            if (!password) {
                                 setErrorFields((prev) => ({ ...prev, password: true }));
+                            }
                         }}
                         className={errorFields.password ? "p-invalid" : ""}
                     />
 
+                    {/* ✅ keep your custom classes + also add a shared class for sizing */}
                     <Button
                         label="Prihlásenie"
                         icon="pi pi-sign-in"
-                        onClick={() => handleLogin({ email, password, toast, navigate })}
-                        className="login-button-login"
+                        type="submit"
+                        className="login-btn login-button-login"
                     />
 
                     <Button
                         label="Registrácia"
                         icon="pi pi-user"
+                        type="button"
                         onClick={openRegisterModal}
-                        className="login-button-register"
+                        className="login-btn login-button-register"
                     />
-                </div>
+                </form>
             </div>
         </div>
     );

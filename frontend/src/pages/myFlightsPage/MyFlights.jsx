@@ -11,14 +11,12 @@ export default function MyFlights() {
     const [maxDistance, setMaxDistance] = useState("");
     const [minRecords, setMinRecords] = useState("");
     const [maxRecords, setMaxRecords] = useState("");
-    const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // ✅ NEW: sorting state
     // key: "name" | "startTime" | "endTime" | "distanceKm" | "recordCount"
     // dir: "asc" | "desc" | null
     const [sort, setSort] = useState({ key: null, dir: null });
@@ -28,7 +26,8 @@ export default function MyFlights() {
     useEffect(() => {
         let alive = true;
 
-        api.get("/api/flights")
+        api
+            .get("/api/flights")
             .then((res) => {
                 if (alive) {
                     setFlights(res.data);
@@ -38,24 +37,48 @@ export default function MyFlights() {
             .catch((err) => console.error("GET /api/flights →", err?.response?.status))
             .finally(() => alive && setLoading(false));
 
-        api.get("/api/users/me")
-            .then((res) => {
-                const userId = res.data.id;
-                return api.get(`/api/users/${userId}/analytics`);
-            })
-            .then((res) => {
-                if (alive) setAnalytics(res.data);
-            })
-            .catch((err) => console.error("GET /api/users/{id}/analytics →", err?.response?.status));
-
         return () => {
             alive = false;
         };
     }, []);
 
+    // ✅ Analytics computed from flights (no backend /api/users/me, no /analytics)
+    const analytics = useMemo(() => {
+        if (!flights || flights.length === 0) return null;
+
+        const totalFlights = flights.length;
+
+        const totalDistanceKm = flights.reduce((sum, f) => {
+            return sum + (typeof f.distanceKm === "number" ? f.distanceKm : 0);
+        }, 0);
+
+        // average duration in seconds (only count flights that have valid start/end)
+        let totalDurationSeconds = 0;
+        let durationCount = 0;
+
+        for (const f of flights) {
+            if (!f?.startTime || !f?.endTime) continue;
+            const start = new Date(f.startTime).getTime();
+            const end = new Date(f.endTime).getTime();
+            if (Number.isFinite(start) && Number.isFinite(end) && end >= start) {
+                totalDurationSeconds += Math.round((end - start) / 1000);
+                durationCount += 1;
+            }
+        }
+
+        const averageDurationSeconds =
+            durationCount > 0 ? Math.round(totalDurationSeconds / durationCount) : 0;
+
+        return {
+            totalFlights,
+            totalDistanceKm,
+            averageDurationSeconds,
+        };
+    }, [flights]);
+
     useEffect(() => {
         const filtered = flights.filter((f) => {
-            const matchesName = f.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesName = (f.name ?? "").toLowerCase().includes(searchTerm.toLowerCase());
 
             const distance = f.distanceKm ?? 0;
             const recordCount = f.recordCount ?? 0;
@@ -95,7 +118,7 @@ export default function MyFlights() {
         navigate(`/flights/${id}`);
     }
 
-    // ✅ NEW: toggle sort for a column: off -> asc -> desc -> off
+    // toggle sort for a column: off -> asc -> desc -> off
     function toggleSort(key) {
         setSort((prev) => {
             if (prev.key !== key) return { key, dir: "asc" };
@@ -105,7 +128,7 @@ export default function MyFlights() {
         setCurrentPage(1);
     }
 
-    // ✅ NEW: apply sorting to filteredFlights BEFORE pagination
+    // apply sorting to filteredFlights BEFORE pagination
     const sortedFlights = useMemo(() => {
         const arr = [...filteredFlights];
         if (!sort.key || !sort.dir) return arr;
@@ -121,7 +144,6 @@ export default function MyFlights() {
                 case "endTime":
                     return new Date(f.endTime).getTime();
                 case "distanceKm":
-                    // missing distance sorts as -Infinity so it goes to start in asc / end in desc
                     return typeof f.distanceKm === "number" ? f.distanceKm : Number.NEGATIVE_INFINITY;
                 case "recordCount":
                     return typeof f.recordCount === "number" ? f.recordCount : Number.NEGATIVE_INFINITY;
@@ -134,11 +156,9 @@ export default function MyFlights() {
             const av = getVal(a);
             const bv = getVal(b);
 
-            // string compare
             if (typeof av === "string" && typeof bv === "string") {
                 return av.localeCompare(bv) * dirMul;
             }
-            // number compare
             return (av - bv) * dirMul;
         });
 
@@ -148,10 +168,7 @@ export default function MyFlights() {
     const totalPages = Math.max(1, Math.ceil(sortedFlights.length / itemsPerPage));
 
     const pageFlights = useMemo(() => {
-        return sortedFlights.slice(
-            (currentPage - 1) * itemsPerPage,
-            currentPage * itemsPerPage
-        );
+        return sortedFlights.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     }, [sortedFlights, currentPage]);
 
     function handlePageChange(e) {
@@ -167,12 +184,13 @@ export default function MyFlights() {
             ? "Žiadne lety."
             : `${sortedFlights.length} výsledkov`;
 
-    // ✅ NEW: helper for arrow icon in header
     function sortIcon(key) {
         if (sort.key !== key || !sort.dir) return <span className="mf-sortIcon">↕</span>;
-        return sort.dir === "asc"
-            ? <span className="mf-sortIcon mf-sortIcon--active">↑</span>
-            : <span className="mf-sortIcon mf-sortIcon--active">↓</span>;
+        return sort.dir === "asc" ? (
+            <span className="mf-sortIcon mf-sortIcon--active">↑</span>
+        ) : (
+            <span className="mf-sortIcon mf-sortIcon--active">↓</span>
+        );
     }
 
     return (
@@ -194,14 +212,14 @@ export default function MyFlights() {
                             </div>
                             <div className="mf-kpi">
                                 <div className="mf-kpiLabel">Počet kilometrov</div>
-                                <div className="mf-kpiValue">
-                                    {analytics.totalDistanceKm?.toFixed(2)} km
-                                </div>
+                                <div className="mf-kpiValue">{analytics.totalDistanceKm.toFixed(2)} km</div>
                             </div>
                             <div className="mf-kpi">
                                 <div className="mf-kpiLabel">Priem. trvanie</div>
                                 <div className="mf-kpiValue">
-                                    {Math.round(analytics.averageDurationSeconds / 60)} min
+                                    {analytics.averageDurationSeconds > 0
+                                        ? `${Math.round(analytics.averageDurationSeconds / 60)} min`
+                                        : "—"}
                                 </div>
                             </div>
                         </div>
@@ -280,11 +298,7 @@ export default function MyFlights() {
                                 <table className="mf-table">
                                     <thead>
                                     <tr>
-                                        <th
-                                            className="mf-sortable"
-                                            onClick={() => toggleSort("name")}
-                                            title="Zoradiť"
-                                        >
+                                        <th className="mf-sortable" onClick={() => toggleSort("name")} title="Zoradiť">
                                             <span className="mf-thLabel">Názov</span>
                                             {sortIcon("name")}
                                         </th>
@@ -298,11 +312,7 @@ export default function MyFlights() {
                                             {sortIcon("startTime")}
                                         </th>
 
-                                        <th
-                                            className="mf-sortable"
-                                            onClick={() => toggleSort("endTime")}
-                                            title="Zoradiť"
-                                        >
+                                        <th className="mf-sortable" onClick={() => toggleSort("endTime")} title="Zoradiť">
                                             <span className="mf-thLabel">Koniec</span>
                                             {sortIcon("endTime")}
                                         </th>
@@ -336,9 +346,7 @@ export default function MyFlights() {
                                             <td>{new Date(f.startTime).toLocaleString()}</td>
                                             <td>{new Date(f.endTime).toLocaleString()}</td>
                                             <td className="mf-num">
-                                                {typeof f.distanceKm === "number"
-                                                    ? `${f.distanceKm.toFixed(2)} km`
-                                                    : "—"}
+                                                {typeof f.distanceKm === "number" ? `${f.distanceKm.toFixed(2)} km` : "—"}
                                             </td>
                                             <td className="mf-num">{f.recordCount}</td>
                                             <td className="mf-actions">

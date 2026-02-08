@@ -26,7 +26,7 @@ export default function Register({ isModal = false }) {
         email: false,
         password: false,
         confirmPassword: false,
-        region: false
+        region: false,
     });
 
     const navigate = useNavigate();
@@ -45,15 +45,21 @@ export default function Register({ isModal = false }) {
         { label: "Žilinský kraj", value: "Žilinský kraj" },
         { label: "Banskobystrický kraj", value: "Banskobystrický kraj" },
         { label: "Prešovský kraj", value: "Prešovský kraj" },
-        { label: "Košický kraj", value: "Košický kraj" }
+        { label: "Košický kraj", value: "Košický kraj" },
     ];
+
+    const handleBlur = (field) => {
+        setTouchedFields((prev) => ({ ...prev, [field]: true }));
+    };
+
+    const errors = validateFields({ name, surname, email, password, region });
 
     const handleRegister = () => {
         const fields = { name, surname, email, password, region };
-        const errors = validateFields(fields);
+        const errs = validateFields(fields);
 
         if (password !== confirmPassword) {
-            toast.current.show({
+            toast.current?.show({
                 severity: "error",
                 summary: "Chyba",
                 detail: "Heslá sa nezhodujú.",
@@ -62,17 +68,16 @@ export default function Register({ isModal = false }) {
             return;
         }
 
-        if (Object.values(errors).every((error) => !error)) {
+        if (Object.values(errs).every((error) => !error)) {
             handleRegisterSubmit(fields)
                 .then(() => {
-                    toast.current.show({
+                    toast.current?.show({
                         severity: "success",
                         summary: "Úspech",
                         detail: "Úspešná registrácia. Skontrolujte svoj email.",
                         life: 4000,
                     });
 
-                    // ✅ modal -> zavrieť späť na login, page -> redirect
                     setTimeout(() => goBackToLogin(), isModal ? 1200 : 3000);
                 })
                 .catch((err) => {
@@ -81,7 +86,7 @@ export default function Register({ isModal = false }) {
                             ? "Email už existuje"
                             : "Chyba pri registrácii, skús nový email";
 
-                    toast.current.show({
+                    toast.current?.show({
                         severity: "error",
                         summary: "Chyba",
                         detail: msg,
@@ -95,133 +100,179 @@ export default function Register({ isModal = false }) {
                 email: true,
                 password: true,
                 confirmPassword: true,
-                region: true
+                region: true,
             });
         }
     };
 
-    const handleBlur = (field) => {
-        setTouchedFields((prev) => ({ ...prev, [field]: true }));
+    // ✅ NEW: form submit handler (Enter key works)
+    const onSubmit = (e) => {
+        e.preventDefault();
+        handleRegister();
     };
-
-    const errors = validateFields({ name, surname, email, password, region });
 
     return (
         <div className={`register-container ${isModal ? "is-modal" : ""}`}>
             <Toast ref={toast} />
+
             <Panel header="Registrácia">
-                <div className="p-field">
-                    <label htmlFor="name">Meno</label>
-                    <InputText
-                        id="name"
-                        value={name}
-                        placeholder="Meno"
-                        onChange={(e) => setName(e.target.value)}
-                        onBlur={() => handleBlur("name")}
-                        className={touchedFields.name && errors.name ? "p-invalid" : ""}
-                    />
-                    {touchedFields.name && errors.name && <small className="p-error">Name is required.</small>}
-                </div>
-
-                <div className="p-field">
-                    <label htmlFor="surname">Priezvisko</label>
-                    <InputText
-                        id="surname"
-                        value={surname}
-                        placeholder="Priezvisko"
-                        onChange={(e) => setSurname(e.target.value)}
-                        onBlur={() => handleBlur("surname")}
-                        className={touchedFields.surname && errors.surname ? "p-invalid" : ""}
-                    />
-                    {touchedFields.surname && errors.surname && <small className="p-error">Surname is required.</small>}
-                </div>
-
-                <div className="p-field">
-                    <label htmlFor="region">Región</label>
-                    <Dropdown
-                        id="region"
-                        value={region}
-                        options={regionOptions}
-                        placeholder="Vyberte kraj"
-                        onChange={(e) => setRegion(e.value)}
-                        onBlur={() => handleBlur("region")}
-                        className={touchedFields.region && errors.region ? "p-invalid" : ""}
-                    />
-                    {touchedFields.region && errors.region && <small className="p-error">Región je povinný.</small>}
-                </div>
-
-                <div className="p-field">
-                    <label htmlFor="email">Email</label>
-                    <InputText
-                        id="email"
-                        value={email}
-                        placeholder="Email"
-                        onChange={(e) => setEmail(e.target.value)}
-                        onBlur={() => handleBlur("email")}
-                        tooltip="Allowed email domains: @student.ukf.sk, @gmail.com"
-                        className={touchedFields.email && errors.email ? "p-invalid" : ""}
-                    />
-                    {touchedFields.email && errors.email && <small className="p-error">Valid email is required.</small>}
-                </div>
-
-                <div className="p-field password-field">
-                    <label htmlFor="password">Heslo</label>
-                    <div className="password-toggle">
+                {/* ✅ Wrap all inputs in a real form to remove DOM warning */}
+                <form onSubmit={onSubmit} autoComplete="on">
+                    <div className="p-field">
+                        <label htmlFor="name">Meno</label>
                         <InputText
-                            id="password"
-                            type={showPassword ? "text" : "password"}
-                            value={password}
-                            placeholder="Heslo"
-                            onChange={(e) => setPassword(e.target.value)}
-                            onBlur={() => handleBlur("password")}
-                            className={touchedFields.password && errors.password ? "p-invalid" : ""}
+                            id="name"
+                            name="name"
+                            value={name}
+                            placeholder="Meno"
+                            autoComplete="given-name"
+                            onChange={(e) => setName(e.target.value)}
+                            onBlur={() => handleBlur("name")}
+                            className={touchedFields.name && errors.name ? "p-invalid" : ""}
                         />
-                        <span className="toggle-icon" onClick={() => setShowPassword((prev) => !prev)}>
-                            {showPassword ? <PiEyeSlash /> : <PiEye />}
-                        </span>
+                        {touchedFields.name && errors.name && (
+                            <small className="p-error">Name is required.</small>
+                        )}
                     </div>
-                    {touchedFields.password && errors.password && (
-                        <small className="p-error">
-                            Heslo musí obsahovať aspoň 6 písmen a 4 čísla.
-                        </small>
-                    )}
-                </div>
 
-                <div className="p-field password-field">
-                    <label htmlFor="confirmPassword">Potvrď heslo</label>
-                    <div className="password-toggle">
+                    <div className="p-field">
+                        <label htmlFor="surname">Priezvisko</label>
                         <InputText
-                            id="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            value={confirmPassword}
-                            placeholder="Zopakuj heslo"
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            onBlur={() => handleBlur("confirmPassword")}
-                            className={touchedFields.confirmPassword && password !== confirmPassword ? "p-invalid" : ""}
+                            id="surname"
+                            name="surname"
+                            value={surname}
+                            placeholder="Priezvisko"
+                            autoComplete="family-name"
+                            onChange={(e) => setSurname(e.target.value)}
+                            onBlur={() => handleBlur("surname")}
+                            className={touchedFields.surname && errors.surname ? "p-invalid" : ""}
                         />
-                        <span className="toggle-icon" onClick={() => setShowConfirmPassword((prev) => !prev)}>
-                            {showConfirmPassword ? <PiEyeSlash /> : <PiEye />}
-                        </span>
+                        {touchedFields.surname && errors.surname && (
+                            <small className="p-error">Surname is required.</small>
+                        )}
                     </div>
-                    {touchedFields.confirmPassword && password !== confirmPassword && (
-                        <small className="p-error">Heslá sa nezhodujú.</small>
-                    )}
-                </div>
 
-                <div className="button-group">
-                    <Button
-                        label="Registrovať sa"
-                        icon="pi pi-user"
-                        onClick={handleRegister}
-                        className="p-button-success button-spacing"
-                    />
-                    <Button
-                        label="Zrušiť"
-                        icon="pi pi-times"
-                        onClick={goBackToLogin}
-                        className="p-button-secondary"
-                    />
-                </div>
+                    <div className="p-field">
+                        <label htmlFor="region">Región</label>
+                        <Dropdown
+                            id="region"
+                            value={region}
+                            options={regionOptions}
+                            placeholder="Vyberte kraj"
+                            onChange={(e) => setRegion(e.value)}
+                            onBlur={() => handleBlur("region")}
+                            className={touchedFields.region && errors.region ? "p-invalid" : ""}
+                        />
+                        {touchedFields.region && errors.region && (
+                            <small className="p-error">Región je povinný.</small>
+                        )}
+                    </div>
+
+                    <div className="p-field">
+                        <label htmlFor="email">Email</label>
+                        <InputText
+                            id="email"
+                            name="email"
+                            value={email}
+                            placeholder="Email"
+                            autoComplete="email"
+                            onChange={(e) => setEmail(e.target.value)}
+                            onBlur={() => handleBlur("email")}
+                            tooltip="Allowed email domains: @student.ukf.sk, @gmail.com"
+                            className={touchedFields.email && errors.email ? "p-invalid" : ""}
+                        />
+                        {touchedFields.email && errors.email && (
+                            <small className="p-error">Valid email is required.</small>
+                        )}
+                    </div>
+
+                    <div className="p-field password-field">
+                        <label htmlFor="password">Heslo</label>
+                        <div className="password-toggle">
+                            <InputText
+                                id="password"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                placeholder="Heslo"
+                                autoComplete="new-password"
+                                onChange={(e) => setPassword(e.target.value)}
+                                onBlur={() => handleBlur("password")}
+                                className={touchedFields.password && errors.password ? "p-invalid" : ""}
+                            />
+                            <span
+                                className="toggle-icon"
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") setShowPassword((p) => !p);
+                                }}
+                                aria-label={showPassword ? "Skryť heslo" : "Zobraziť heslo"}
+                            >
+                                {showPassword ? <PiEyeSlash /> : <PiEye />}
+                            </span>
+                        </div>
+                        {touchedFields.password && errors.password && (
+                            <small className="p-error">Heslo musí obsahovať aspoň 6 písmen a 4 čísla.</small>
+                        )}
+                    </div>
+
+                    <div className="p-field password-field">
+                        <label htmlFor="confirmPassword">Potvrď heslo</label>
+                        <div className="password-toggle">
+                            <InputText
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type={showConfirmPassword ? "text" : "password"}
+                                value={confirmPassword}
+                                placeholder="Zopakuj heslo"
+                                autoComplete="new-password"
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onBlur={() => handleBlur("confirmPassword")}
+                                className={
+                                    touchedFields.confirmPassword && password !== confirmPassword ? "p-invalid" : ""
+                                }
+                            />
+                            <span
+                                className="toggle-icon"
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") setShowConfirmPassword((p) => !p);
+                                }}
+                                aria-label={showConfirmPassword ? "Skryť heslo" : "Zobraziť heslo"}
+                            >
+                                {showConfirmPassword ? <PiEyeSlash /> : <PiEye />}
+                            </span>
+                        </div>
+                        {touchedFields.confirmPassword && password !== confirmPassword && (
+                            <small className="p-error">Heslá sa nezhodujú.</small>
+                        )}
+                    </div>
+
+                    <div className="button-group">
+                        <div className="register-btnWrap">
+                            <Button
+                                label="Registrovať sa"
+                                icon="pi pi-user"
+                                type="submit"
+                                className="register-btn register-btn--submit p-button-success"
+                            />
+                        </div>
+
+                        <div className="register-btnWrap">
+                            <Button
+                                label="Zrušiť"
+                                icon="pi pi-times"
+                                type="button"
+                                onClick={goBackToLogin}
+                                className="register-btn register-btn--cancel p-button-secondary"
+                            />
+                        </div>
+                    </div>
+                </form>
             </Panel>
         </div>
     );

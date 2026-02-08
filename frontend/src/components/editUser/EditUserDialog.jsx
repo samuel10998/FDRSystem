@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../api";
 import { Toast } from "primereact/toast";
 import { Dropdown } from "primereact/dropdown";
 import "./editUser.css";
@@ -14,7 +14,6 @@ export default function EditUserDialog({ isModal = false }) {
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [region, setRegion] = useState("");
-    const [profilePic, setProfilePic] = useState("profile_picture_default.jpg");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [file, setFile] = useState(null);
@@ -27,17 +26,22 @@ export default function EditUserDialog({ isModal = false }) {
         { label: "Žilinský kraj", value: "Žilinský kraj" },
         { label: "Banskobystrický kraj", value: "Banskobystrický kraj" },
         { label: "Prešovský kraj", value: "Prešovský kraj" },
-        { label: "Košický kraj", value: "Košický kraj" }
+        { label: "Košický kraj", value: "Košický kraj" },
     ];
 
+    // baseURL pre obrázok (aby sme nemuseli hardcodovať localhost)
+    const apiBase = api?.defaults?.baseURL || "http://localhost:8080";
+
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/users/${id}`)
+        if (!id) return;
+
+        api
+            .get(`/api/users/${id}`)
             .then(({ data }) => {
                 setFirstName(data.name || "");
                 setLastName(data.surname || "");
                 setEmail(data.email || "");
                 setRegion(data.region || "");
-                setProfilePic(data.profilePicture || "profile_picture_default.jpg");
             })
             .catch(() =>
                 toast.current?.show({
@@ -81,25 +85,20 @@ export default function EditUserDialog({ isModal = false }) {
                 name: firstName,
                 surname: lastName,
                 region: region,
-                ...(password.trim() && { password })
+                ...(password.trim() && { password }),
             };
 
-            await axios.patch(`http://localhost:8080/api/users/${id}`, payload);
+            // ✅ cez api (JWT sa pridá automaticky interceptorom)
+            await api.patch(`/api/users/${id}`, payload);
 
             if (file) {
                 const formData = new FormData();
                 formData.append("file", file);
 
-                await axios.post(
-                    `http://localhost:8080/api/users/${id}/avatar`,
-                    formData,
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`
-                        }
-                    }
-                );
+                // ✅ tiež cez api + multipart
+                await api.post(`/api/users/${id}/avatar`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
             }
 
             toast.current?.show({
@@ -109,18 +108,11 @@ export default function EditUserDialog({ isModal = false }) {
                 life: 2500,
             });
 
-            // ✅ 1) Aktualizuj localStorage user (aby sa zmenilo meno v navbare bez re-loginu)
-            // ✅ 2) Pošli event, aby Navbar hneď re-renderol
+            // ✅ Update localStorage user → navbar sa zmení bez re-loginu
             try {
                 const lsUser = JSON.parse(localStorage.getItem("user") || "{}");
-
                 if (lsUser && String(lsUser.id) === String(id)) {
-                    const updated = {
-                        ...lsUser,
-                        name: firstName,
-                        surname: lastName,
-                        region: region,
-                    };
+                    const updated = { ...lsUser, name: firstName, surname: lastName, region: region };
                     localStorage.setItem("user", JSON.stringify(updated));
                     window.dispatchEvent(new Event("userUpdated"));
                 }
@@ -128,11 +120,9 @@ export default function EditUserDialog({ isModal = false }) {
                 // ignore
             }
 
-            // ✅ Modal: zavri sa späť na pôvodnú stránku
             if (isModal) {
                 setTimeout(() => navigate(-1), 900);
             } else {
-                // ✅ Page: pôvodné správanie
                 setTimeout(() => navigate("/my-flights"), 1500);
             }
         } catch (err) {
@@ -153,12 +143,19 @@ export default function EditUserDialog({ isModal = false }) {
                     <div className="edit-user-image">
                         <img
                             className="avatar"
-                            src={`http://localhost:8080/api/users/${id}/avatar`}
+                            src={`${apiBase}/api/users/${id}/avatar`}
                             alt="Profilová fotka"
                         />
                     </div>
 
-                    <div className="edit-user-form">
+                    {/* ✅ FORM wrapper → odstráni DOM warning + Enter = submit */}
+                    <form
+                        className="edit-user-form"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSave();
+                        }}
+                    >
                         <h2>Upraviť profil</h2>
 
                         <div className="form-group">
@@ -167,6 +164,8 @@ export default function EditUserDialog({ isModal = false }) {
                                 type="text"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
+                                autoComplete="given-name"
+                                name="firstName"
                             />
                         </div>
 
@@ -176,6 +175,8 @@ export default function EditUserDialog({ isModal = false }) {
                                 type="text"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
+                                autoComplete="family-name"
+                                name="lastName"
                             />
                         </div>
 
@@ -191,7 +192,7 @@ export default function EditUserDialog({ isModal = false }) {
 
                         <div className="form-group">
                             <label>Email (nemenné)</label>
-                            <input type="email" value={email} disabled />
+                            <input type="email" value={email} disabled autoComplete="email" name="email" />
                         </div>
 
                         <div className="form-group">
@@ -201,6 +202,8 @@ export default function EditUserDialog({ isModal = false }) {
                                 placeholder="Nepovinné – zadajte nové heslo"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                autoComplete="new-password"
+                                name="newPassword"
                             />
                         </div>
 
@@ -211,6 +214,8 @@ export default function EditUserDialog({ isModal = false }) {
                                 placeholder="Znovu zadajte nové heslo"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
+                                autoComplete="new-password"
+                                name="confirmNewPassword"
                             />
                         </div>
 
@@ -220,14 +225,22 @@ export default function EditUserDialog({ isModal = false }) {
                                 type="file"
                                 accept="image/*"
                                 onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                name="avatar"
                             />
                         </div>
 
                         <div className="form-actions">
-                            <button className="btn-save" onClick={handleSave}>Uložiť</button>
-                            <button className="btn-cancel" onClick={() => navigate(-1)}>Zrušiť</button>
+                            {/* ✅ type="submit" */}
+                            <button className="btn-save" type="submit">
+                                Uložiť
+                            </button>
+
+                            {/* ✅ type="button" aby to nesubmitovalo form */}
+                            <button className="btn-cancel" type="button" onClick={() => navigate(-1)}>
+                                Zrušiť
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </section>
         </>
