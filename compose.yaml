@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   mysql:
     image: mysql:8.4
@@ -50,12 +48,14 @@ services:
       SPRING_DATASOURCE_PASSWORD: secret
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8080:8080"
     volumes:
       - ./uploads/avatars:/app/uploads/avatars
     networks:
       - spring-network
+
 
   # ------------------------ FRONTEND -------------------------
   frontend:
