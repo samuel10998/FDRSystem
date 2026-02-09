@@ -41,7 +41,6 @@ public class UserController {
     @Autowired private RoleRepository   roleRepository;
     @Autowired private JwtService       jwtService;
 
-
     private boolean isAdmin(Authentication auth) {
         return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -54,7 +53,6 @@ public class UserController {
                 .filter(id::equals)
                 .isPresent();
     }
-
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -116,7 +114,6 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-
     @PutMapping("/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id,
                                              @RequestBody UpdateUserDTO dto) {
@@ -124,7 +121,7 @@ public class UserController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!isAdmin(auth) && !isSelf(auth, id)) return ResponseEntity.status(403).build();
 
-        return saveUser(id, dto, false);
+        return saveUser(auth, id, dto, false);
     }
 
     @PatchMapping("/{id}")
@@ -134,10 +131,14 @@ public class UserController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!isAdmin(auth) && !isSelf(auth, id)) return ResponseEntity.status(403).build();
 
-        return saveUser(id, dto, true);
+        return saveUser(auth, id, dto, true);
     }
 
-    private ResponseEntity<String> saveUser(Long id, UpdateUserDTO dto, boolean patch) {
+    /**
+     * FIX: Role IDs môže meniť iba ADMIN.
+     * Ak bežný používateľ pošle roleIds v PATCH/PUT, vrátime 403.
+     */
+    private ResponseEntity<String> saveUser(Authentication auth, Long id, UpdateUserDTO dto, boolean patch) {
 
         Optional<User> opt = userRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
@@ -152,10 +153,22 @@ public class UserController {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
-        if (dto.getRoleIds() != null && !dto.getRoleIds().isEmpty()) {
+        // --- BEZPEČNOSŤ: roly môže meniť iba ADMIN ---
+        if (dto.getRoleIds() != null) {
+
+            if (!isAdmin(auth)) {
+                return ResponseEntity.status(403).body("roles can be changed only by admin");
+            }
+
+            if (dto.getRoleIds().isEmpty()) {
+                return ResponseEntity.badRequest().body("roleIds cannot be empty");
+            }
+
             Collection<Role> roles = roleRepository.findAllById(dto.getRoleIds());
-            if (roles.size() != dto.getRoleIds().size())
+            if (roles.size() != dto.getRoleIds().size()) {
                 return ResponseEntity.badRequest().body("bad role id");
+            }
+
             user.setRoles(roles);
         }
 

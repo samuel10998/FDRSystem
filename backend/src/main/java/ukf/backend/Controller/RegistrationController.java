@@ -31,7 +31,6 @@ public class RegistrationController {
 
     private static final String DEFAULT_AVATAR = "profile_picture_default.jpg";
 
-
     @Autowired private UserRepository userRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private AllowedEmailDomainRepository allowedEmailDomainRepository;
@@ -63,13 +62,12 @@ public class RegistrationController {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Collections.singletonList(roleRepository.findByName("ROLE_USER")));
-        user.setProfilePicture(DEFAULT_AVATAR);        // predvolený avatar
+        user.setProfilePicture(DEFAULT_AVATAR);
         userRepository.save(user);
 
         userService.sendRegistrationConfirmationEmail(user);
         return ResponseEntity.ok("User registered successfully.");
     }
-
 
     @PostMapping(value = "/api/login", consumes = "application/json")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody User user) {
@@ -119,12 +117,21 @@ public class RegistrationController {
     }
 
     @GetMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestParam("token") String token)
-            throws InvalidTokenException {
+    public ResponseEntity<String> confirmEmail(@RequestParam("token") String token) {
+        try {
+            boolean ok = userService.verifyUser(token);
+            if (ok) {
+                return ResponseEntity.ok("✅ Email potvrdený. Teraz sa môžeš prihlásiť.");
+            }
+            return ResponseEntity.ok("⚠️ Token je neplatný / expirovaný alebo účet už bol potvrdený.");
 
-        if (userService.verifyUser(token)) {
-            return ResponseEntity.ok("Your email has been successfully verified.");
+        } catch (InvalidTokenException ex) {
+            // toto ti predtým robilo 500
+            return ResponseEntity.ok("⚠️ Token je neplatný / expirovaný alebo účet už bol potvrdený.");
+        } catch (Exception ex) {
+            // aby sa už nikdy nezobrazila Whitelabel 500
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("❌ Nastala chyba pri potvrdení emailu.");
         }
-        return ResponseEntity.ok("Link expired, token invalid, or user already verified.");
     }
 }
