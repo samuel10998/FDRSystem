@@ -374,4 +374,121 @@ body {
     color: var(--brand);
 }
 
+/* =========================
+   ✅ Flash / toast (NEW)
+   ========================= */
 
+.mf-flash {
+    display: grid;
+    grid-template-columns: 34px 1fr 36px;
+    gap: 12px;
+    align-items: start;
+
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+
+    margin-bottom: 12px;
+}
+
+.mf-flashIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    font-size: 16px;
+    line-height: 1;
+    user-select: none;
+}
+
+.mf-flashBody {
+    min-width: 0;
+}
+
+.mf-flashTitle {
+    font-weight: 850;
+    color: rgba(15, 23, 42, 0.95);
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+.mf-flashList {
+    margin: 6px 0 0 18px;
+    padding: 0;
+    color: rgba(2, 6, 23, 0.80);
+    font-size: 13px;
+}
+
+.mf-flashList li {
+    margin: 4px 0;
+}
+
+.mf-flashClose {
+    justify-self: end;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    background: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+    font-weight: 900;
+    color: rgba(2, 6, 23, 0.70);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.mf-flashClose:hover {
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.10);
+    background: rgba(255, 255, 255, 1);
+}
+
+.mf-flashClose:active {
+    transform: translateY(1px);
+}
+
+/* Variants */
+.mf-flash--success {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.28);
+}
+
+.mf-flash--success .mf-flashIcon {
+    background: rgba(34, 197, 94, 0.14);
+    color: rgba(21, 128, 61, 0.95);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.mf-flash--info {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.28);
+}
+
+.mf-flash--info .mf-flashIcon {
+    background: rgba(59, 130, 246, 0.14);
+    color: rgba(30, 64, 175, 0.95);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.mf-flash--warn {
+    background: rgba(245, 158, 11, 0.10);
+    border-color: rgba(245, 158, 11, 0.30);
+}
+
+.mf-flash--warn .mf-flashIcon {
+    background: rgba(245, 158, 11, 0.16);
+    color: rgba(146, 64, 14, 0.95);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.mf-flash--error {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.28);
+}
+
+.mf-flash--error .mf-flashIcon {
+    background: rgba(239, 68, 68, 0.14);
+    color: rgba(153, 27, 27, 0.95);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
