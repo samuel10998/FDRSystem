@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../api";
 import "./myFlights.css";
 
@@ -17,11 +17,40 @@ export default function MyFlights() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // key: "name" | "startTime" | "endTime" | "distanceKm" | "recordCount"
-    // dir: "asc" | "desc" | null
     const [sort, setSort] = useState({ key: null, dir: null });
 
+    // { type: "success"|"error"|"info"|"warn", message: string }
+    const [flash, setFlash] = useState(null);
+
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // ✅ flash message from Upload page (navigate state)
+    useEffect(() => {
+        const f = location?.state?.flash;
+        if (f?.message) {
+            setFlash({ type: f.type || "info", message: f.message });
+
+            // clear state so it doesn't re-appear on refresh/back
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ✅ auto-dismiss flash (centralized)
+    useEffect(() => {
+        if (!flash?.message) return;
+
+        const type = flash.type || "info";
+        const ms =
+            type === "success" ? 3500 :
+                type === "info" ? 4500 :
+                    type === "warn" ? 6500 :
+                        8000; // error
+
+        const t = setTimeout(() => setFlash(null), ms);
+        return () => clearTimeout(t);
+    }, [flash]);
 
     useEffect(() => {
         let alive = true;
@@ -42,7 +71,7 @@ export default function MyFlights() {
         };
     }, []);
 
-    // ✅ Analytics computed from flights (no backend /api/users/me, no /analytics)
+    // ✅ Analytics computed from flights
     const analytics = useMemo(() => {
         if (!flights || flights.length === 0) return null;
 
@@ -52,7 +81,6 @@ export default function MyFlights() {
             return sum + (typeof f.distanceKm === "number" ? f.distanceKm : 0);
         }, 0);
 
-        // average duration in seconds (only count flights that have valid start/end)
         let totalDurationSeconds = 0;
         let durationCount = 0;
 
@@ -106,9 +134,11 @@ export default function MyFlights() {
             const updated = flights.filter((f) => f.id !== id);
             setFlights(updated);
             setFilteredFlights(updated);
+
+            setFlash({ type: "success", message: "Let bol zmazaný.\nZoznam bol aktualizovaný." });
         } catch (err) {
             console.error("DELETE /api/flights/", id, "→", err?.response?.status);
-            alert("Zmazanie zlyhalo.");
+            setFlash({ type: "error", message: "Zmazanie zlyhalo.\nSkús to prosím ešte raz." });
         } finally {
             setDeletingId(null);
         }
@@ -118,7 +148,7 @@ export default function MyFlights() {
         navigate(`/flights/${id}`);
     }
 
-    // toggle sort for a column: off -> asc -> desc -> off
+    // toggle sort: off -> asc -> desc -> off
     function toggleSort(key) {
         setSort((prev) => {
             if (prev.key !== key) return { key, dir: "asc" };
@@ -128,7 +158,6 @@ export default function MyFlights() {
         setCurrentPage(1);
     }
 
-    // apply sorting to filteredFlights BEFORE pagination
     const sortedFlights = useMemo(() => {
         const arr = [...filteredFlights];
         if (!sort.key || !sort.dir) return arr;
@@ -140,9 +169,9 @@ export default function MyFlights() {
                 case "name":
                     return (f.name ?? "").toLowerCase();
                 case "startTime":
-                    return new Date(f.startTime).getTime();
+                    return f.startTime ? new Date(f.startTime).getTime() : Number.NEGATIVE_INFINITY;
                 case "endTime":
-                    return new Date(f.endTime).getTime();
+                    return f.endTime ? new Date(f.endTime).getTime() : Number.NEGATIVE_INFINITY;
                 case "distanceKm":
                     return typeof f.distanceKm === "number" ? f.distanceKm : Number.NEGATIVE_INFINITY;
                 case "recordCount":
@@ -193,9 +222,73 @@ export default function MyFlights() {
         );
     }
 
+    const formatDT = (v) => {
+        if (!v) return "—";
+        const d = new Date(v);
+        return Number.isFinite(d.getTime()) ? d.toLocaleString() : "—";
+    };
+
+    // ✅ parse flash message into title + detail lines
+    const flashParsed = useMemo(() => {
+        if (!flash?.message) return null;
+        const lines = String(flash.message)
+            .split("\n")
+            .map((l) => l.trim())
+            .filter(Boolean);
+
+        const title = lines[0] || "";
+        const detailLines = lines.slice(1);
+
+        return { title, detailLines };
+    }, [flash]);
+
+    const flashIcon = (type) => {
+        switch (type) {
+            case "success":
+                return "✓";
+            case "warn":
+                return "!";
+            case "error":
+                return "×";
+            default:
+                return "i";
+        }
+    };
+
     return (
         <section className="mf-page">
             <div className="mf-report">
+
+                {/* ✅ Flash / Toast */}
+                {flashParsed?.title && (
+                    <div className={`mf-flash mf-flash--${flash?.type || "info"}`}>
+                        <div className="mf-flashIcon" aria-hidden="true">
+                            {flashIcon(flash?.type)}
+                        </div>
+
+                        <div className="mf-flashBody">
+                            <div className="mf-flashTitle">{flashParsed.title}</div>
+
+                            {flashParsed.detailLines?.length > 0 && (
+                                <ul className="mf-flashList">
+                                    {flashParsed.detailLines.map((line, i) => (
+                                        <li key={i}>{line}</li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={() => setFlash(null)}
+                            className="mf-flashClose"
+                            aria-label="Zavrieť"
+                            title="Zavrieť"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="mf-header">
                     <div>
@@ -303,11 +396,7 @@ export default function MyFlights() {
                                             {sortIcon("name")}
                                         </th>
 
-                                        <th
-                                            className="mf-sortable"
-                                            onClick={() => toggleSort("startTime")}
-                                            title="Zoradiť"
-                                        >
+                                        <th className="mf-sortable" onClick={() => toggleSort("startTime")} title="Zoradiť">
                                             <span className="mf-thLabel">Začiatok</span>
                                             {sortIcon("startTime")}
                                         </th>
@@ -317,20 +406,12 @@ export default function MyFlights() {
                                             {sortIcon("endTime")}
                                         </th>
 
-                                        <th
-                                            className="mf-num mf-sortable"
-                                            onClick={() => toggleSort("distanceKm")}
-                                            title="Zoradiť"
-                                        >
+                                        <th className="mf-num mf-sortable" onClick={() => toggleSort("distanceKm")} title="Zoradiť">
                                             <span className="mf-thLabel">Vzdialenosť</span>
                                             {sortIcon("distanceKm")}
                                         </th>
 
-                                        <th
-                                            className="mf-num mf-sortable"
-                                            onClick={() => toggleSort("recordCount")}
-                                            title="Zoradiť"
-                                        >
+                                        <th className="mf-num mf-sortable" onClick={() => toggleSort("recordCount")} title="Zoradiť">
                                             <span className="mf-thLabel"># záznamov</span>
                                             {sortIcon("recordCount")}
                                         </th>
@@ -343,12 +424,14 @@ export default function MyFlights() {
                                     {pageFlights.map((f) => (
                                         <tr key={f.id}>
                                             <td className="mf-name">{f.name}</td>
-                                            <td>{new Date(f.startTime).toLocaleString()}</td>
-                                            <td>{new Date(f.endTime).toLocaleString()}</td>
+                                            <td>{formatDT(f.startTime)}</td>
+                                            <td>{formatDT(f.endTime)}</td>
                                             <td className="mf-num">
                                                 {typeof f.distanceKm === "number" ? `${f.distanceKm.toFixed(2)} km` : "—"}
                                             </td>
-                                            <td className="mf-num">{f.recordCount}</td>
+                                            <td className="mf-num">
+                                                {typeof f.recordCount === "number" ? f.recordCount : "—"}
+                                            </td>
                                             <td className="mf-actions">
                                                 <button
                                                     onClick={() => handleDetail(f.id)}

@@ -13,6 +13,7 @@ import ukf.backend.Model.flight.FlightRecord;
 import ukf.backend.Repository.flight.FlightRecordRepository;
 import ukf.backend.Repository.flight.FlightRepository;
 import ukf.backend.dtos.FlightStatsDto;
+import ukf.backend.Exception.FlightUploadException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,10 +44,11 @@ public class FlightService {
             int recordsSaved,
             int badLines,
             Integer firstBadLineNumber,
-            String firstBadLinePreview
+            String firstBadLinePreview,
+            String firstBadLineReason
     ) {}
 
-    /** Backward-compatible: ak niekde inde voláš ingestFile, nič sa nerozbije. */
+    /** Backward-compatible */
     @Transactional
     public Flight ingestFile(MultipartFile file, User owner) throws IOException {
         return ingestFileWithReport(file, owner).flight();
@@ -55,9 +57,28 @@ public class FlightService {
     @Transactional
     public IngestReport ingestFileWithReport(MultipartFile file, User owner) throws IOException {
 
+        if (file == null) {
+            throw new FlightUploadException(
+                    "Chýba súbor (file).",
+                    0, null, null, "MISSING_FILE"
+            );
+        }
+
+        if (file.isEmpty()) {
+            throw new FlightUploadException(
+                    "Súbor je prázdny.",
+                    0, null, null, "EMPTY_FILE"
+            );
+        }
+
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) originalName = "upload.txt";
+
+        // flight vytvoríme hneď, ale ak neskôr hodíme exception v @Transactional,
+        // tak sa rollbackne a nezostane v DB
         Flight flight = flightRepo.save(Flight.builder()
                 .user(owner)
-                .name(file.getOriginalFilename())
+                .name(originalName)
                 .build());
 
         List<FlightRecord> buf = new ArrayList<>(BATCH_SIZE);
@@ -70,22 +91,27 @@ public class FlightService {
         int badLines = 0;
         Integer firstBadLineNumber = null;
         String firstBadLinePreview = null;
+        String firstBadLineReason = null;
 
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
-            // header
             String header = br.readLine();
+            if (header == null) {
+                throw new FlightUploadException(
+                        "Súbor je prázdny (chýba header).",
+                        0, null, null, "EMPTY_FILE"
+                );
+            }
 
             String line;
             int lineNo = 1; // header je 1
+
             while ((line = br.readLine()) != null) {
                 lineNo++;
 
                 String trimmed = line.trim();
-                if (trimmed.isEmpty()) {
-                    continue; // prázdne riadky ignor
-                }
+                if (trimmed.isEmpty()) continue;
 
                 String preview = trimmed.length() > 200 ? trimmed.substring(0, 200) + "..." : trimmed;
 
@@ -138,12 +164,16 @@ public class FlightService {
                     if (firstBadLineNumber == null) {
                         firstBadLineNumber = lineNo;
                         firstBadLinePreview = preview;
+                        firstBadLineReason = ex.getMessage();
+                        // len prvý zlý riadok ako WARN
+                        log.warn("Bad line {} in file '{}': {} | preview='{}'",
+                                lineNo, originalName, ex.getMessage(), preview);
+                    } else {
+                        // ďalšie ako DEBUG aby to nespamovalo
+                        log.debug("Bad line {} in file '{}': {}", lineNo, originalName, ex.getMessage());
                     }
 
-                    log.warn("Bad line {} in file '{}': {} | preview='{}'",
-                            lineNo, file.getOriginalFilename(), ex.getMessage(), preview);
-
-                    // skip this line
+                    // skip
                 }
             }
         }
@@ -154,9 +184,13 @@ public class FlightService {
         }
 
         if (recordsSaved == 0) {
-            // keď je všetko zlé, radšej fail (transaction rollback = flight sa neuloží)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Upload failed: no valid records found (badLines=" + badLines + ").");
+            throw new FlightUploadException(
+                    "Upload zlyhal: nenašiel som žiadne platné záznamy. Skontroluj formát súboru (stĺpce) a oddeľovanie (tab/medzera).",
+                    badLines,
+                    firstBadLineNumber,
+                    firstBadLinePreview,
+                    firstBadLineReason
+            );
         }
 
         flight.setStartTime(first != null ? first.atDate(LocalDate.now()) : null);
@@ -166,7 +200,14 @@ public class FlightService {
 
         Flight savedFlight = flightRepo.save(flight);
 
-        return new IngestReport(savedFlight, recordsSaved, badLines, firstBadLineNumber, firstBadLinePreview);
+        return new IngestReport(
+                savedFlight,
+                recordsSaved,
+                badLines,
+                firstBadLineNumber,
+                firstBadLinePreview,
+                firstBadLineReason
+        );
     }
 
     @Transactional(readOnly = true)
@@ -222,7 +263,6 @@ public class FlightService {
     }
 
     public List<Flight> findFlightsForUser(Long userId) {
-        // ✅ už nefiltrujeme findAll() (výkon + čistota)
         return flightRepo.findAllByUserIdOrderByStartTimeDesc(userId);
     }
 
