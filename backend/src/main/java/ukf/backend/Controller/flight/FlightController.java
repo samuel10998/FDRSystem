@@ -11,6 +11,7 @@ import ukf.backend.Model.flight.Flight;
 import ukf.backend.Model.flight.FlightRecord;
 import ukf.backend.Service.flight.FlightService;
 import ukf.backend.dtos.flight.FlightDto;
+import ukf.backend.dtos.flight.FlightIngestResultDto;
 import ukf.backend.dtos.FlightStatsDto;
 
 import java.io.IOException;
@@ -23,23 +24,22 @@ import java.util.List;
 public class FlightController {
 
     private final FlightService flightService;
-    private final UserService   userService;
-
+    private final UserService userService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
-    public ResponseEntity<FlightDto> upload(@RequestPart("file") MultipartFile file,
-                                            Principal principal) throws IOException {
-        User   current = userService.getByEmail(principal.getName());
-        Flight flight  = flightService.ingestFile(file, current);
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<FlightIngestResultDto> upload(@RequestPart("file") MultipartFile file,
+                                                        Principal principal) throws IOException {
+        User current = userService.getByEmail(principal.getName());
+
+        FlightService.IngestReport report = flightService.ingestFileWithReport(file, current);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(FlightDto.from(flight));
+                .body(FlightIngestResultDto.from(report));
     }
 
-
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public List<FlightDto> listMyFlights(Principal principal) {
         User current = userService.getByEmail(principal.getName());
         return flightService.findFlightsForUser(current.getId())
@@ -48,9 +48,8 @@ public class FlightController {
                 .toList();
     }
 
-
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<FlightDto> getFlight(@PathVariable Long id,
                                                Principal principal) {
         User current = userService.getByEmail(principal.getName());
@@ -58,9 +57,8 @@ public class FlightController {
         return ResponseEntity.ok(FlightDto.from(flight));
     }
 
-
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<Void> deleteFlight(@PathVariable Long id,
                                              Principal principal) {
         User current = userService.getByEmail(principal.getName());
@@ -68,9 +66,8 @@ public class FlightController {
         return ResponseEntity.noContent().build();
     }
 
-
     @GetMapping("/{id}/records")
-    @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<FlightRecord>> getFlightRecords(@PathVariable Long id,
                                                                Principal principal) {
         User current = userService.getByEmail(principal.getName());
@@ -79,13 +76,12 @@ public class FlightController {
         return ResponseEntity.ok(records);
     }
 
-
     @GetMapping("/{id}/stats")
-    @PreAuthorize("hasAnyRole('USER','HOST','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<FlightStatsDto> getFlightStats(@PathVariable Long id,
                                                          Principal principal) {
         User current = userService.getByEmail(principal.getName());
-        flightService.getFlight(id, current); // validacia ADMIN
+        flightService.getFlight(id, current);
         FlightStatsDto stats = flightService.getStats(id);
         return ResponseEntity.ok(stats);
     }
