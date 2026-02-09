@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../api";
 
 /* ---------- Email validácia ---------- */
 export const validateEmail = (email) => {
@@ -16,15 +16,15 @@ const isValidPassword = (password) => {
 /* ---------- Validácia polí ---------- */
 export const validateFields = ({ name, surname, email, password, region }) => {
     return {
-        name:     !name.trim(),
-        surname:  !surname.trim(),
-        email:    !email.trim() || !validateEmail(email),
+        name: !name.trim(),
+        surname: !surname.trim(),
+        email: !email.trim() || !validateEmail(email),
         password: !isValidPassword(password),
-        region:   !region || !region.trim()
+        region: !region || !region.trim(),
     };
 };
 
 /* ---------- API request pre registráciu ---------- */
 export const handleRegisterSubmit = async (fields) => {
-    return axios.post("http://localhost:8080/api/register", fields);
+    return api.post("/api/register", fields);
 };
