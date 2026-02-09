@@ -14,7 +14,6 @@
     box-sizing: border-box;
 }
 
-
 .upload-card {
     background: #fff;
     border-radius: 16px;
@@ -105,4 +104,76 @@
     margin-top: 12px;
     font-size: 0.9rem;
     color: #c00;
+}
+
+/* ==========================
+   ✅ NEW: krajší dizajn správy
+   ========================== */
+
+.upload-alert {
+    margin-top: 14px;
+    padding: 14px 14px;
+    border-radius: 14px;
+    text-align: left;
+    line-height: 1.35;
+    font-size: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.upload-alert--error {
+    border-color: rgba(220, 38, 38, 0.28);
+    background: rgba(220, 38, 38, 0.06);
+}
+
+.upload-alertTitle {
+    font-weight: 700;
+    color: rgba(15, 23, 42, 0.95);
+    margin-bottom: 8px;
+}
+
+.upload-alertDetails summary {
+    cursor: pointer;
+    font-weight: 600;
+    user-select: none;
+    color: rgba(2, 6, 23, 0.75);
+}
+
+.upload-alertDetails summary:hover {
+    color: rgba(2, 6, 23, 0.92);
+}
+
+.upload-alertList {
+    margin: 10px 0 0 18px;
+    padding: 0;
+}
+
+.upload-alertList li {
+    margin: 6px 0;
+    color: rgba(2, 6, 23, 0.78);
+}
+
+.upload-alertPreview {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(2, 6, 23, 0.04);
+}
+
+.upload-alertPreviewLabel {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: rgba(2, 6, 23, 0.65);
+}
+
+.upload-alertPreview code {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12.5px;
+    color: rgba(2, 6, 23, 0.85);
 }
