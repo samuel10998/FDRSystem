@@ -1,6 +1,7 @@
 package ukf.backend.Service.flight;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,12 +22,12 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.DoubleSummaryStatistics;
-import java.util.List;
+import java.util.*;
+import java.util.stream.DoubleStream;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FlightService {
 
     private final FlightRepository flightRepo;
@@ -36,8 +37,24 @@ public class FlightService {
     private static final int BATCH_SIZE = 500;
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("H:mm:ss");
 
+    /** Report z ingestu – použije controller pre response */
+    public record IngestReport(
+            Flight flight,
+            int recordsSaved,
+            int badLines,
+            Integer firstBadLineNumber,
+            String firstBadLinePreview
+    ) {}
+
+    /** Backward-compatible: ak niekde inde voláš ingestFile, nič sa nerozbije. */
     @Transactional
     public Flight ingestFile(MultipartFile file, User owner) throws IOException {
+        return ingestFileWithReport(file, owner).flight();
+    }
+
+    @Transactional
+    public IngestReport ingestFileWithReport(MultipartFile file, User owner) throws IOException {
+
         Flight flight = flightRepo.save(Flight.builder()
                 .user(owner)
                 .name(file.getOriginalFilename())
@@ -46,63 +63,110 @@ public class FlightService {
         List<FlightRecord> buf = new ArrayList<>(BATCH_SIZE);
         LocalTime first = null, last = null;
 
-        Double totalDistanceKm = 0.0;
+        double totalDistanceKm = 0.0;
         Double prevLat = null, prevLon = null;
+
+        int recordsSaved = 0;
+        int badLines = 0;
+        Integer firstBadLineNumber = null;
+        String firstBadLinePreview = null;
 
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
-            br.readLine();
+            // header
+            String header = br.readLine();
 
             String line;
+            int lineNo = 1; // header je 1
             while ((line = br.readLine()) != null) {
-                String[] t = line.trim().split("\\s+");
-                if (t.length < COLS) continue;
+                lineNo++;
 
-                Double lat = toD(t[1]);
-                Double lon = toD(t[2]);
-
-                if (prevLat != null && prevLon != null && lat != null && lon != null) {
-                    totalDistanceKm += haversine(prevLat, prevLon, lat, lon);
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) {
+                    continue; // prázdne riadky ignor
                 }
 
-                prevLat = lat;
-                prevLon = lon;
+                String preview = trimmed.length() > 200 ? trimmed.substring(0, 200) + "..." : trimmed;
 
-                FlightRecord rec = FlightRecord.builder()
-                        .flight(flight)
-                        .time(LocalTime.parse(t[0], TIME_FMT))
-                        .latitude(lat)
-                        .longitude(lon)
-                        .temperatureC(toD(t[3]))
-                        .pressureHpa(toD(t[4]))
-                        .altitudeM(toD(t[5]))
-                        .imuX(toD(t[6]))
-                        .imuY(toD(t[7]))
-                        .imuZ(toD(t[8]))
-                        .turbulenceG(toD(t[9]))
-                        .speedKn(toD(t[13]))
-                        .build();
+                try {
+                    String[] t = trimmed.split("\\s+");
+                    if (t.length < COLS) {
+                        throw new IllegalArgumentException("Not enough columns: " + t.length + " < " + COLS);
+                    }
 
-                buf.add(rec);
+                    LocalTime time = LocalTime.parse(t[0], TIME_FMT);
 
-                if (first == null) first = rec.getTime();
-                last = rec.getTime();
+                    Double lat = parseDoubleStrict(t[1]);
+                    Double lon = parseDoubleStrict(t[2]);
 
-                if (buf.size() == BATCH_SIZE) {
-                    recordRepo.saveAll(buf);
-                    buf.clear();
+                    if (prevLat != null && prevLon != null && lat != null && lon != null) {
+                        totalDistanceKm += haversine(prevLat, prevLon, lat, lon);
+                    }
+                    prevLat = lat;
+                    prevLon = lon;
+
+                    FlightRecord rec = FlightRecord.builder()
+                            .flight(flight)
+                            .time(time)
+                            .latitude(lat)
+                            .longitude(lon)
+                            .temperatureC(parseDoubleStrict(t[3]))
+                            .pressureHpa(parseDoubleStrict(t[4]))
+                            .altitudeM(parseDoubleStrict(t[5]))
+                            .imuX(parseDoubleStrict(t[6]))
+                            .imuY(parseDoubleStrict(t[7]))
+                            .imuZ(parseDoubleStrict(t[8]))
+                            .turbulenceG(parseDoubleStrict(t[9]))
+                            .speedKn(parseDoubleStrict(t[13]))
+                            .build();
+
+                    buf.add(rec);
+                    recordsSaved++;
+
+                    if (first == null) first = time;
+                    last = time;
+
+                    if (buf.size() == BATCH_SIZE) {
+                        recordRepo.saveAll(buf);
+                        buf.clear();
+                    }
+
+                } catch (Exception ex) {
+                    badLines++;
+
+                    if (firstBadLineNumber == null) {
+                        firstBadLineNumber = lineNo;
+                        firstBadLinePreview = preview;
+                    }
+
+                    log.warn("Bad line {} in file '{}': {} | preview='{}'",
+                            lineNo, file.getOriginalFilename(), ex.getMessage(), preview);
+
+                    // skip this line
                 }
             }
         }
-        if (!buf.isEmpty()) recordRepo.saveAll(buf);
+
+        if (!buf.isEmpty()) {
+            recordRepo.saveAll(buf);
+            buf.clear();
+        }
+
+        if (recordsSaved == 0) {
+            // keď je všetko zlé, radšej fail (transaction rollback = flight sa neuloží)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Upload failed: no valid records found (badLines=" + badLines + ").");
+        }
 
         flight.setStartTime(first != null ? first.atDate(LocalDate.now()) : null);
         flight.setEndTime(last != null ? last.atDate(LocalDate.now()) : null);
-        flight.setRecordCount(Math.toIntExact(recordRepo.countByFlightId(flight.getId())));
+        flight.setRecordCount(recordsSaved);
         flight.setDistanceKm(Math.round(totalDistanceKm * 100.0) / 100.0);
 
-        return flightRepo.save(flight);
+        Flight savedFlight = flightRepo.save(flight);
+
+        return new IngestReport(savedFlight, recordsSaved, badLines, firstBadLineNumber, firstBadLinePreview);
     }
 
     @Transactional(readOnly = true)
@@ -114,45 +178,52 @@ public class FlightService {
     public FlightStatsDto getStats(Long flightId) {
         List<FlightRecord> records = recordRepo.findByFlightId(flightId);
         if (records.isEmpty()) {
-            throw new RuntimeException("No records found for flight " + flightId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No records found for flight " + flightId);
         }
 
-        DoubleSummaryStatistics tempStats = records.stream().mapToDouble(FlightRecord::getTemperatureC).summaryStatistics();
-        DoubleSummaryStatistics pressureStats = records.stream().mapToDouble(FlightRecord::getPressureHpa).summaryStatistics();
-        DoubleSummaryStatistics altitudeStats = records.stream().mapToDouble(FlightRecord::getAltitudeM).summaryStatistics();
-        DoubleSummaryStatistics turbulenceStats = records.stream().mapToDouble(FlightRecord::getTurbulenceG).summaryStatistics();
-        DoubleSummaryStatistics speedStats = records.stream().mapToDouble(FlightRecord::getSpeedKn).summaryStatistics();
+        DoubleSummaryStatistics temp = stats(records, FlightRecord::getTemperatureC);
+        DoubleSummaryStatistics pressure = stats(records, FlightRecord::getPressureHpa);
+        DoubleSummaryStatistics altitude = stats(records, FlightRecord::getAltitudeM);
+        DoubleSummaryStatistics turbulence = stats(records, FlightRecord::getTurbulenceG);
+        DoubleSummaryStatistics speed = stats(records, FlightRecord::getSpeedKn);
 
         Flight flight = flightRepo.findById(flightId)
-                .orElseThrow(() -> new RuntimeException("Flight not found: " + flightId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flight not found: " + flightId));
 
-        Duration duration = Duration.between(flight.getStartTime(), flight.getEndTime());
+        Duration duration = (flight.getStartTime() != null && flight.getEndTime() != null)
+                ? Duration.between(flight.getStartTime(), flight.getEndTime())
+                : Duration.ZERO;
 
         return FlightStatsDto.builder()
-                .minTemperatureC(tempStats.getMin())
-                .maxTemperatureC(tempStats.getMax())
-                .avgTemperatureC(tempStats.getAverage())
-                .minPressureHpa(pressureStats.getMin())
-                .maxPressureHpa(pressureStats.getMax())
-                .avgPressureHpa(pressureStats.getAverage())
-                .minAltitudeM(altitudeStats.getMin())
-                .maxAltitudeM(altitudeStats.getMax())
-                .avgAltitudeM(altitudeStats.getAverage())
-                .minTurbulenceG(turbulenceStats.getMin())
-                .maxTurbulenceG(turbulenceStats.getMax())
-                .avgTurbulenceG(turbulenceStats.getAverage())
-                .minSpeedKn(speedStats.getMin())
-                .maxSpeedKn(speedStats.getMax())
-                .avgSpeedKn(speedStats.getAverage())
+                .minTemperatureC(safeMin(temp))
+                .maxTemperatureC(safeMax(temp))
+                .avgTemperatureC(temp.getCount() > 0 ? temp.getAverage() : 0)
+
+                .minPressureHpa(safeMin(pressure))
+                .maxPressureHpa(safeMax(pressure))
+                .avgPressureHpa(pressure.getCount() > 0 ? pressure.getAverage() : 0)
+
+                .minAltitudeM(safeMin(altitude))
+                .maxAltitudeM(safeMax(altitude))
+                .avgAltitudeM(altitude.getCount() > 0 ? altitude.getAverage() : 0)
+
+                .minTurbulenceG(safeMin(turbulence))
+                .maxTurbulenceG(safeMax(turbulence))
+                .avgTurbulenceG(turbulence.getCount() > 0 ? turbulence.getAverage() : 0)
+
+                .minSpeedKn(safeMin(speed))
+                .maxSpeedKn(safeMax(speed))
+                .avgSpeedKn(speed.getCount() > 0 ? speed.getAverage() : 0)
+
                 .recordCount(records.size())
-                .duration(String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart()))
+                .duration(String.format("%02d:%02d:%02d",
+                        duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart()))
                 .build();
     }
 
     public List<Flight> findFlightsForUser(Long userId) {
-        return flightRepo.findAll().stream()
-                .filter(f -> f.getUser().getId().equals(userId))
-                .toList();
+        // ✅ už nefiltrujeme findAll() (výkon + čistota)
+        return flightRepo.findAllByUserIdOrderByStartTimeDesc(userId);
     }
 
     public Flight getFlight(Long flightId, User requestor) {
@@ -177,10 +248,11 @@ public class FlightService {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, "Flight " + id + " not found");
     }
 
-    private Double toD(String s) {
+    private Double parseDoubleStrict(String s) {
         if (s == null) return null;
         s = s.replace(',', '.').trim();
-        return s.isEmpty() ? null : Double.parseDouble(s);
+        if (s.isEmpty()) return null;
+        return Double.parseDouble(s);
     }
 
     private double haversine(double lat1, double lon1, double lat2, double lon2) {
@@ -196,5 +268,22 @@ public class FlightService {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    private DoubleSummaryStatistics stats(List<FlightRecord> records, java.util.function.Function<FlightRecord, Double> getter) {
+        DoubleStream stream = records.stream()
+                .map(getter)
+                .filter(Objects::nonNull)
+                .mapToDouble(Double::doubleValue);
+
+        return stream.summaryStatistics();
+    }
+
+    private double safeMin(DoubleSummaryStatistics s) {
+        return s.getCount() > 0 ? s.getMin() : 0;
+    }
+
+    private double safeMax(DoubleSummaryStatistics s) {
+        return s.getCount() > 0 ? s.getMax() : 0;
     }
 }
