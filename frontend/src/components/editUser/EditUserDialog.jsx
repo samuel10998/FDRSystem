@@ -29,8 +29,10 @@ export default function EditUserDialog({ isModal = false }) {
         { label: "Košický kraj", value: "Košický kraj" },
     ];
 
-    // baseURL pre obrázok (aby sme nemuseli hardcodovať localhost)
-    const apiBase = api?.defaults?.baseURL || "http://localhost:8080";
+    // ✅ Relatívna URL pre avatar (funguje s proxy aj mimo Dockeru)
+    // img request nejde cez axios interceptor, ale cez proxy pôjde správne:
+    // http://localhost:3000/api/...  -> proxy -> backend
+    const avatarUrl = id ? `/api/users/${id}/avatar` : "";
 
     useEffect(() => {
         if (!id) return;
@@ -141,14 +143,9 @@ export default function EditUserDialog({ isModal = false }) {
             <section className={`edit-user-page ${isModal ? "is-modal" : ""}`}>
                 <div className="edit-user-card">
                     <div className="edit-user-image">
-                        <img
-                            className="avatar"
-                            src={`${apiBase}/api/users/${id}/avatar`}
-                            alt="Profilová fotka"
-                        />
+                        <img className="avatar" src={avatarUrl} alt="Profilová fotka" />
                     </div>
 
-                    {/* ✅ FORM wrapper → odstráni DOM warning + Enter = submit */}
                     <form
                         className="edit-user-form"
                         onSubmit={(e) => {
@@ -230,12 +227,10 @@ export default function EditUserDialog({ isModal = false }) {
                         </div>
 
                         <div className="form-actions">
-                            {/* ✅ type="submit" */}
                             <button className="btn-save" type="submit">
                                 Uložiť
                             </button>
 
-                            {/* ✅ type="button" aby to nesubmitovalo form */}
                             <button className="btn-cancel" type="button" onClick={() => navigate(-1)}>
                                 Zrušiť
                             </button>

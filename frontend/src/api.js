@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: "", // => volá /api/... na localhost:3000, proxy to hodí na backend
 });
 
 api.interceptors.request.use((cfg) => {
