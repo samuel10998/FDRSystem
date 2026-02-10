@@ -60,6 +60,7 @@ Tip: If you want to reset the admin password on next start, set it to `true`, re
 From the project root:
 ```bash
 docker compose up --build
+```
 
 ## Admin account
 On backend startup, an admin user is created (if it does not exist yet) using:
