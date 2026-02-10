@@ -78,26 +78,29 @@ in `secrets/admin_seed_force_reset.txt`
 Restart backend:
 ```bash
 docker compose restart backend
+```
 
 Log in with the password from `admin_password.txt`.
 Set it back to:
 ```txt
 false
-
+```
 and restart backend again:
 ```bash
 docker compose restart backend
+```
 
 ## Stop / reset
 
 Stop containers:
 ```bash
 docker compose down
+```
 
 Full reset (removes volumes: database + stored data):
 ```bash
 docker compose down -v
-
+```
 !!! After `down -v`, the database is empty and will be initialized again on next startup (including admin seeding). 
 
 ---
