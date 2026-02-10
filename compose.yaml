@@ -5,14 +5,20 @@ services:
     environment:
       MYSQL_DATABASE: database
       MYSQL_USER: user
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: verysecret
+
+      # secrets (files mounted to /run/secrets/*)
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     ports:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
+    secrets:
+      - db_password
+      - db_root_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pverysecret"]
+      # read root password from secret file
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$(cat /run/secrets/db_root_password)\" || exit 1"]
       interval: 10s
       retries: 5
     networks:
@@ -26,7 +32,8 @@ services:
     restart: unless-stopped
     environment:
       PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: verysecret
+      # Pozn.: phpMyAdmin nemusí podporovať *_FILE premenné.
+      # Prihlásiš sa manuálne: user/root + heslo zo secrets súboru.
     ports:
       - "8081:80"
     networks:
@@ -43,14 +50,17 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/database?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: secret
+
+      # DDL/logy môžeš nechať ako máš
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
-      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8080:8080"
     volumes:
       - ./uploads/avatars:/app/uploads/avatars
+    secrets:
+      - jwt_secret
+      - db_password
     networks:
       - spring-network
 
@@ -83,6 +93,14 @@ services:
 volumes:
   db-data:
   smtp4dev-data:
+
+secrets:
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  db_password:
+    file: ./secrets/db_password.txt
+  db_root_password:
+    file: ./secrets/db_root_password.txt
 
 networks:
   spring-network:
