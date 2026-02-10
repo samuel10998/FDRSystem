@@ -72,6 +72,7 @@ You can check this on phpMyAdmin: http://localhost:8081 with user - name and pas
 Set:
 ```txt
 true
+```
 in `secrets/admin_seed_force_reset.txt`
 
 Restart backend:
