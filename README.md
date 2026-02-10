@@ -27,6 +27,7 @@ Each file must contain **exactly 1 line** (no quotes).
 Generate a strong JWT signing secret (Git Bash / WSL):
 ```bash
 openssl rand -base64 48
+```
 
 Paste the output into:
 - `secrets/jwt_secret.txt`
