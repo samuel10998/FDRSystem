@@ -61,6 +61,9 @@ services:
     secrets:
       - jwt_secret
       - db_password
+      - admin_email
+      - admin_password
+      - admin_seed_force_reset
     networks:
       - spring-network
 
@@ -101,6 +104,13 @@ secrets:
     file: ./secrets/db_password.txt
   db_root_password:
     file: ./secrets/db_root_password.txt
+  admin_email:
+    file: ./secrets/admin_email.txt
+  admin_password:
+    file: ./secrets/admin_password.txt
+  admin_seed_force_reset:
+    file: ./secrets/admin_seed_force_reset.txt
+
 
 networks:
   spring-network:
