@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    // configurable limits (nice for thesis + easy tweaks)
+    // configurable limits
     @Value("${ratelimit.login.capacity:10}")
     private int loginCapacity;
 
@@ -56,7 +56,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String ip = resolveClientIp(request);
-        String key = ip; // could be ip + email later if you want
+        String key = ip; // could change for ip or email later
 
         Bucket bucket;
         String path = request.getRequestURI();
