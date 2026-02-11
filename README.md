@@ -122,6 +122,23 @@ docker compose down -v
 - If you clone this project on a new machine, you must recreate the `secrets/` folder before running Docker Compose.
 
 
+## Production deployment (plan – “last step”)
+Right now I’m presenting/defending this project in a local setup (Docker Compose).  
+However, I prepared the system so it is **deployment-ready** in the sense that the **only remaining step** would be buying a domain + server and putting a reverse proxy in front of it.
+
+What the “last step” would look like in practice:
+- On a VPS/server I would run Docker Compose (backend + database + mail service).
+- I would put a reverse proxy in front of it (e.g., Nginx), which would:
+  - terminate HTTPS (Let’s Encrypt certificate),
+  - serve the built frontend static files,
+  - and proxy `/api/*` requests to the backend over the internal Docker network.
+- In production, the backend would **not** be exposed directly to the public internet on a port (safer).  
+  Only the reverse proxy would be public.
+- The frontend is ready for a production build and can be served via Nginx (see the commented `frontend_prod` skeleton in `docker-compose.yml`).
+
+In short: the application code does not need major changes for production — the remaining work is mainly infrastructure (domain/server + reverse proxy + HTTPS).
+
+
 
 
 
