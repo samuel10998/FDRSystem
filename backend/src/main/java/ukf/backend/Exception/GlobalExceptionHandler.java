@@ -13,6 +13,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -38,6 +40,8 @@ public class GlobalExceptionHandler {
         return build(status, message, req, null);
     }
 
+    // ---------- Custom app exceptions ----------
+
     @ExceptionHandler(FlightUploadException.class)
     public ResponseEntity<ApiError> handleFlightUpload(FlightUploadException ex, HttpServletRequest req) {
 
@@ -51,9 +55,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), req, details);
     }
 
+    // ---------- Security / auth ----------
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCreds(BadCredentialsException ex, HttpServletRequest req) {
-        // ex nepoužívame zámerne (nechceme leakovať info), warning môžeš ignorovať
+        // ex zámerne nepoužívame (nechceme leakovať detaily)
         return build(HttpStatus.UNAUTHORIZED, "Invalid credentials", req);
     }
 
@@ -61,6 +67,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
         return build(HttpStatus.FORBIDDEN, "Access denied", req);
     }
+
+    // ---------- Request / validation ----------
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleBadJson(HttpMessageNotReadableException ex, HttpServletRequest req) {
@@ -81,9 +89,31 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "Database constraint violation", req);
     }
 
+    // ---------- Upload / multipart ----------
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> handleUploadTooLarge(MaxUploadSizeExceededException ex, HttpServletRequest req) {
         return build(HttpStatus.PAYLOAD_TOO_LARGE, "Uploaded file is too large", req);
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ApiError> handleMultipart(MultipartException ex, HttpServletRequest req) {
+        // zlé boundary / zle poslaný multipart / chýbajúce časti requestu
+        return build(HttpStatus.BAD_REQUEST, "Invalid multipart request", req);
+    }
+
+    // ---------- Spring response-status exceptions ----------
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) status = HttpStatus.BAD_REQUEST;
+
+        String msg = (ex.getReason() != null && !ex.getReason().isBlank())
+                ? ex.getReason()
+                : status.getReasonPhrase();
+
+        return build(status, msg, req);
     }
 
     @ExceptionHandler(ErrorResponseException.class)
@@ -98,9 +128,15 @@ public class GlobalExceptionHandler {
         return build(status, msg, req);
     }
 
+    // ---------- Fallback ----------
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAny(Exception ex, HttpServletRequest req) {
-        log.error("Unhandled exception on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        if (req != null) {
+            log.error("Unhandled exception on {} {}", req.getMethod(), req.getRequestURI(), ex);
+        } else {
+            log.error("Unhandled exception", ex);
+        }
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", req);
     }
 }

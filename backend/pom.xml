@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.11</version>
+		<version>3.3.13</version>
 		<relativePath/>
 	</parent>
 
@@ -49,6 +49,11 @@
 			<groupId>com.bucket4j</groupId>
 			<artifactId>bucket4j_jdk17-core</artifactId>
 			<version>${bucket4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
 		<dependency>
