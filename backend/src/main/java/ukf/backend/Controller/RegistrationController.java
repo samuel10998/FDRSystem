@@ -105,9 +105,14 @@ public class RegistrationController {
             }
 
             Collection<Role> roles = authenticatedUser.getRoles();
+
+            var roleNames = roles.stream()
+                    .map(Role::getName)
+                    .toList();
+
             String jwt = jwtService.generateToken(
                     authenticatedUser.getEmail(),
-                    roles.toString(),
+                    roleNames,
                     authenticatedUser.getId()
             );
 
