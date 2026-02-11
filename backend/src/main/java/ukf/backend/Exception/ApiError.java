@@ -1,9 +1,18 @@
 package ukf.backend.Exception;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.time.Instant;
+import java.util.Map;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiError(
+        Instant timestamp,
+        int status,
+        String error,
         String message,
-        int badLines,
-        Integer firstBadLineNumber,
-        String firstBadLinePreview,
-        String firstBadLineReason
+        String path,
+
+        // univerzálne "details" (napr. upload, validácia, debug info)
+        Map<String, Object> details
 ) {}
