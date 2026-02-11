@@ -6,8 +6,9 @@ RUN mvn -B clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-COPY --from=builder /app/target/*.war ./app.war
+RUN apk add --no-cache wget
 
+COPY --from=builder /app/target/*.war ./app.war
 RUN mkdir -p /app/uploads/avatars
 
 EXPOSE 8080
