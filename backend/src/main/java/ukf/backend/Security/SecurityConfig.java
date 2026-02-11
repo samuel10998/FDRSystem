@@ -84,6 +84,10 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/error", "/error/**").permitAll()
 
+                        // ----------- ACTUATOR (health only) -----------
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
+
+
                         // ----------- PUBLIC -----------
                         .requestMatchers("/api/login", "/api/register").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
