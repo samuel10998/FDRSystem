@@ -82,8 +82,11 @@ export default function Upload() {
         if (!token) return setMsg("Nie si prihlásený.");
 
         const name = file.name?.toLowerCase?.() || "";
-        if (!name.endsWith(".txt")) {
-            return setMsg("Prosím vyber .txt súbor.");
+        const isTxt = name.endsWith(".txt");
+        const isCsv = name.endsWith(".csv");
+
+        if (!isTxt && !isCsv) {
+            return setMsg("Prosím vyber .txt alebo .csv súbor.");
         }
 
         setUploading(true);
@@ -146,12 +149,12 @@ export default function Upload() {
 
                         <form onSubmit={handleUpload}>
                             <label htmlFor="fileInput" className="file-label">
-                                Vyberte .txt súbor
+                                Vyberte .txt alebo .csv súbor
                             </label>
                             <input
                                 id="fileInput"
                                 type="file"
-                                accept=".txt"
+                                accept=".txt,.csv"
                                 onChange={(e) => setFile(e.target.files?.[0] || null)}
                                 className="file-input"
                             />

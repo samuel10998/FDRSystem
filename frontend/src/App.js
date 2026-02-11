@@ -6,7 +6,6 @@ import {
     Navigate,
     useLocation,
 } from "react-router-dom";
-import axios from "axios";
 
 import Navbar from "./components/navigation/Navbar";
 import Footer from "./components/footer/Footer";
@@ -25,11 +24,6 @@ import Contact from "./pages/contactPage/Contact";
 import FlightDetails from "./pages/flightDetailsPage/FlightDetails";
 
 import "./App.css";
-
-const jwt = localStorage.getItem("jwtToken");
-if (jwt) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
-}
 
 function AppRoutes() {
     const location = useLocation();
