@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public JwtAuthenticationFilter(JwtService jwtService,
                                    UserDetailsService userDetailsService) {
-        this.jwtService        = jwtService;
+        this.jwtService         = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -39,8 +39,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        String jwt = header.substring(7);
-        String email = jwtService.extractEmail(jwt);
+
+        String jwt = header.substring(7).trim();
+        if (jwt.isEmpty()) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        String email;
+        try {
+            email = jwtService.extractEmail(jwt);
+        } catch (Exception ex) {
+            // zlý/exp token -> len nepoužijeme auth (nech to neskončí 500)
+            log.debug("JWT parse failed on {}: {}", request.getRequestURI(), ex.getClass().getSimpleName());
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (email == null) {
             chain.doFilter(request, response);
             return;
@@ -55,22 +70,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         var userDetails = userDetailsService.loadUserByUsername(email);
 
         if (!jwtService.validateToken(jwt, userDetails.getUsername())) {
-            log.debug("JWT invalid – {} → {}", email, request.getRequestURI());
+            log.debug("JWT invalid – {} → {}", email, request.getRequestURI());
             chain.doFilter(request, response);
             return;
         }
 
         var authToken = new UsernamePasswordAuthenticationToken(
-                userDetails,                          // principal
-                null,                                 // credentials
-                userDetails.getAuthorities());
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
 
-        authToken.setDetails(
-                new WebAuthenticationDetailsSource().buildDetails(request));
-
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        log.debug("JWT OK  – {} → {}", email, request.getRequestURI());
+        log.debug("JWT OK – {} → {}", email, request.getRequestURI());
         chain.doFilter(request, response);
     }
 }
