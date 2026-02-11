@@ -1,5 +1,6 @@
 package ukf.backend.Controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ukf.backend.Model.AuditLog.AuditLogService;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.Role.RoleRepository;
 import ukf.backend.Model.User.User;
@@ -25,9 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -40,6 +41,8 @@ public class UserController {
     @Autowired private PasswordEncoder  passwordEncoder;
     @Autowired private RoleRepository   roleRepository;
     @Autowired private JwtService       jwtService;
+
+    @Autowired private AuditLogService  auditLogService;
 
     private boolean isAdmin(Authentication auth) {
         return auth.getAuthorities().stream()
@@ -54,20 +57,33 @@ public class UserController {
                 .isPresent();
     }
 
+    private String rolesToString(Collection<Role> roles) {
+        if (roles == null) return "";
+        return roles.stream()
+                .map(Role::getName)
+                .sorted()
+                .collect(Collectors.joining(","));
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<User> listAllUsers() {
+    public List<User> listAllUsers(HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        auditLogService.log(auth, "ADMIN_LIST_USERS", null, request, null);
         return userRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<User> getUserById(@PathVariable Long id, HttpServletRequest request) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (!isAdmin(auth) && !isSelf(auth, id)) {
             return ResponseEntity.status(403).build();
         }
+
+        // (voliteľné) ak chceš, môžeš rozlíšiť ADMIN_READ_USER vs USER_READ_SELF
+        auditLogService.log(auth, "USER_READ_PROFILE", id, request, null);
 
         return userRepository.findById(id)
                 .map(ResponseEntity::ok)
@@ -98,12 +114,17 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, HttpServletRequest request) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         Optional<User> opt = userRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
 
         User user = opt.get();
+
+        // Audit BEFORE delete (so we can store email in details)
+        auditLogService.log(auth, "ADMIN_DELETE_USER", id, request, "email=" + user.getEmail());
 
         if (user.getProfilePicture() != null) {
             try { Files.deleteIfExists(AVATAR_DIR.resolve(user.getProfilePicture())); }
@@ -116,42 +137,69 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id,
-                                             @RequestBody UpdateUserDTO dto) {
+                                             @RequestBody UpdateUserDTO dto,
+                                             HttpServletRequest request) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!isAdmin(auth) && !isSelf(auth, id)) return ResponseEntity.status(403).build();
 
-        return saveUser(auth, id, dto, false);
+        return saveUser(auth, id, dto, false, request);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<String> patchUser(@PathVariable Long id,
-                                            @RequestBody UpdateUserDTO dto) {
+                                            @RequestBody UpdateUserDTO dto,
+                                            HttpServletRequest request) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!isAdmin(auth) && !isSelf(auth, id)) return ResponseEntity.status(403).build();
 
-        return saveUser(auth, id, dto, true);
+        return saveUser(auth, id, dto, true, request);
     }
 
     /**
      * FIX: Role IDs môže meniť iba ADMIN.
      * Ak bežný používateľ pošle roleIds v PATCH/PUT, vrátime 403.
      */
-    private ResponseEntity<String> saveUser(Authentication auth, Long id, UpdateUserDTO dto, boolean patch) {
+    private ResponseEntity<String> saveUser(Authentication auth,
+                                            Long id,
+                                            UpdateUserDTO dto,
+                                            boolean patch,
+                                            HttpServletRequest request) {
 
         Optional<User> opt = userRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
         User user = opt.get();
 
-        if (!patch || dto.getName()    != null) user.setName(dto.getName());
-        if (!patch || dto.getSurname() != null) user.setSurname(dto.getSurname());
-        if (!patch || dto.getEmail()   != null) user.setEmail(dto.getEmail());
-        if (!patch || dto.getRegion()  != null) user.setRegion(dto.getRegion());
+        // For audit diffs
+        String oldRoles = rolesToString(user.getRoles());
+
+        boolean anyProfileFieldChanged = false;
+
+        if (!patch || dto.getName() != null) {
+            user.setName(dto.getName());
+            anyProfileFieldChanged = true;
+        }
+        if (!patch || dto.getSurname() != null) {
+            user.setSurname(dto.getSurname());
+            anyProfileFieldChanged = true;
+        }
+        if (!patch || dto.getEmail() != null) {
+            user.setEmail(dto.getEmail());
+            anyProfileFieldChanged = true;
+        }
+        if (!patch || dto.getRegion() != null) {
+            user.setRegion(dto.getRegion());
+            anyProfileFieldChanged = true;
+        }
 
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            anyProfileFieldChanged = true;
         }
+
+        boolean rolesChanged = false;
+        String newRoles = oldRoles;
 
         // --- BEZPEČNOSŤ: roly môže meniť iba ADMIN ---
         if (dto.getRoleIds() != null) {
@@ -170,15 +218,38 @@ public class UserController {
             }
 
             user.setRoles(roles);
+
+            newRoles = rolesToString(roles);
+            rolesChanged = !Objects.equals(oldRoles, newRoles);
         }
 
         userRepository.save(user);
+
+        // ---------- AUDIT ----------
+        // 1) roles change
+        if (rolesChanged) {
+            auditLogService.log(
+                    auth,
+                    "ADMIN_UPDATE_ROLES",
+                    id,
+                    request,
+                    "roles: " + oldRoles + " -> " + newRoles
+            );
+        }
+
+        // 2) profile change (admin vs self)
+        if (anyProfileFieldChanged && !rolesChanged) {
+            String action = isAdmin(auth) && !isSelf(auth, id) ? "ADMIN_UPDATE_USER" : "USER_UPDATE_SELF";
+            auditLogService.log(auth, action, id, request, null);
+        }
+
         return ResponseEntity.ok("user updated");
     }
 
     @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadAvatar(@PathVariable Long id,
-                                               @RequestParam("file") MultipartFile file) {
+                                               @RequestParam("file") MultipartFile file,
+                                               HttpServletRequest request) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!isAdmin(auth) && !isSelf(auth, id)) return ResponseEntity.status(403).build();
@@ -191,18 +262,21 @@ public class UserController {
         try {
             if (Files.notExists(AVATAR_DIR)) Files.createDirectories(AVATAR_DIR);
 
-            String ext      = Optional.ofNullable(file.getOriginalFilename())
+            String ext = Optional.ofNullable(file.getOriginalFilename())
                     .filter(n -> n.contains("."))
                     .map(n -> n.substring(n.lastIndexOf('.') + 1))
                     .orElse("png");
+
             String fileName = "user_" + id + "." + ext;
-            Path   target   = AVATAR_DIR.resolve(fileName);
+            Path target = AVATAR_DIR.resolve(fileName);
 
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
             User user = opt.get();
             user.setProfilePicture(fileName);
             userRepository.save(user);
+
+            auditLogService.log(auth, "USER_UPLOAD_AVATAR", id, request, "file=" + fileName);
 
             return ResponseEntity.ok("avatar updated");
         } catch (Exception e) {
