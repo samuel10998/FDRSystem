@@ -1,6 +1,7 @@
 package ukf.backend.Security;
 
 import jakarta.servlet.DispatcherType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,6 +25,7 @@ import ukf.backend.Model.User.UserService;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -32,6 +34,10 @@ public class SecurityConfig {
 
     private final UserService appUserService;
     private final JwtService jwtService;
+
+    // comma-separated list, e.g. "http://localhost:3000,http://127.0.0.1:3000"
+    @Value("${cors.allowed-origins:http://localhost:3000}")
+    private String corsAllowedOrigins;
 
     public SecurityConfig(UserService appUserService, JwtService jwtService) {
         this.appUserService = appUserService;
@@ -120,8 +126,13 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
+
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
+        cfg.setAllowedOrigins(origins);
         cfg.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","PATCH","HEAD","OPTIONS"));
         cfg.setAllowedHeaders(Arrays.asList("Authorization","Content-Type"));
         cfg.setAllowCredentials(true);
