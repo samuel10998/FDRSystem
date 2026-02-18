@@ -19,6 +19,8 @@ db_root_password.txt
 admin_email.txt
 admin_password.txt
 admin_seed_force_reset.txt
+cloud_inbox_sync_token.txt
+worker_device_keys.json (local helper file for admin)
 
 ## Secrets (required)
 Each file must contain **exactly 1 line** (no quotes).
@@ -55,6 +57,21 @@ Put any strong passwords you want into:
 Tip: If you want to reset the admin password on next start, set it to `true`, restart backend, then set it back to `false`.
 
 ---
+
+ **Cloud Inbox (Cloudflare Worker + R2) – NEW**
+
+This project supports cloud upload + sync via Cloudflare Worker + R2.
+
+### 1) `cloud_inbox_sync_token.txt` (required)
+
+Backend uses this token to securely call the Cloudflare Worker “sync” endpoints.
+
+**Create:**
+
+- `secrets/cloud_inbox_sync_token.txt`
+
+**Example:**
+
 
 ## 2) Build & run
 From the project root:
@@ -105,6 +122,8 @@ docker compose down -v
 
 ---
 
+
+
 ## Services & Ports
 
 - Frontend: http://localhost:3000  
@@ -115,6 +134,7 @@ docker compose down -v
 - MySQL: localhost:3306  
 
 ---
+
 
 ## Notes
 
