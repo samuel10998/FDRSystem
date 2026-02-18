@@ -22,6 +22,8 @@ import EditUserModal from "./components/editUser/EditUserModal"; // ✅ NOVÉ
 import Info from "./pages/infoPage/Info";
 import Contact from "./pages/contactPage/Contact";
 import FlightDetails from "./pages/flightDetailsPage/FlightDetails";
+import MyDevices from "./pages/devicesPage/MyDevices";
+import AdminDevices from "./pages/adminDevicesPage/AdminDevices";
 
 import "./App.css";
 
@@ -66,6 +68,14 @@ function AppRoutes() {
                 <Route
                     path="/flights/:id"
                     element={<PrivateRoute roles={["ROLE_ADMIN", "ROLE_USER"]} page={<FlightDetails />} />}
+                />
+                <Route
+                    path="/my-devices"
+                    element={<PrivateRoute roles={["ROLE_ADMIN", "ROLE_USER"]} page={<MyDevices />} />}
+                />
+                <Route
+                    path="/admin-devices"
+                    element={<PrivateRoute roles={["ROLE_ADMIN"]} page={<AdminDevices />} />}
                 />
             </Routes>
 

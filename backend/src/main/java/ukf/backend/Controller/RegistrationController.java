@@ -19,10 +19,12 @@ import ukf.backend.Model.AllowedEmailDomain.AllowedEmailDomainRepository;
 import ukf.backend.Model.AuditLog.AuditLogService;
 import ukf.backend.Model.Role.Role;
 import ukf.backend.Model.Role.RoleRepository;
+import ukf.backend.Model.User.DeviceRequest;
 import ukf.backend.Model.User.User;
 import ukf.backend.Model.User.UserRepository;
 import ukf.backend.Model.User.UserService;
 import ukf.backend.Security.JwtService;
+import ukf.backend.dtos.auth.RegisterRequest;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -44,36 +46,51 @@ public class RegistrationController {
     @Autowired private AuditLogService auditLogService;
 
     @PostMapping(value = "/api/register", consumes = "application/json")
-    public ResponseEntity<String> createUser(@RequestBody User user, HttpServletRequest request) throws MessagingException {
+    public ResponseEntity<String> createUser(@RequestBody RegisterRequest req, HttpServletRequest request) throws MessagingException {
 
-        if (user.getEmail() == null || user.getPassword() == null ||
-                user.getName() == null  || user.getSurname() == null ||
-                user.getRegion() == null || user.getRegion().isBlank()) {
+        if (req.getEmail() == null || req.getPassword() == null ||
+                req.getName() == null  || req.getSurname() == null ||
+                req.getRegion() == null || req.getRegion().isBlank()) {
 
             auditLogService.log(null, "REGISTER_FAIL", null, request, "missing_fields");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Name, surname, email, password a region sú povinné.");
         }
 
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            auditLogService.log(null, "REGISTER_FAIL", null, request, "email_exists=" + user.getEmail());
+        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+            auditLogService.log(null, "REGISTER_FAIL", null, request, "email_exists=" + req.getEmail());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("A user with that email address already exists.");
         }
 
-        String domain = user.getEmail().substring(user.getEmail().indexOf("@") + 1);
+        String domain = req.getEmail().substring(req.getEmail().indexOf("@") + 1);
         if (allowedEmailDomainRepository.findByDomain(domain).isEmpty()) {
             auditLogService.log(null, "REGISTER_FAIL", null, request, "domain_not_allowed=" + domain);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Email domain not allowed.");
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = new User();
+        user.setName(req.getName());
+        user.setSurname(req.getSurname());
+        user.setEmail(req.getEmail());
+        user.setRegion(req.getRegion());
+
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setRoles(Collections.singletonList(roleRepository.findByName("ROLE_USER")));
         user.setProfilePicture(DEFAULT_AVATAR);
+
+        // ✅ default, ak nepríde z frontendu
+        DeviceRequest dr = (req.getDeviceRequest() != null)
+                ? req.getDeviceRequest()
+                : DeviceRequest.HAS_OWN_DEVICE;
+
+        user.setDeviceRequest(dr);
+
         userRepository.save(user);
 
-        auditLogService.log(null, "REGISTER_SUCCESS", user.getId(), request, "email=" + user.getEmail());
+        auditLogService.log(null, "REGISTER_SUCCESS", user.getId(), request,
+                "email=" + user.getEmail() + ", deviceRequest=" + dr.name());
 
         userService.sendRegistrationConfirmationEmail(user);
         return ResponseEntity.ok("User registered successfully.");

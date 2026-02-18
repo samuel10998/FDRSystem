@@ -35,7 +35,6 @@ public class SecurityConfig {
     private final UserService appUserService;
     private final JwtService jwtService;
 
-    // comma-separated list, e.g. "http://localhost:3000,http://127.0.0.1:3000"
     @Value("${cors.allowed-origins:http://localhost:3000}")
     private String corsAllowedOrigins;
 
@@ -80,25 +79,42 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
 
-                        // ✅ Allow Spring Boot error dispatch + /error endpoint
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/error", "/error/**").permitAll()
 
-                        // ----------- ACTUATOR (health only) -----------
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
 
-
-                        // ----------- PUBLIC -----------
                         .requestMatchers("/api/login", "/api/register").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/.well-known/**").permitAll()
 
-                        // email confirmation must be public (token in query string)
                         .requestMatchers(HttpMethod.GET, "/confirm-email").permitAll()
                         .requestMatchers("/confirm-email", "/confirm-email/**").permitAll()
 
-                        // avatar public
                         .requestMatchers(HttpMethod.GET, "/api/users/*/avatar").permitAll()
+
+                        // ✅ NEW: current user info
+                        .requestMatchers(HttpMethod.GET, "/api/me")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        // ----------- DEVICES (USER/ADMIN) -----------
+                        .requestMatchers(HttpMethod.GET, "/api/devices/my")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/devices/pair")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        // ----------- ADMIN DEVICES -----------
+                        .requestMatchers(HttpMethod.POST, "/api/admin/devices")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        // ✅ NEW: list users who need devices
+                        .requestMatchers(HttpMethod.GET, "/api/admin/users/device-requests")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        // ----------- CLOUD SYNC -----------
+                        .requestMatchers(HttpMethod.POST, "/api/cloud/sync")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         // ----------- FLIGHTS -----------
                         .requestMatchers(HttpMethod.POST, "/api/flights")
@@ -121,7 +137,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users/**").hasAuthority("ROLE_ADMIN")
 
-                        // ----------- DEFAULT -----------
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)

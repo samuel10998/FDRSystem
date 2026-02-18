@@ -14,13 +14,20 @@ const isValidPassword = (password) => {
 };
 
 /* ---------- Validácia polí ---------- */
-export const validateFields = ({ name, surname, email, password, region }) => {
+export const validateFields = ({ name, surname, email, password, region, deviceRequest }) => {
+    // deviceRequest je voliteľné (backend má default), ale ak príde, nech je platné
+    const drOk =
+        !deviceRequest ||
+        deviceRequest === "HAS_OWN_DEVICE" ||
+        deviceRequest === "NEEDS_DEVICE";
+
     return {
         name: !name.trim(),
         surname: !surname.trim(),
         email: !email.trim() || !validateEmail(email),
         password: !isValidPassword(password),
         region: !region || !region.trim(),
+        deviceRequest: !drOk,
     };
 };
 

@@ -1,0 +1,156 @@
+.mydevices-page{
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.mydevices-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.mydevices-title{
+    margin:0;
+    font-size: 28px;
+    color:#0b2545;
+}
+
+.mydevices-error{
+    color:#c00;
+    margin-top: 10px;
+}
+
+.mydevices-loading{
+    margin-top: 12px;
+}
+
+.mydevices-msg{
+    white-space: pre-wrap;
+    background: rgba(2, 6, 23, 0.04);
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 12px;
+    border-radius: 12px;
+    margin-top: 12px;
+}
+
+.mydevices-empty{
+    margin-top: 14px;
+    color: rgba(2,6,23,0.7);
+}
+
+.mydevices-grid{
+    display:grid;
+    gap:12px;
+    margin-top: 14px;
+}
+
+.mydevices-card{
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 14px;
+    background: #fff;
+    padding: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+
+.mydevices-row{
+    display:flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 6px 0;
+}
+
+.mydevices-label{
+    font-weight: 700;
+    color: rgba(2,6,23,0.75);
+}
+
+.mydevices-value{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    color: rgba(2,6,23,0.85);
+}
+
+.mydevices-actions{
+    display:flex;
+    gap:10px;
+    margin-top: 12px;
+}
+
+.mydevices-btn{
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.mydevices-btn:disabled{
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.mydevices-btn--primary{
+    background: #0b2545;
+    color:#fff;
+}
+
+.mydevices-btn--primary:hover{
+    background: #082038;
+}
+
+.mydevices-btn--secondary{
+    background:#fff;
+    border: 1px solid rgba(0,0,0,0.15);
+    color: rgba(2,6,23,0.85);
+}
+
+.mydevices-btn--secondary:hover{
+    background: rgba(2,6,23,0.04);
+}
+
+/* ✅ Pairing panel */
+.mydevices-panel{
+    margin-top: 16px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.10);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+
+.mydevices-panelTitle{
+    font-weight: 800;
+    color: rgba(2,6,23,0.9);
+    margin-bottom: 6px;
+}
+
+.mydevices-panelHelp{
+    font-size: 14px;
+    color: rgba(2,6,23,0.7);
+    margin-bottom: 12px;
+}
+
+.mydevices-pairForm{
+    display:flex;
+    gap:10px;
+}
+
+.mydevices-input{
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.18);
+    outline: none;
+}
+
+.mydevices-input:focus{
+    border-color: rgba(11,37,69,0.55);
+    box-shadow: 0 0 0 3px rgba(11,37,69,0.12);
+}
+
+.mydevices-btn--tiny {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    margin-left: 8px;
+}
