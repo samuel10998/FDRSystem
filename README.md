@@ -73,6 +73,7 @@ Backend uses this token to securely call the Cloudflare Worker “sync” endpoi
 **Example:**
 ```txt
   MY_SUPER_SYNC_TOKEN_123
+```
 
 
 
