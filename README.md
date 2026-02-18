@@ -90,7 +90,12 @@ This file is **not** used by Docker directly. It’s a local admin helper so you
   "DEV_5161fa0eb676": "0935dedb5d9b36fb4a92a76e15202bb6"
 }
 ```
+How it’s used:
+In Cloudflare Worker settings you keep a secret called DEVICE_KEYS_JSON.
+It contains a JSON object with multiple device mappings (so you DON’T overwrite older devices when adding new ones).
+When admin assigns a new device to a user, admin also adds that deviceId+key into the Worker’s DEVICE_KEYS_JSON.
 
+Recommendation: Always keep DEVICE_KEYS_JSON as one JSON object with many entries, like:
 
 
 
