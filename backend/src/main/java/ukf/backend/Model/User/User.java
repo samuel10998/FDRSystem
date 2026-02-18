@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import ukf.backend.Model.Role.Role;
+import ukf.backend.Model.device.Device;
 import ukf.backend.Model.flight.Flight;
 import ukf.backend.Model.EmailConfirmationToken.EmailConfirmationToken;
 
@@ -25,11 +26,13 @@ public class User {
     private String  password;
     private boolean accountVerified;
 
-
     private String region;
 
-
     private String profilePicture;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DeviceRequest deviceRequest = DeviceRequest.HAS_OWN_DEVICE;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -47,7 +50,6 @@ public class User {
     @JsonIgnore
     private List<EmailConfirmationToken> confirmationTokens = new ArrayList<>();
 
-
     @OneToMany(
             mappedBy      = "user",
             cascade       = CascadeType.ALL,
@@ -55,6 +57,15 @@ public class User {
     )
     @JsonIgnore
     private List<Flight> flights = new ArrayList<>();
+
+    // ✅ NEW: cascade delete devices when deleting user
+    @OneToMany(
+            mappedBy      = "owner",
+            cascade       = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JsonIgnore
+    private List<Device> devices = new ArrayList<>();
 
     public boolean hasRole(String roleName) {
         if (roles == null) return false;

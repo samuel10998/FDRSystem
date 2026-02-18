@@ -12,4 +12,7 @@ import ukf.backend.Model.Role.Role;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     List<User> findByRoles(Role role);
+
+    // ✅ NEW
+    List<User> findByDeviceRequest(DeviceRequest deviceRequest);
 }

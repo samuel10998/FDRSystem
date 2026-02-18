@@ -47,6 +47,10 @@ services:
       SPRING_DATASOURCE_USERNAME: user
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
+      #CLOUD_INBOX_SYNC_TOKEN: "n8Kp3wZ7sQ1vX2mL9dR4tY6uA0cE5gH7jB1kP9sW3qZ8xV"
+
+      CLOUD_INBOX_BASE_URL: "https://fdr-inbox-worker.samuel-gergel.workers.dev"
+      CLOUD_INBOX_HTTP_TIMEOUT_MS: "10000"
     ports:
       - "8080:8080"
     volumes:
@@ -57,6 +61,7 @@ services:
       - admin_email
       - admin_password
       - admin_seed_force_reset
+      - cloud_inbox_sync_token
     networks:
       - spring-network
     healthcheck:
@@ -71,7 +76,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: dev                 # ✅ dôležité: aby sa nespustil nginx stage
+      target: dev                 # dôležité: aby sa nespustil nginx stage
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -79,7 +84,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      CHOKIDAR_USEPOLLING: "true" # ✅ stabilnejší watch na Windows/WSL
+      CHOKIDAR_USEPOLLING: "true" # stabilnejší watch na Windows/WSL
       WATCHPACK_POLLING: "true"
     networks:
       - spring-network
@@ -140,6 +145,8 @@ secrets:
     file: ./secrets/admin_password.txt
   admin_seed_force_reset:
     file: ./secrets/admin_seed_force_reset.txt
+  cloud_inbox_sync_token:
+    file: ./secrets/cloud_inbox_sync_token.txt
 
 networks:
   spring-network:
