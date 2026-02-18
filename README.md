@@ -62,7 +62,7 @@ Tip: If you want to reset the admin password on next start, set it to `true`, re
 
 This project supports cloud upload + sync via Cloudflare Worker + R2.
 
-### 1) `cloud_inbox_sync_token.txt` (required)
+### 1. `cloud_inbox_sync_token.txt` (required)
 
 Backend uses this token to securely call the Cloudflare Worker “sync” endpoints.
 
@@ -77,7 +77,7 @@ Backend uses this token to securely call the Cloudflare Worker “sync” endpoi
 
 **Important:** The same value must be configured in Cloudflare Worker as secret (usually named `SYNC_TOKEN`).
 
-### 2) `worker_device_keys.json` (recommended helper file)
+### 2. `worker_device_keys.json` (recommended helper file)
 
 This file is **not** used by Docker directly. It’s a local admin helper so you keep track of `deviceId → deviceKey` mapping that must be added into Cloudflare Worker secret `DEVICE_KEYS_JSON`.
 
@@ -103,9 +103,6 @@ Recommendation: Always keep DEVICE_KEYS_JSON as one JSON object with many entrie
   "DEV_ccc": "key3"
 }
 ```
-
-
-
 
 ## 2) Build & run
 From the project root:
@@ -157,7 +154,6 @@ docker compose down -v
 ---
 
 
-
 ## Services & Ports
 
 - Frontend: http://localhost:3000  
@@ -174,6 +170,7 @@ docker compose down -v
 
 - Never commit `secrets/` to GitHub.
 - If you clone this project on a new machine, you must recreate the `secrets/` folder before running Docker Compose.
+- Cloud sync requires Cloudflare Worker + R2 configured (Worker URL + secrets: SYNC_TOKEN, DEVICE_KEYS_JSON).
 
 
 ## Production deployment (plan – “last step”)
