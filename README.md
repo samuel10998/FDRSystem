@@ -5,7 +5,7 @@ If you want to run this app use **Docker Desktop** + for example **IntelliJ** (r
 ## Requirements
 - Docker Desktop (with Docker Compose)
 - (Optional) IntelliJ IDEA
-- Cloudflare account with (R2 + Worker created)
+- Cloudflare account with (R2 + Worker created if you want Cloud Upload inbox)
 
 ---
 
