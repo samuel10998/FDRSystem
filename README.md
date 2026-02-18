@@ -71,6 +71,16 @@ Backend uses this token to securely call the Cloudflare Worker “sync” endpoi
 - `secrets/cloud_inbox_sync_token.txt`
 
 **Example:**
+```txt
+  MY_SUPER_SYNC_TOKEN_123
+
+
+
+
+
+
+
+
 
 
 ## 2) Build & run
