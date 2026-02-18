@@ -13,12 +13,16 @@ This project uses **Docker secrets**. The `secrets/` folder is **not** pushed to
 
 Create this structure in the project root:
 secrets/(folder) and files:
-jwt_secret.txt
-db_password.txt
-db_root_password.txt
-admin_email.txt
-admin_password.txt
-admin_seed_force_reset.txt
+- jwt_secret.txt
+- db_password.txt
+- db_root_password.txt
+- admin_email.txt
+- admin_password.txt
+- admin_name.txt
+- admin_surname.txt
+- admin_seed_force_reset.txt
+- cloud_inbox_sync_token.txt
+- worker_device_keys.json (local helper file for admin)
 
 ## Secrets (required)
 Each file must contain **exactly 1 line** (no quotes).
@@ -38,6 +42,17 @@ Put any strong passwords you want into:
 - `secrets/db_root_password.txt` (password for MySQL root) first line
 
 ### Admin account (seeded automatically on startup)
+- `secrets/admin_name.txt`  
+  Example:
+  ```txt
+  Admin
+  ```
+- `secrets/admin_surname.txt`  
+  Example:
+  ```txt
+  User
+  ```
+  
 - `secrets/admin_email.txt`  
   Example:
   ```txt
@@ -55,6 +70,52 @@ Put any strong passwords you want into:
 Tip: If you want to reset the admin password on next start, set it to `true`, restart backend, then set it back to `false`.
 
 ---
+
+ **Cloud Inbox (Cloudflare Worker + R2) – NEW**
+
+This project supports cloud upload + sync via Cloudflare Worker + R2.
+
+### 1. `cloud_inbox_sync_token.txt` (required)
+
+Backend uses this token to securely call the Cloudflare Worker “sync” endpoints.
+
+**Create:**
+
+- `secrets/cloud_inbox_sync_token.txt`
+
+**Example:**
+```txt
+  MY_SUPER_SYNC_TOKEN_123
+```
+
+**Important:** The same value must be configured in Cloudflare Worker as secret (usually named `SYNC_TOKEN`).
+
+### 2. `worker_device_keys.json` (recommended helper file)
+
+This file is **not** used by Docker directly. It’s a local admin helper so you keep track of `deviceId → deviceKey` mapping that must be added into Cloudflare Worker secret `DEVICE_KEYS_JSON`.
+
+**Create:**
+- `secrets/worker_device_keys.json`
+
+**Example:**
+```json
+{
+  "DEV_5161fa0eb676": "0935dedb5d9b36fb4a92a76e15202bb6"
+}
+```
+How it’s used:
+In Cloudflare Worker settings you keep a secret called DEVICE_KEYS_JSON.
+It contains a JSON object with multiple device mappings (so you DON’T overwrite older devices when adding new ones).
+When admin assigns a new device to a user, admin also adds that deviceId+key into the Worker’s DEVICE_KEYS_JSON.
+
+Recommendation: Always keep DEVICE_KEYS_JSON as one JSON object with many entries, like:
+```json
+{
+  "DEV_aaa": "key1",
+  "DEV_bbb": "key2",
+  "DEV_ccc": "key3"
+}
+```
 
 ## 2) Build & run
 From the project root:
@@ -105,6 +166,7 @@ docker compose down -v
 
 ---
 
+
 ## Services & Ports
 
 - Frontend: http://localhost:3000  
@@ -116,10 +178,12 @@ docker compose down -v
 
 ---
 
+
 ## Notes
 
 - Never commit `secrets/` to GitHub.
 - If you clone this project on a new machine, you must recreate the `secrets/` folder before running Docker Compose.
+- Cloud sync requires Cloudflare Worker + R2 configured (Worker URL + secrets: SYNC_TOKEN, DEVICE_KEYS_JSON).
 
 
 ## Production deployment (plan – “last step”)

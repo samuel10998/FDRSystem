@@ -17,6 +17,11 @@ export default function Register({ isModal = false }) {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [region, setRegion] = useState("");
+
+    // ✅ Checkbox -> deviceRequest string
+    // false = HAS_OWN_DEVICE, true = NEEDS_DEVICE
+    const [needsDevice, setNeedsDevice] = useState(false);
+
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -27,6 +32,7 @@ export default function Register({ isModal = false }) {
         password: false,
         confirmPassword: false,
         region: false,
+        deviceRequest: false,
     });
 
     const navigate = useNavigate();
@@ -52,10 +58,19 @@ export default function Register({ isModal = false }) {
         setTouchedFields((prev) => ({ ...prev, [field]: true }));
     };
 
-    const errors = validateFields({ name, surname, email, password, region });
+    const deviceRequest = needsDevice ? "NEEDS_DEVICE" : "HAS_OWN_DEVICE";
+
+    const errors = validateFields({
+        name,
+        surname,
+        email,
+        password,
+        region,
+        deviceRequest,
+    });
 
     const handleRegister = () => {
-        const fields = { name, surname, email, password, region };
+        const fields = { name, surname, email, password, region, deviceRequest };
         const errs = validateFields(fields);
 
         if (password !== confirmPassword) {
@@ -81,8 +96,12 @@ export default function Register({ isModal = false }) {
                     setTimeout(() => goBackToLogin(), isModal ? 1200 : 3000);
                 })
                 .catch((err) => {
+                    // backend u teba vracia 400 pri duplicitnom emaile, nie 409
+                    const text = err?.response?.data?.message || err?.response?.data;
+
                     const msg =
-                        err?.response?.status === 409
+                        err?.response?.status === 400 &&
+                        String(text || "").toLowerCase().includes("exists")
                             ? "Email už existuje"
                             : "Chyba pri registrácii, skús nový email";
 
@@ -101,11 +120,11 @@ export default function Register({ isModal = false }) {
                 password: true,
                 confirmPassword: true,
                 region: true,
+                deviceRequest: true,
             });
         }
     };
 
-    // ✅ NEW: form submit handler (Enter key works)
     const onSubmit = (e) => {
         e.preventDefault();
         handleRegister();
@@ -116,7 +135,6 @@ export default function Register({ isModal = false }) {
             <Toast ref={toast} />
 
             <Panel header="Registrácia">
-                {/* ✅ Wrap all inputs in a real form to remove DOM warning */}
                 <form onSubmit={onSubmit} autoComplete="on">
                     <div className="p-field">
                         <label htmlFor="name">Meno</label>
@@ -183,6 +201,31 @@ export default function Register({ isModal = false }) {
                         />
                         {touchedFields.email && errors.email && (
                             <small className="p-error">Valid email is required.</small>
+                        )}
+                    </div>
+
+                    {/* ✅ NEW: device checkbox */}
+                    <div className="p-field">
+                        <label>Zariadenie (FDR)</label>
+
+                        <label className="device-checkbox">
+                            <input
+                                type="checkbox"
+                                checked={needsDevice}
+                                onChange={(e) => setNeedsDevice(e.target.checked)}
+                                onBlur={() => handleBlur("deviceRequest")}
+                            />
+                            <span>Nemám svoje zariadenie (chcem prideliť od admina)</span>
+                        </label>
+
+                        <small className="device-hint">
+                            {needsDevice
+                                ? "Admin ťa uvidí v „Manage devices“ a môže ti prideliť device."
+                                : "Máš vlastné zariadenie – budeš uploadovať dáta lokálne cez Upload page."}
+                        </small>
+
+                        {touchedFields.deviceRequest && errors.deviceRequest && (
+                            <small className="p-error">Neplatná voľba zariadenia.</small>
                         )}
                     </div>
 

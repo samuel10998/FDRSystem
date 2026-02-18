@@ -9,6 +9,10 @@ export default function Upload() {
     const [msg, setMsg] = useState("");
     const [uploading, setUploading] = useState(false);
 
+    // ✅ cloud sync
+    const [syncMsg, setSyncMsg] = useState("");
+    const [syncing, setSyncing] = useState(false);
+
     const navigate = useNavigate();
 
     // ✅ tvoj route
@@ -74,6 +78,44 @@ export default function Upload() {
             preview,
         };
     }, [msg]);
+
+    const handleCloudSync = async () => {
+        if (!token) {
+            setSyncMsg("Nie si prihlásený.");
+            return;
+        }
+
+        setSyncing(true);
+        setSyncMsg("");
+
+        try {
+            const devRes = await api.get("/api/devices/my");
+            const devData = devRes.data;
+            const devices = Array.isArray(devData) ? devData : (devData ? [devData] : []);
+
+            if (devices.length === 0) {
+                setSyncMsg("Nemáš žiadne spárované zariadenie.");
+                return;
+            }
+
+            // MVP: vezmeme prvé zariadenie
+            const deviceId = devices[0].deviceId;
+
+            const res = await api.post("/api/cloud/sync", { deviceId });
+            const r = res.data || {};
+
+            setSyncMsg(`✅ Sync hotový (${deviceId}) | Imported: ${r.imported ?? 0} | Skipped: ${r.skipped ?? 0}`);
+        } catch (err) {
+            console.error(err);
+            const text =
+                err?.response?.data?.message ||
+                err?.response?.data ||
+                `Sync zlyhal (HTTP ${err?.response?.status || "?"}).`;
+            setSyncMsg(String(text));
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     const handleUpload = async (e) => {
         e.preventDefault();
@@ -158,6 +200,20 @@ export default function Upload() {
                                 onChange={(e) => setFile(e.target.files?.[0] || null)}
                                 className="file-input"
                             />
+
+                            {/* ✅ Cloud sync */}
+                            <button
+                                type="button"
+                                className="btn-upload"
+                                onClick={handleCloudSync}
+                                disabled={!token || syncing}
+                                title={!token ? "Najprv sa prihlás." : syncing ? "Syncujem…" : "Sync z cloudu"}
+                                style={{ background: "#1f4069" }}
+                            >
+                                {syncing ? "Syncujem…" : "Sync z cloudu"}
+                            </button>
+
+                            {syncMsg && <p className="upload-msg">{syncMsg}</p>}
 
                             <button
                                 type="submit"

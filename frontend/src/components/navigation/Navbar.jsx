@@ -43,9 +43,21 @@ export default function Navbar() {
             visible: isAdmin || isUser
         },
         {
+            label: "Moje zariadenia",
+            icon: "pi pi-tablet",
+            command: () => navigate("/my-devices"),
+            visible: isAdmin || isUser
+        },
+        {
             label: "Spravovať používateľov",
             icon: "pi pi-cog",
             command: () => navigate("/manage-users"),
+            visible: isAdmin
+        },
+        {
+            label: "Manage devices",
+            icon: "pi pi-wrench",
+            command: () => navigate("/admin-devices"),
             visible: isAdmin
         },
         {

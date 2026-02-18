@@ -17,7 +17,9 @@ import ukf.backend.dtos.FlightStatsDto;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -70,6 +72,33 @@ public class FlightService {
         return ingestFileWithReport(file, owner).flight();
     }
 
+    /**
+     * ✅ NEW: ingest plain text content (e.g. from Cloud Inbox chunks join)
+     * Reuses the same parse+persist logic as multipart upload.
+     */
+    @Transactional
+    public IngestReport ingestTextContentWithReport(String fileName, String content, User owner) throws IOException {
+        if (content == null || content.isBlank()) {
+            throw new FlightUploadException(
+                    "Súbor je prázdny.",
+                    0, null, null, "EMPTY_FILE"
+            );
+        }
+
+        String safeName = safeOriginalName(fileName);
+        if (safeName == null || safeName.isBlank()) safeName = "cloud.txt";
+
+        try (InputStream is = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+             BufferedInputStream bis = new BufferedInputStream(is)) {
+
+            // lightweight validation: NUL byte check only
+            validatePlainTextPeek(bis);
+
+            // shared parsing+persist
+            return ingestBufferedReaderWithReport(safeName, bis, owner);
+        }
+    }
+
     @Transactional
     public IngestReport ingestFileWithReport(MultipartFile file, User owner) throws IOException {
 
@@ -93,6 +122,19 @@ public class FlightService {
         String originalName = safeOriginalName(file.getOriginalFilename());
         if (originalName == null || originalName.isBlank()) originalName = "upload.txt";
 
+        // Use BufferedInputStream so we can safely read text
+        try (BufferedInputStream bis = new BufferedInputStream(file.getInputStream())) {
+            // shared parsing+persist (same as cloud)
+            return ingestBufferedReaderWithReport(originalName, bis, owner);
+        }
+    }
+
+    // ---------------- Shared parsing+persist ----------------
+
+    private IngestReport ingestBufferedReaderWithReport(String originalName,
+                                                        BufferedInputStream bis,
+                                                        User owner) throws IOException {
+
         // flight vytvoríme hneď, ale ak neskôr hodíme exception v @Transactional,
         // tak sa rollbackne a nezostane v DB
         Flight flight = flightRepo.save(Flight.builder()
@@ -112,92 +154,86 @@ public class FlightService {
         String firstBadLinePreview = null;
         String firstBadLineReason = null;
 
-        // Use BufferedInputStream so we can peek + reset safely
-        try (BufferedInputStream bis = new BufferedInputStream(file.getInputStream())) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(bis, StandardCharsets.UTF_8))) {
 
-            // (we already validated via peek; now just parse)
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(bis, StandardCharsets.UTF_8))) {
+            String header = br.readLine();
+            if (header == null) {
+                throw new FlightUploadException(
+                        "Súbor je prázdny (chýba header).",
+                        0, null, null, "EMPTY_FILE"
+                );
+            }
 
-                String header = br.readLine();
-                if (header == null) {
-                    throw new FlightUploadException(
-                            "Súbor je prázdny (chýba header).",
-                            0, null, null, "EMPTY_FILE"
-                    );
-                }
+            String line;
+            int lineNo = 1; // header je 1
 
-                String line;
-                int lineNo = 1; // header je 1
+            while ((line = br.readLine()) != null) {
+                lineNo++;
 
-                while ((line = br.readLine()) != null) {
-                    lineNo++;
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) continue;
 
-                    String trimmed = line.trim();
-                    if (trimmed.isEmpty()) continue;
+                String preview = trimmed.length() > 200 ? trimmed.substring(0, 200) + "..." : trimmed;
 
-                    String preview = trimmed.length() > 200 ? trimmed.substring(0, 200) + "..." : trimmed;
-
-                    try {
-                        String[] t = trimmed.split("\\s+");
-                        if (t.length < COLS) {
-                            throw new IllegalArgumentException("Not enough columns: " + t.length + " < " + COLS);
-                        }
-
-                        LocalTime time = LocalTime.parse(t[0], TIME_FMT);
-
-                        Double lat = parseDoubleStrict(t[1]);
-                        Double lon = parseDoubleStrict(t[2]);
-
-                        if (prevLat != null && prevLon != null && lat != null && lon != null) {
-                            totalDistanceKm += haversine(prevLat, prevLon, lat, lon);
-                        }
-                        prevLat = lat;
-                        prevLon = lon;
-
-                        FlightRecord rec = FlightRecord.builder()
-                                .flight(flight)
-                                .time(time)
-                                .latitude(lat)
-                                .longitude(lon)
-                                .temperatureC(parseDoubleStrict(t[3]))
-                                .pressureHpa(parseDoubleStrict(t[4]))
-                                .altitudeM(parseDoubleStrict(t[5]))
-                                .imuX(parseDoubleStrict(t[6]))
-                                .imuY(parseDoubleStrict(t[7]))
-                                .imuZ(parseDoubleStrict(t[8]))
-                                .turbulenceG(parseDoubleStrict(t[9]))
-                                .speedKn(parseDoubleStrict(t[13]))
-                                .build();
-
-                        buf.add(rec);
-                        recordsSaved++;
-
-                        if (first == null) first = time;
-                        last = time;
-
-                        if (buf.size() == BATCH_SIZE) {
-                            recordRepo.saveAll(buf);
-                            buf.clear();
-                        }
-
-                    } catch (Exception ex) {
-                        badLines++;
-
-                        if (firstBadLineNumber == null) {
-                            firstBadLineNumber = lineNo;
-                            firstBadLinePreview = preview;
-                            firstBadLineReason = ex.getMessage();
-                            // len prvý zlý riadok ako WARN
-                            log.warn("Bad line {} in file '{}': {} | preview='{}'",
-                                    lineNo, originalName, ex.getMessage(), preview);
-                        } else {
-                            // ďalšie ako DEBUG aby to nespamovalo
-                            log.debug("Bad line {} in file '{}': {}", lineNo, originalName, ex.getMessage());
-                        }
-
-                        // skip
+                try {
+                    String[] t = trimmed.split("\\s+");
+                    if (t.length < COLS) {
+                        throw new IllegalArgumentException("Not enough columns: " + t.length + " < " + COLS);
                     }
+
+                    LocalTime time = LocalTime.parse(t[0], TIME_FMT);
+
+                    Double lat = parseDoubleStrict(t[1]);
+                    Double lon = parseDoubleStrict(t[2]);
+
+                    if (prevLat != null && prevLon != null && lat != null && lon != null) {
+                        totalDistanceKm += haversine(prevLat, prevLon, lat, lon);
+                    }
+                    prevLat = lat;
+                    prevLon = lon;
+
+                    FlightRecord rec = FlightRecord.builder()
+                            .flight(flight)
+                            .time(time)
+                            .latitude(lat)
+                            .longitude(lon)
+                            .temperatureC(parseDoubleStrict(t[3]))
+                            .pressureHpa(parseDoubleStrict(t[4]))
+                            .altitudeM(parseDoubleStrict(t[5]))
+                            .imuX(parseDoubleStrict(t[6]))
+                            .imuY(parseDoubleStrict(t[7]))
+                            .imuZ(parseDoubleStrict(t[8]))
+                            .turbulenceG(parseDoubleStrict(t[9]))
+                            .speedKn(parseDoubleStrict(t[13]))
+                            .build();
+
+                    buf.add(rec);
+                    recordsSaved++;
+
+                    if (first == null) first = time;
+                    last = time;
+
+                    if (buf.size() == BATCH_SIZE) {
+                        recordRepo.saveAll(buf);
+                        buf.clear();
+                    }
+
+                } catch (Exception ex) {
+                    badLines++;
+
+                    if (firstBadLineNumber == null) {
+                        firstBadLineNumber = lineNo;
+                        firstBadLinePreview = preview;
+                        firstBadLineReason = ex.getMessage();
+                        // len prvý zlý riadok ako WARN
+                        log.warn("Bad line {} in file '{}': {} | preview='{}'",
+                                lineNo, originalName, ex.getMessage(), preview);
+                    } else {
+                        // ďalšie ako DEBUG aby to nespamovalo
+                        log.debug("Bad line {} in file '{}': {}", lineNo, originalName, ex.getMessage());
+                    }
+
+                    // skip
                 }
             }
         }
@@ -257,18 +293,20 @@ public class FlightService {
 
         // Basic "text-only" peek: reject if contains NUL bytes (likely binary)
         try (BufferedInputStream bis = new BufferedInputStream(file.getInputStream())) {
-            bis.mark(PEEK_BYTES);
+            validatePlainTextPeek(bis);
+        }
+    }
 
-            byte[] buf = new byte[PEEK_BYTES];
-            int n = bis.read(buf);
-            bis.reset();
+    private void validatePlainTextPeek(BufferedInputStream bis) throws IOException {
+        bis.mark(PEEK_BYTES);
 
-            if (n > 0) {
-                int nul = 0;
-                for (int i = 0; i < n; i++) {
-                    if (buf[i] == 0) nul++;
-                }
-                if (nul > 0) {
+        byte[] buf = new byte[PEEK_BYTES];
+        int n = bis.read(buf);
+        bis.reset();
+
+        if (n > 0) {
+            for (int i = 0; i < n; i++) {
+                if (buf[i] == 0) {
                     throw new ResponseStatusException(
                             HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                             "File does not look like plain text."
