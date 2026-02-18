@@ -75,8 +75,20 @@ Backend uses this token to securely call the Cloudflare Worker “sync” endpoi
   MY_SUPER_SYNC_TOKEN_123
 ```
 
+**Important:** The same value must be configured in Cloudflare Worker as secret (usually named `SYNC_TOKEN`).
 
+### 2) `worker_device_keys.json` (recommended helper file)
 
+This file is **not** used by Docker directly. It’s a local admin helper so you keep track of `deviceId → deviceKey` mapping that must be added into Cloudflare Worker secret `DEVICE_KEYS_JSON`.
+
+**Create:**
+- `secrets/worker_device_keys.json`
+
+**Example:**
+```json
+{
+  "DEV_5161fa0eb676": "0935dedb5d9b36fb4a92a76e15202bb6"
+}
 
 
 
