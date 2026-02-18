@@ -96,8 +96,13 @@ It contains a JSON object with multiple device mappings (so you DON’T overwrit
 When admin assigns a new device to a user, admin also adds that deviceId+key into the Worker’s DEVICE_KEYS_JSON.
 
 Recommendation: Always keep DEVICE_KEYS_JSON as one JSON object with many entries, like:
-
-
+```json
+{
+  "DEV_aaa": "key1",
+  "DEV_bbb": "key2",
+  "DEV_ccc": "key3"
+}
+```
 
 
 
