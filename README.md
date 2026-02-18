@@ -13,14 +13,16 @@ This project uses **Docker secrets**. The `secrets/` folder is **not** pushed to
 
 Create this structure in the project root:
 secrets/(folder) and files:
-jwt_secret.txt
-db_password.txt
-db_root_password.txt
-admin_email.txt
-admin_password.txt
-admin_seed_force_reset.txt
-cloud_inbox_sync_token.txt
-worker_device_keys.json (local helper file for admin)
+- jwt_secret.txt
+- db_password.txt
+- db_root_password.txt
+- admin_email.txt
+- admin_password.txt
+- admin_name.txt
+- admin_surname.txt
+- admin_seed_force_reset.txt
+- cloud_inbox_sync_token.txt
+- worker_device_keys.json (local helper file for admin)
 
 ## Secrets (required)
 Each file must contain **exactly 1 line** (no quotes).
@@ -55,6 +57,18 @@ Put any strong passwords you want into:
   ```txt
   false
 Tip: If you want to reset the admin password on next start, set it to `true`, restart backend, then set it back to `false`.
+
+- `secrets/admin_name.txt`  
+  Example:
+  ```txt
+  Admin
+  ```
+- `secrets/admin_surname.txt`  
+  Example:
+  ```txt
+  User
+  ```
+  
 
 ---
 
