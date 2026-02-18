@@ -42,6 +42,17 @@ Put any strong passwords you want into:
 - `secrets/db_root_password.txt` (password for MySQL root) first line
 
 ### Admin account (seeded automatically on startup)
+- `secrets/admin_name.txt`  
+  Example:
+  ```txt
+  Admin
+  ```
+- `secrets/admin_surname.txt`  
+  Example:
+  ```txt
+  User
+  ```
+  
 - `secrets/admin_email.txt`  
   Example:
   ```txt
@@ -57,18 +68,6 @@ Put any strong passwords you want into:
   ```txt
   false
 Tip: If you want to reset the admin password on next start, set it to `true`, restart backend, then set it back to `false`.
-
-- `secrets/admin_name.txt`  
-  Example:
-  ```txt
-  Admin
-  ```
-- `secrets/admin_surname.txt`  
-  Example:
-  ```txt
-  User
-  ```
-  
 
 ---
 
