@@ -97,7 +97,8 @@ public class UserService implements UserDetailsService {
 
         emailConfirmationTokenRepository.delete(emailConfirmationToken);
 
-        log.info("Email verified: userId={}, email={}", user.getId(), user.getEmail());
+        // avoid raw email in app logs
+        log.info("Email verified: userId={}", user.getId());
         return true;
     }
 

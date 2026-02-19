@@ -58,7 +58,10 @@ public class RegistrationController {
         }
 
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-            auditLogService.log(null, "REGISTER_FAIL", null, request, "email_exists=" + req.getEmail());
+            Long actorId = auditLogService.findUserIdByEmail(req.getEmail());
+            String emailHash = auditLogService.emailHash(req.getEmail());
+            auditLogService.logWithActorId(actorId, "REGISTER_FAIL", actorId, request, "email_exists_hash=" + emailHash);
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("A user with that email address already exists.");
         }
@@ -89,8 +92,13 @@ public class RegistrationController {
 
         userRepository.save(user);
 
-        auditLogService.log(null, "REGISTER_SUCCESS", user.getId(), request,
-                "email=" + user.getEmail() + ", deviceRequest=" + dr.name());
+        auditLogService.logWithActorId(
+                user.getId(),
+                "REGISTER_SUCCESS",
+                user.getId(),
+                request,
+                "emailHash=" + auditLogService.emailHash(user.getEmail()) + ", deviceRequest=" + dr.name()
+        );
 
         userService.sendRegistrationConfirmationEmail(user);
         return ResponseEntity.ok("User registered successfully.");
@@ -147,7 +155,17 @@ public class RegistrationController {
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException ex) {
-            auditLogService.log(null, "LOGIN_FAIL", null, request, "bad_credentials email=" + user.getEmail());
+            Long actorId = auditLogService.findUserIdByEmail(user.getEmail());
+            String emailHash = auditLogService.emailHash(user.getEmail());
+
+            auditLogService.logWithActorId(
+                    actorId,
+                    "LOGIN_FAIL",
+                    actorId,
+                    request,
+                    "bad_credentials emailHash=" + emailHash
+            );
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Invalid credentials"));
         }

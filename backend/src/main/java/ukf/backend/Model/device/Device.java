@@ -27,8 +27,9 @@ public class Device {
     @JsonIgnore
     private String deviceKeyHash;
 
-    // ✅ NEW: plain key (quick & dirty - zobrazíme userovi v /api/devices/my)
-    @Column(nullable = false, length = 128)
+    // plaintext key (stále v DB; frontend ho zobrazí userovi len 1x per browser)
+    @Column(nullable = true, length = 128)
+    @JsonIgnore
     private String deviceKeyPlain;
 
     // krátky kód na spárovanie

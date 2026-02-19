@@ -12,10 +12,13 @@ export default function MyDevices() {
     const [pairingCode, setPairingCode] = useState("");
     const [pairing, setPairing] = useState(false);
 
-    // ✅ NEW: per-device show/hide key
-    const [showKey, setShowKey] = useState({}); // { [deviceId]: boolean }
+    // FE-only "show once" memory (prežije refresh, zmizne po logout ak čistíš localStorage)
+    const [consumedKeyMap, setConsumedKeyMap] = useState({});
 
     const token = useMemo(() => localStorage.getItem("jwtToken"), []);
+    const userId = useMemo(() => localStorage.getItem("userId") || "anon", []);
+
+    const storageKey = (deviceId) => `fdr_seen_device_key:${userId}:${deviceId}`;
 
     async function load() {
         setLoading(true);
@@ -25,9 +28,16 @@ export default function MyDevices() {
             const res = await api.get("/api/devices/my");
             const data = res.data;
 
-            // backend môže vrátiť list alebo single objekt → normalize na array
             const arr = Array.isArray(data) ? data : (data ? [data] : []);
             setDevices(arr);
+
+            // načítaj "už zobrazené key" flagy z localStorage
+            const map = {};
+            for (const d of arr) {
+                if (!d?.deviceId) continue;
+                map[d.deviceId] = localStorage.getItem(storageKey(d.deviceId)) === "1";
+            }
+            setConsumedKeyMap(map);
         } catch (err) {
             console.error(err);
             const text =
@@ -90,7 +100,6 @@ export default function MyDevices() {
             await navigator.clipboard.writeText(String(text));
             setMsg(`✅ ${label}`);
         } catch (e) {
-            // fallback
             try {
                 const ta = document.createElement("textarea");
                 ta.value = String(text);
@@ -103,6 +112,17 @@ export default function MyDevices() {
                 setMsg("❌ Nepodarilo sa skopírovať do clipboardu.");
             }
         }
+    }
+
+    function markDeviceKeySeen(deviceId) {
+        if (!deviceId) return;
+        localStorage.setItem(storageKey(deviceId), "1");
+        setConsumedKeyMap((prev) => ({ ...prev, [deviceId]: true }));
+    }
+
+    async function copyAndHideDeviceKey(deviceId, key) {
+        await copyToClipboard(key, "Device key skopírovaný");
+        markDeviceKeySeen(deviceId);
     }
 
     useEffect(() => {
@@ -160,8 +180,9 @@ export default function MyDevices() {
             {!loading && devices.length > 0 && (
                 <div className="mydevices-grid">
                     {devices.map((d) => {
-                        const keyVisible = !!showKey[d.deviceId];
-                        const keyValue = d.deviceKeyPlain; // backend ti to teraz pošle
+                        const keyValue = (d.deviceKeyPlain || "").trim();
+                        const alreadySeen = !!consumedKeyMap[d.deviceId];
+                        const showOneTimeKey = !!keyValue && !alreadySeen;
 
                         return (
                             <div className="mydevices-card" key={d.id || d.deviceId}>
@@ -183,47 +204,37 @@ export default function MyDevices() {
                                     <span className="mydevices-value">{d.pairedAt || "—"}</span>
                                 </div>
 
-                                {/* ✅ NEW: device key */}
-                                <div className="mydevices-row">
-                                    <span className="mydevices-label">Device key:</span>
+                                {showOneTimeKey && (
+                                    <div className="mydevices-onetimeKey">
+                                        <div className="mydevices-onetimeTitle">⚠️ Device key (zobrazí sa iba 1x)</div>
+                                        <div className="mydevices-onetimeHint">
+                                            Ulož si tento kľúč teraz. Po refreshi stránky alebo odhlásení sa už nezobrazí.
+                                        </div>
 
-                                    {keyValue ? (
-                                        <>
-                                            <span className="mydevices-value" style={{ fontFamily: "monospace" }}>
-                                                {keyVisible ? keyValue : "••••••••••••••••••••••••••••••••"}
-                                            </span>
+                                        <div className="mydevices-row mydevices-row--key">
+                                            <span className="mydevices-value">{keyValue}</span>
 
-                                            <button
-                                                type="button"
-                                                className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
-                                                onClick={() =>
-                                                    setShowKey((prev) => ({
-                                                        ...prev,
-                                                        [d.deviceId]: !prev[d.deviceId],
-                                                    }))
-                                                }
-                                            >
-                                                {keyVisible ? "Hide" : "Show"}
-                                            </button>
+                                            <div className="mydevices-inlineActions">
+                                                <button
+                                                    type="button"
+                                                    className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
+                                                    onClick={() => copyAndHideDeviceKey(d.deviceId, keyValue)}
+                                                    title="Copy"
+                                                >
+                                                    Copy key
+                                                </button>
 
-                                            <button
-                                                type="button"
-                                                className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
-                                                onClick={() => copyToClipboard(keyValue, "Device key skopírovaný")}
-                                                title="Copy"
-                                            >
-                                                Copy
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <span className="mydevices-value">
-                                            —
-                                            <span style={{ marginLeft: 8, color: "#666" }}>
-                                                (nie je dostupný pre staré zariadenia)
-                                            </span>
-                                        </span>
-                                    )}
-                                </div>
+                                                <button
+                                                    type="button"
+                                                    className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
+                                                    onClick={() => markDeviceKeySeen(d.deviceId)}
+                                                >
+                                                    Rozumiem, skryť
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="mydevices-actions">
                                     <button
