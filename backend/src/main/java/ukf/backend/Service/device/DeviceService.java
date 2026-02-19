@@ -56,7 +56,7 @@ public class DeviceService {
         d.setPairedAt(LocalDateTime.now());
         deviceRepo.save(d);
 
-        return created; // returns deviceKeyPlain + pairingCode (only once)
+        return created; // returns deviceKeyPlain + pairingCode (only once for admin response)
     }
 
     @Transactional(readOnly = true)

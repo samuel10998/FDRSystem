@@ -109,7 +109,7 @@
     background: rgba(2,6,23,0.04);
 }
 
-/* ✅ Pairing panel */
+/* Pairing panel */
 .mydevices-panel{
     margin-top: 16px;
     background: #fff;
@@ -153,4 +153,33 @@
     padding: 6px 10px;
     font-size: 0.85rem;
     margin-left: 8px;
+}
+
+.mydevices-onetimeKey {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(180, 83, 9, 0.35);
+    background: rgba(251, 191, 36, 0.14);
+}
+
+.mydevices-onetimeTitle {
+    font-weight: 800;
+    color: #7c2d12;
+    margin-bottom: 4px;
+}
+
+.mydevices-onetimeHint {
+    color: #7c2d12;
+    font-size: 0.92rem;
+    margin-bottom: 8px;
+}
+
+.mydevices-row--key {
+    align-items: center;
+}
+
+.mydevices-inlineActions {
+    display: flex;
+    gap: 8px;
 }
