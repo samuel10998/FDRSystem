@@ -32,13 +32,10 @@ public class JwtService {
             throw new IllegalStateException("jwt.secret is missing or blank");
         }
 
-        // Väčšinou máš secret z: openssl rand -base64 48  -> to je BASE64
-        // Takže ho dekódujeme a spravíme HMAC key.
         byte[] keyBytes;
         try {
             keyBytes = Base64.getDecoder().decode(secretKey.trim());
         } catch (IllegalArgumentException ex) {
-            // fallback: ak by niekto dal obyčajný string (nie base64)
             keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         }
 
@@ -61,6 +58,10 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    public long extractExpirationEpochMs(String token) {
+        return extractExpiration(token).getTime();
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -70,7 +71,6 @@ public class JwtService {
         var parser = Jwts.parserBuilder()
                 .setSigningKey(signingKey);
 
-        // issuer/audience validujeme len ak sú nastavené
         if (!issuer.isBlank()) parser.requireIssuer(issuer);
         if (!audience.isBlank()) parser.requireAudience(audience);
 
@@ -84,9 +84,6 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    /**
-     * roles = zoznam stringov, napr. ["ROLE_USER","ROLE_ADMIN"]
-     */
     public String generateToken(String email, List<String> roles, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", roles != null ? roles : List.of());
@@ -105,7 +102,6 @@ public class JwtService {
                 .setIssuedAt(issuedAt)
                 .setExpiration(exp);
 
-        // voliteľné: issuer/audience
         if (!issuer.isBlank()) builder.setIssuer(issuer);
         if (!audience.isBlank()) builder.setAudience(audience);
 
@@ -114,9 +110,6 @@ public class JwtService {
                 .compact();
     }
 
-    /**
-     * Validácia: podpis + exp + subject + (issuer/aud ak sú nastavené)
-     */
     public Boolean validateToken(String token, String email) {
         try {
             final String extractedEmail = extractEmail(token);
