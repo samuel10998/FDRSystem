@@ -132,125 +132,131 @@ export default function MyDevices() {
 
     return (
         <div className="mydevices-page">
-            <div className="mydevices-header">
-                <h2 className="mydevices-title">Moje zariadenia</h2>
-                <button className="mydevices-btn mydevices-btn--secondary" onClick={load} disabled={loading}>
-                    {loading ? "Načítavam…" : "Refresh"}
-                </button>
-            </div>
+            <section className="mydevices-shell">
+                <div className="mydevices-header">
+                    <div>
+                        <div className="mydevices-eyebrow">DEVICES</div>
+                        <h2 className="mydevices-title">Moje zariadenia</h2>
+                    </div>
 
-            {!token && <p className="mydevices-error">Nie si prihlásený.</p>}
-
-            {/* Pairing panel */}
-            <div className="mydevices-panel">
-                <div className="mydevices-panelTitle">Spárovať zariadenie</div>
-                <div className="mydevices-panelHelp">
-                    Zadaj pairing kód, ktorý ti dal admin (napr. <code>PAIR_abcd1234</code>).
+                    <button className="mydevices-btn mydevices-btn--secondary" onClick={load} disabled={loading}>
+                        {loading ? "Načítavam…" : "Refresh"}
+                    </button>
                 </div>
 
-                <form className="mydevices-pairForm" onSubmit={doPair}>
-                    <input
-                        className="mydevices-input"
-                        value={pairingCode}
-                        onChange={(e) => setPairingCode(e.target.value)}
-                        placeholder="PAIR_..."
-                        disabled={!token || pairing}
-                    />
-                    <button
-                        className="mydevices-btn mydevices-btn--primary"
-                        type="submit"
-                        disabled={!token || pairing}
-                        title={!token ? "Najprv sa prihlás." : ""}
-                    >
-                        {pairing ? "Párujem…" : "Spárovať"}
-                    </button>
-                </form>
-            </div>
+                {!token && <p className="mydevices-error">Nie si prihlásený.</p>}
 
-            {loading && <p className="mydevices-loading">Načítavam…</p>}
+                {/* Pairing panel */}
+                <div className="mydevices-panel">
+                    <div className="mydevices-panelTitle">Spárovať zariadenie</div>
+                    <div className="mydevices-panelHelp">
+                        Zadaj pairing kód, ktorý ti dal admin (napr. <code>PAIR_abcd1234</code>).
+                    </div>
 
-            {msg && <pre className="mydevices-msg">{msg}</pre>}
+                    <form className="mydevices-pairForm" onSubmit={doPair}>
+                        <input
+                            className="mydevices-input"
+                            value={pairingCode}
+                            onChange={(e) => setPairingCode(e.target.value)}
+                            placeholder="PAIR_..."
+                            disabled={!token || pairing}
+                        />
+                        <button
+                            className="mydevices-btn mydevices-btn--primary"
+                            type="submit"
+                            disabled={!token || pairing}
+                            title={!token ? "Najprv sa prihlás." : ""}
+                        >
+                            {pairing ? "Párujem…" : "Spárovať"}
+                        </button>
+                    </form>
+                </div>
 
-            {!loading && devices.length === 0 && (
-                <p className="mydevices-empty">
-                    Zatiaľ nemáš žiadne spárované zariadenie.
-                </p>
-            )}
+                {loading && <p className="mydevices-loading">Načítavam…</p>}
 
-            {!loading && devices.length > 0 && (
-                <div className="mydevices-grid">
-                    {devices.map((d) => {
-                        const keyValue = (d.deviceKeyPlain || "").trim();
-                        const alreadySeen = !!consumedKeyMap[d.deviceId];
-                        const showOneTimeKey = !!keyValue && !alreadySeen;
+                {msg && <pre className="mydevices-msg">{msg}</pre>}
 
-                        return (
-                            <div className="mydevices-card" key={d.id || d.deviceId}>
-                                <div className="mydevices-row">
-                                    <span className="mydevices-label">Device ID:</span>
-                                    <span className="mydevices-value">{d.deviceId}</span>
-                                    <button
-                                        type="button"
-                                        className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
-                                        onClick={() => copyToClipboard(d.deviceId, "Device ID skopírované")}
-                                        title="Copy"
-                                    >
-                                        Copy
-                                    </button>
-                                </div>
+                {!loading && devices.length === 0 && (
+                    <p className="mydevices-empty">
+                        Zatiaľ nemáš žiadne spárované zariadenie.
+                    </p>
+                )}
 
-                                <div className="mydevices-row">
-                                    <span className="mydevices-label">Paired at:</span>
-                                    <span className="mydevices-value">{d.pairedAt || "—"}</span>
-                                </div>
+                {!loading && devices.length > 0 && (
+                    <div className="mydevices-grid">
+                        {devices.map((d) => {
+                            const keyValue = (d.deviceKeyPlain || "").trim();
+                            const alreadySeen = !!consumedKeyMap[d.deviceId];
+                            const showOneTimeKey = !!keyValue && !alreadySeen;
 
-                                {showOneTimeKey && (
-                                    <div className="mydevices-onetimeKey">
-                                        <div className="mydevices-onetimeTitle">⚠️ Device key (zobrazí sa iba 1x)</div>
-                                        <div className="mydevices-onetimeHint">
-                                            Ulož si tento kľúč teraz. Po refreshi stránky alebo odhlásení sa už nezobrazí.
-                                        </div>
+                            return (
+                                <div className="mydevices-card" key={d.id || d.deviceId}>
+                                    <div className="mydevices-row mydevices-row--meta">
+                                        <span className="mydevices-label">Device ID:</span>
+                                        <span className="mydevices-value">{d.deviceId}</span>
+                                        <button
+                                            type="button"
+                                            className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
+                                            onClick={() => copyToClipboard(d.deviceId, "Device ID skopírované")}
+                                            title="Copy"
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
 
-                                        <div className="mydevices-row mydevices-row--key">
-                                            <span className="mydevices-value">{keyValue}</span>
+                                    <div className="mydevices-row mydevices-row--meta">
+                                        <span className="mydevices-label">Paired at:</span>
+                                        <span className="mydevices-value">{d.pairedAt || "—"}</span>
+                                    </div>
 
-                                            <div className="mydevices-inlineActions">
-                                                <button
-                                                    type="button"
-                                                    className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
-                                                    onClick={() => copyAndHideDeviceKey(d.deviceId, keyValue)}
-                                                    title="Copy"
-                                                >
-                                                    Copy key
-                                                </button>
+                                    {showOneTimeKey && (
+                                        <div className="mydevices-onetimeKey">
+                                            <div className="mydevices-onetimeTitle">⚠️ Device key (zobrazí sa iba 1x)</div>
+                                            <div className="mydevices-onetimeHint">
+                                                Ulož si tento kľúč teraz. Po refreshi stránky alebo odhlásení sa už nezobrazí.
+                                            </div>
 
-                                                <button
-                                                    type="button"
-                                                    className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
-                                                    onClick={() => markDeviceKeySeen(d.deviceId)}
-                                                >
-                                                    Rozumiem, skryť
-                                                </button>
+                                            <div className="mydevices-row mydevices-row--key">
+                                                <span className="mydevices-value">{keyValue}</span>
+
+                                                <div className="mydevices-inlineActions">
+                                                    <button
+                                                        type="button"
+                                                        className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
+                                                        onClick={() => copyAndHideDeviceKey(d.deviceId, keyValue)}
+                                                        title="Copy"
+                                                    >
+                                                        Copy key
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="mydevices-btn mydevices-btn--secondary mydevices-btn--tiny"
+                                                        onClick={() => markDeviceKeySeen(d.deviceId)}
+                                                    >
+                                                        Rozumiem, skryť
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                                <div className="mydevices-actions">
-                                    <button
-                                        className="mydevices-btn mydevices-btn--primary"
-                                        onClick={() => doSync(d.deviceId)}
-                                        disabled={!token || syncing === d.deviceId}
-                                        title={!token ? "Najprv sa prihlás." : ""}
-                                    >
-                                        {syncing === d.deviceId ? "Syncujem…" : "Sync z cloudu"}
-                                    </button>
+                                    <div className="mydevices-actions">
+                                        <button
+                                            className="mydevices-btn mydevices-btn--primary"
+                                            onClick={() => doSync(d.deviceId)}
+                                            disabled={!token || syncing === d.deviceId}
+                                            title={!token ? "Najprv sa prihlás." : ""}
+                                        >
+                                            {syncing === d.deviceId ? "Syncujem…" : "Sync z cloudu"}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                            );
+                        })}
+                    </div>
+                )}
+            </section>
         </div>
     );
 }

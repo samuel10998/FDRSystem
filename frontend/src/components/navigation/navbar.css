@@ -14,7 +14,8 @@
     background-color: transparent !important;
     color: #ffffff !important;
     font-weight: 500;
-    padding: 0.75rem 1rem;
+    padding: 0.675rem 0.9rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     border-radius: 4px;
@@ -45,7 +46,8 @@
 /* Ikony */
 .p-menubar .pi {
     color: #ffffff !important;
-    margin-right: 8px;
+    margin-right: 7px;
+    font-size: 0.9rem;
 }
 
 .p-menubar .p-menuitem-link span,
@@ -87,9 +89,37 @@ body .p-menubar .p-menuitem-link:active {
     outline: none !important;
 }
 
+
+/* Odstránenie default bieleho highlightu z PrimeReact */
+.p-menubar .p-menuitem > .p-menuitem-content,
+.p-menubar .p-menuitem.p-focus > .p-menuitem-content,
+.p-menubar .p-menuitem.p-highlight > .p-menuitem-content {
+    background: transparent !important;
+}
+
+.p-menubar .p-menuitem.p-focus > .p-menuitem-content > .p-menuitem-link,
+.p-menubar .p-menuitem.p-highlight > .p-menuitem-content > .p-menuitem-link,
+.p-menubar .p-menuitem-link:focus-visible,
+.p-menubar .p-menuitem-link:focus {
+    background-color: #2e5c85 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* PrimeReact button focus ring (Prihlásenie / User) */
+.user-info .p-button:focus,
+.user-info .p-button:focus-visible,
+.user-button:focus,
+.user-button:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 /* 👤 User dropdown */
 .user-info {
     position: relative;
+    margin-right: 10px;
 }
 
 .user-dropdown {
@@ -100,8 +130,9 @@ body .p-menubar .p-menuitem-link:active {
     background-color: #2196f3 !important;
     border: none !important;
     color: #fff !important;
-    padding: 0.4rem 1rem !important;
+    padding: 0.36rem 0.9rem !important;
     font-weight: 500;
+    font-size: 0.9rem !important;
     border-radius: 6px;
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
     cursor: pointer;
@@ -118,22 +149,22 @@ body .p-menubar .p-menuitem-link:active {
     top: 100%;
     right: 0;
     background-color: #00203f; /* rovnaká ako navbar */
-    border-radius: 6px;
-    margin-top: 5px;
+    border-radius: 5px;
+    margin-top: 4px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 100;
-    min-width: 160px;
+    min-width: 144px;
     overflow: hidden;
 }
 
 .dropdown-item {
-    padding: 0.5rem 1rem;
+    padding: 0.45rem 0.9rem;
     width: 100%;
     text-align: left;
     background-color: transparent;
     border: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12.6px;
     color: #ffffff;
     transition: background-color 0.2s ease-in-out;
 }

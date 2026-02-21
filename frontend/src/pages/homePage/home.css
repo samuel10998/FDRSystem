@@ -12,7 +12,6 @@
     --radius: 14px;
     --radius-lg: 18px;
 
-    /* ✅ zmeň podľa paddingu okolo Outlet/page wrappera */
     --page-pad: 20px;
 }
 
@@ -29,38 +28,30 @@ html, body {
 
 body {
     background: var(--bg);
-    overflow-x: hidden; /* poistka proti 1-2px horizontálnemu posunu */
+    overflow-x: hidden;
 }
 
 .home {
     background: var(--bg);
     margin: 0;
     padding: 0;
-
-    /* ❌ overflow-x: clip;  -> toto orezávalo full-bleed hero */
-    overflow-x: visible; /* ✅ nech hero môže ísť "mimo" wrapper */
+    overflow-x: visible;
 }
 
 /* ===== HERO (FULL BLEED) ===== */
 .home-hero {
     position: relative;
-    height: 60vh;
-    min-height: 420px;
-    max-height: 528px;
+    height: 52vh;
+    min-height: 380px;
+    max-height: 395px;
     overflow: hidden;
     background: #0b1220;
-
-    /* ✅ ak máš okolo stránky padding (napr. wrapper okolo <Outlet/>),
-       tak toto zruší medzeru medzi navbarom a hero */
     margin-top: calc(-1 * var(--page-pad));
-
-    /* ✅ FULL-BLEED (zruší bočné pásy z wrapperov) */
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
 }
 
-/* stacked slides */
 .home-heroSlides {
     position: absolute;
     inset: 0;
@@ -81,7 +72,6 @@ body {
     opacity: 1;
 }
 
-/* overlay (gradient for readability) */
 .home-heroOverlay {
     position: absolute;
     inset: 0;
@@ -99,7 +89,6 @@ body {
             );
 }
 
-/* inner container */
 .home-heroInner {
     position: relative;
     height: 100%;
@@ -146,8 +135,8 @@ body {
     max-width: 560px;
 }
 
-/* CTA buttons */
-.home-cta {
+.home-cta,
+.home-actions {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
@@ -177,7 +166,12 @@ body {
     box-shadow: 0 14px 30px rgba(2, 6, 23, 0.25);
 }
 
-/* arrows */
+.home-btn--ghost {
+    background: #eff4fb;
+    color: var(--brand);
+    border-color: #c5d3e6;
+}
+
 .home-nav {
     position: absolute;
     top: 50%;
@@ -205,7 +199,6 @@ body {
 .home-nav--left { left: 16px; }
 .home-nav--right { right: 16px; }
 
-/* dots */
 .home-dots {
     position: absolute;
     left: 50%;
@@ -231,27 +224,29 @@ body {
     transform: scale(1.15);
 }
 
-/* ===== INTRO ===== */
+/* ===== CONTENT ===== */
 .home-intro {
-    min-height: 40vh;
     display: flex;
     align-items: center;
-    padding: 24px 0 36px;
+    padding: 28px 0 18px;
 }
 
-.home-introCard {
+.home-introCard,
+.home-overviewCard {
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
     padding: 22px;
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 18px;
-
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+}
+
+.home-introCard {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 18px;
 }
 
 .home-logoWrap {
@@ -259,20 +254,17 @@ body {
     align-items: center;
     justify-content: center;
     border-right: 1px solid var(--border);
-
-    /* trochu viac priestoru pri deliacej čiare (posunie logo opticky doľava) */
     padding: 0 48px 0 24px;
 }
 
 .home-logo {
-    width: 360px;     /* tvoje veľké logo */
-    max-width: 100%;  /* ✅ nech nikdy neprelezie mimo stĺpca */
+    width: 360px;
+    max-width: 100%;
     height: auto;
 }
 
-
-
-.home-introText h2 {
+.home-introText h2,
+.home-overviewCard h2 {
     margin: 0 0 10px;
     font-size: 26px;
     font-weight: 850;
@@ -280,14 +272,19 @@ body {
     color: var(--text);
 }
 
-.home-introText p {
+.home-overviewCard h2 {
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.home-introText p,
+.home-cloudBox p {
     margin: 0 0 12px;
     color: var(--muted);
     line-height: 1.65;
     font-size: 14px;
 }
 
-/* ✅ krajší “bullets” dizajn ako karty */
 .home-features {
     display: grid;
     grid-template-columns: repeat(2, minmax(220px, 1fr));
@@ -299,7 +296,7 @@ body {
     border: 1px solid var(--border);
     background: #fbfdff;
     border-radius: 14px;
-    padding: 12px 12px;
+    padding: 12px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
@@ -330,10 +327,65 @@ body {
     font-size: 13px;
     color: var(--muted);
     line-height: 1.55;
-    padding-left: 30px; /* zarovnanie pod text za check ikonou */
+    padding-left: 30px;
 }
 
-/* Responsive */
+.home-overview {
+    padding: 0 0 40px;
+}
+
+.home-workflowList {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+}
+
+.home-workflowList li {
+    position: relative;
+    padding: 10px 12px 10px 38px;
+    border: 1px solid #dbe6f4;
+    border-radius: 12px;
+    background: #f9fbff;
+    color: #15314f;
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 600;
+}
+
+.home-workflowList li::before {
+    content: "•";
+    position: absolute;
+    left: 14px;
+    top: 8px;
+    color: var(--brand);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.home-cloudBox {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #d5e1f0;
+    background: linear-gradient(180deg, #f7fafd 0%, #f2f7fc 100%);
+}
+
+.home-cloudBox h3 {
+    margin: 0 0 8px;
+    color: var(--text);
+    font-size: 16px;
+}
+
+.home-actions {
+    margin-top: 14px;
+}
+
+.home-actions .home-btn {
+    min-width: 220px;
+}
+
 @media (max-width: 900px) {
     .home-title {
         font-size: 30px;
@@ -353,9 +405,17 @@ body {
     .home-features {
         grid-template-columns: 1fr;
     }
+
+    .home-overviewCard h2 {
+        font-size: 24px;
+    }
+
+    .home-workflowList li {
+        font-size: 14px;
+        padding-left: 34px;
+    }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .home-heroSlide {
         transition: none;

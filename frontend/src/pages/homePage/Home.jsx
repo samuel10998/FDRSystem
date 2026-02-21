@@ -47,21 +47,29 @@ const SLIDES = [
 
 const FEATURES = [
     {
-        title: "Interaktívna mapa trasy",
-        desc: "GPS trasa letu prehľadne v mape.",
+        title: "Upload aj Cloud Sync",
+        desc: "Logy vieš odovzdať manuálne alebo cez cloud inbox workflow.",
     },
     {
-        title: "Grafy senzorov",
-        desc: "Teplota, tlak, výška, turbulencia, rýchlosť.",
+        title: "Analýza letu",
+        desc: "Spracovanie dát, metriky letu a prehľad bezpečnostných udalostí.",
     },
     {
-        title: "Štatistiky letu",
-        desc: "Min/Max/Avg + základné KPI metriky.",
+        title: "Mapa a časové grafy",
+        desc: "Interaktívna trasa + vývoj senzorov v čase na jednom mieste.",
     },
     {
-        title: "Bezpečnostné prehľady",
-        desc: "Detekcia turbulence a extrémnych hodnôt podľa limitov",
+        title: "Podpora zariadení",
+        desc: "Pridelené adminom alebo vlastné zariadenie s integračnou šablónou.",
     },
+];
+
+const WORKFLOW_STEPS = [
+    "FDR zariadenie zaznamená letové údaje",
+    "Upload alebo Cloud Sync odošle dáta do systému",
+    "Systém údaje spracuje a validuje",
+    "Vypočíta metriky a analytické prehľady",
+    "Výsledky zobrazí v mapách, grafoch a štatistikách",
 ];
 
 export default function Home() {
@@ -126,7 +134,6 @@ export default function Home() {
                         <p className="home-desc">{active.desc}</p>
 
                         <div className="home-cta">
-                            {/* Host môže len login */}
                             <button
                                 className="home-btn home-btn--primary"
                                 onClick={() => navigate("/login")}
@@ -180,11 +187,11 @@ export default function Home() {
                     </div>
 
                     <div className="home-introText">
-                        <h2>Flight Data Recorder System</h2>
+                        <h2>FDRSystem v skratke</h2>
                         <p>
-                            Webová aplikácia na nahrávanie a analýzu letových záznamov z Flight
-                            Data Recorder zariadenia. Získaj rýchly prehľad aj detailné dáta v
-                            jednom rozhraní.
+                            FDRSystem prepája Flight Data Recorder zariadenie a webovú aplikáciu do
+                            jedného pracovného toku: od záznamu letu, cez import dát, až po analýzu
+                            a vizualizáciu výsledkov.
                         </p>
 
                         <div className="home-features">
@@ -195,6 +202,35 @@ export default function Home() {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="home-overview" aria-labelledby="home-workflow-title">
+                <div className="home-overviewCard">
+                    <h2 id="home-workflow-title">Ako systém funguje</h2>
+                    <ul className="home-workflowList" aria-label="Workflow systému">
+                        {WORKFLOW_STEPS.map((step) => (
+                            <li key={step}>{step}</li>
+                        ))}
+                    </ul>
+
+                    <div className="home-cloudBox">
+                        <h3>Cloud Sync</h3>
+                        <p>
+                            Systém podporuje cloud inbox model (Cloudflare-based workflow) pre
+                            používateľov s prideleným aj vlastným zariadením.
+                        </p>
+                        <p>
+                            Detailný postup pre scenár admin-prideleného zariadenia a pre vlastnú
+                            integráciu nájdeš na stránke Info.
+                        </p>
+                    </div>
+
+                    <div className="home-actions">
+                        <button className="home-btn home-btn--ghost" onClick={() => navigate("/info")}>
+                            Zobraziť detail workflow
+                        </button>
                     </div>
                 </div>
             </section>
