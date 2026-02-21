@@ -193,12 +193,12 @@ export default function Register({ isModal = false }) {
                             name="email"
                             value={email}
                             placeholder="Email"
-                            autoComplete="email"
+                            autoComplete="off"
                             onChange={(e) => setEmail(e.target.value)}
                             onBlur={() => handleBlur("email")}
-                            tooltip="Allowed email domains: @student.ukf.sk, @gmail.com"
                             className={touchedFields.email && errors.email ? "p-invalid" : ""}
                         />
+                        <small className="field-hint">Povolené domény: @student.ukf.sk, @gmail.com</small>
                         {touchedFields.email && errors.email && (
                             <small className="p-error">Valid email is required.</small>
                         )}
@@ -220,7 +220,7 @@ export default function Register({ isModal = false }) {
 
                         <small className="device-hint">
                             {needsDevice
-                                ? "Admin ťa uvidí v „Manage devices“ a môže ti prideliť device."
+                                ? "Admin ti pridelí vlastné zariadenie s vlastným ID a kľúčom – Možnosť nahrávania a synchronizácie letových logov cez cloud."
                                 : "Máš vlastné zariadenie – budeš uploadovať dáta lokálne cez Upload page."}
                         </small>
 

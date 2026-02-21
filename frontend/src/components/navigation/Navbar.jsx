@@ -42,7 +42,7 @@ export default function Navbar() {
         { label: "Nahrať súbory", icon: "pi pi-folder", command: () => navigate("/upload-files"), visible: isAdmin || isUser },
         { label: "Moje zariadenia", icon: "pi pi-tablet", command: () => navigate("/my-devices"), visible: isAdmin || isUser },
         { label: "Spravovať používateľov", icon: "pi pi-cog", command: () => navigate("/manage-users"), visible: isAdmin },
-        { label: "Manage devices", icon: "pi pi-wrench", command: () => navigate("/admin-devices"), visible: isAdmin },
+        { label: "Spravovať zariadenia", icon: "pi pi-wrench", command: () => navigate("/admin-devices"), visible: isAdmin },
         { label: "Info", icon: "pi pi-info-circle", command: () => navigate("/info"), visible: !isAdmin },
         { label: "Kontakt", icon: "pi pi-phone", command: () => navigate("/contact"), visible: !isAdmin }
     ];

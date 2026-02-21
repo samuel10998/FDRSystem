@@ -88,15 +88,15 @@ export default function AdminDevices() {
     return (
         <div className="admindev-page">
             <div className="admindev-header">
-                <h2 className="admindev-title">Admin – Devices</h2>
+                <h2 className="admindev-title">Admin - Zariadenia</h2>
 
                 <div className="admindev-headerActions">
                     <button className="admindev-btn admindev-btn--secondary" onClick={loadRequests} disabled={loadingReqs}>
-                        {loadingReqs ? "Načítavam…" : "Refresh requests"}
+                        {loadingReqs ? "Načítavam…" : "Obnoviť žiadosti"}
                     </button>
 
                     <button className="admindev-btn admindev-btn--primary" onClick={createDevice} disabled={creating}>
-                        {creating ? "Generujem…" : "Generate device"}
+                        {creating ? "Generujem…" : "Vygenerovať zariadenie"}
                     </button>
                 </div>
             </div>
@@ -138,7 +138,7 @@ export default function AdminDevices() {
 
             {/* Requests list */}
             <div className="admindev-card">
-                <div className="admindev-cardTitle">Používatelia, ktorí potrebujú zariadenie (NEEDS_DEVICE)</div>
+                <div className="admindev-cardTitle">Používatelia, ktorí potrebujú zariadenie (NEEDS DEVICE)</div>
 
                 {loadingReqs ? (
                     <p>Načítavam…</p>
