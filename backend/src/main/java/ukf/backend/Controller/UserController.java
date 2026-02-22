@@ -123,8 +123,9 @@ public class UserController {
 
         User user = opt.get();
 
-        // Audit BEFORE delete (so we can store email in details)
-        auditLogService.log(auth, "ADMIN_DELETE_USER", id, request, "email=" + user.getEmail());
+        // Audit BEFORE delete (without raw email)
+        String emailHash = auditLogService.emailHash(user.getEmail());
+        auditLogService.log(auth, "ADMIN_DELETE_USER", id, request, "userEmailHash=" + emailHash);
 
         if (user.getProfilePicture() != null) {
             try { Files.deleteIfExists(AVATAR_DIR.resolve(user.getProfilePicture())); }

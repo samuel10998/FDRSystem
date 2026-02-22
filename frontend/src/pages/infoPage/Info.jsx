@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./info.css";
 
 // ✅ images from src/assets (uprav si podľa seba – nech sú len 3)
@@ -12,21 +13,30 @@ const SLIDES = [
     {
         img: airplane4,
         title: "FDR Systems",
-        desc: "Webová aplikácia na analýzu letových dát z tvojho Flight Data Recorder zariadenia."
+        desc: "Webová aplikácia na analýzu letových dát z tvojho Flight Data Recorder zariadenia.",
     },
     {
         img: Helicopter2,
         title: "FDR Systems",
-        desc: "Vizualizácia trasy letu a senzorov v čase – rýchlo, prehľadne a bezpečne."
+        desc: "Vizualizácia trasy letu a senzorov v čase – rýchlo, prehľadne a bezpečne.",
     },
     {
         img: cockpitHeli,
         title: "FDR Systems",
-        desc: "Od základného reportu až po detailné grafy – všetko v jednom rozhraní."
-    }
+        desc: "Od základného reportu až po detailné grafy – všetko v jednom rozhraní.",
+    },
+];
+
+const FLOW = [
+    "FDR zariadenie zaznamená letový log.",
+    "Dáta sa prenesú cez Upload alebo Cloud Sync.",
+    "Systém vykoná spracovanie a validáciu dát.",
+    "Vygeneruje analytické metriky a prehľady udalostí.",
+    "Výsledky zobrazí ako mapu trasy, grafy a štatistiky.",
 ];
 
 export default function Info() {
+    const navigate = useNavigate();
     const [index, setIndex] = useState(0);
     const timerRef = useRef(null);
 
@@ -125,33 +135,53 @@ export default function Info() {
                 <div className="info-card">
                     <div className="info-header">
                         <div className="info-smallTitle">O projekte</div>
-                        <h2 className="info-h2">Čo je FDR Systems?</h2>
+                        <h2 className="info-h2">Ako funguje FDRSystem</h2>
                         <p className="info-lead">
-                            FDR Systems je webová aplikácia, ktorá umožňuje nahratie letového záznamu z
-                            Flight Data Recorder zariadenia a jeho následnú analýzu.
-                            Cieľom je poskytnúť používateľovi rýchly prehľad o lete aj detailné dáta na jednom mieste.
+                            FDRSystem prepája hardvérové FDR zariadenie a webovú analytickú vrstvu.
+                            Cieľom je spoľahlivý prenos dát z letu, ich spracovanie a zrozumiteľná
+                            vizualizácia výsledkov.
                         </p>
                     </div>
 
                     <div className="info-grid">
-                        {/* left: text */}
                         <div className="info-section">
-                            <h3 className="info-h3">Ako to funguje</h3>
+                            <h3 className="info-h3">Workflow systému</h3>
+                            <ol className="info-list info-list--ordered">
+                                {FLOW.map((step) => (
+                                    <li key={step}>{step}</li>
+                                ))}
+                            </ol>
+
+                            <h3 className="info-h3">Cloud Sync a cloud inbox model</h3>
                             <p className="info-p">
-                                Po nahratí súboru systém spracuje GPS a senzorické údaje, vypočíta základné metriky a zobrazí výsledky
-                                vo forme prehľadného reportu. Vďaka tomu vieš rýchlo porovnať lety, nájsť zaujímavé úseky a analyzovať priebeh letu.
+                                Cloud Sync je určený pre používateľov, ktorí majú so systémom
+                                spárované zariadenie. Systém synchronizuje dáta pre konkrétne
+                                zariadenie, importuje ich do aplikácie a spracované záznamy označí ako
+                                vybavené.
                             </p>
 
-                            <h3 className="info-h3">Čo v aplikácii uvidíš</h3>
-                            <ul className="info-list">
-                                <li><strong>Mapu trasy letu</strong> z GPS súradníc</li>
-                                <li><strong>Časové grafy</strong> (teplota, tlak, výška, turbulencia…)</li>
-                                <li><strong>Štatistiky</strong> (min/max/priemer, dĺžka letu, vzdialenosť)</li>
-                                <li><strong>Prehľadné reporty</strong> vhodné na archiváciu a porovnanie letov</li>
-                            </ul>
+                            <h3 className="info-h3">Dva scenáre používania</h3>
+                            <div className="info-scenario">
+                                <h4>Scenár A — používateľ nemá vlastné zariadenie</h4>
+                                <p>
+                                    Pri registrácii zvolí možnosť, že potrebuje zariadenie od admina.
+                                    Admin mu následne pridelí FDR zariadenie a používateľ získa
+                                    <strong>DEVICE_ID</strong> a <strong>DEVICE_KEY</strong>.
+                                    Device key sa v používateľskom rozhraní zobrazí iba raz, preto si
+                                    ho treba bezpečne uložiť.
+                                </p>
+                            </div>
+                            <div className="info-scenario">
+                                <h4>Scenár B — používateľ má vlastné zariadenie</h4>
+                                <p>
+                                    Pri registrácii zvolí, že má vlastné zariadenie. V tomto scenári
+                                    admin neprideľuje nové systémové zariadenie ani nové prístupové
+                                    údaje. Používateľ pracuje so svojím hardvérom podľa dostupnej
+                                    integrácie a upload/sync možností v aplikácii.
+                                </p>
+                            </div>
                         </div>
 
-                        {/* right: “quick facts” */}
                         <aside className="info-aside">
                             <div className="info-miniCard">
                                 <div className="info-miniTitle">Podporované dáta</div>
@@ -166,12 +196,20 @@ export default function Info() {
                             </div>
 
                             <div className="info-miniCard">
-                                <div className="info-miniTitle">Pre koho je to</div>
+                                <div className="info-miniTitle">Bezpečnostná poznámka</div>
                                 <ul className="info-miniList">
-                                    <li>Piloti a nadšenci letectva</li>
-                                    <li>Študenti / výskum</li>
-                                    <li>Testovanie a porovnanie letov</li>
+                                    <li><strong>DEVICE_KEY</strong> je citlivý údaj.</li>
+                                    <li>Ulož ho bezpečne, ideálne mimo verejných kanálov.</li>
+                                    <li>Nezdieľaj ho verejne ani neukladaj do verejných repozitárov.</li>
                                 </ul>
+                            </div>
+
+                            <div className="info-miniCard">
+                                <div className="info-miniTitle">Ďalší krok</div>
+                                <div className="info-ctaCol">
+                                    <button className="info-btn" onClick={() => navigate("/login")}>Prihlásiť sa</button>
+                                    <button className="info-btn info-btn--ghost" onClick={() => navigate("/home")}>Späť na Home</button>
+                                </div>
                             </div>
                         </aside>
                     </div>

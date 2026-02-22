@@ -1,5 +1,6 @@
 package ukf.backend.Controller.cloud;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,10 +27,9 @@ public class CloudSyncController {
 
     @PostMapping("/sync")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<?> sync(@RequestBody CloudSyncRequest req, Principal principal) throws Exception {
+    public ResponseEntity<?> sync(@Valid @RequestBody CloudSyncRequest req, Principal principal) throws Exception {
         User current = userService.getByEmail(principal.getName());
 
-        // ✅ NEW: user bez prideleného device (a ktorý "NEEDS_DEVICE") nemá čo syncovať
         boolean isAdmin = current.hasRole("ROLE_ADMIN");
         boolean needsDevice = current.getDeviceRequest() == DeviceRequest.NEEDS_DEVICE;
 

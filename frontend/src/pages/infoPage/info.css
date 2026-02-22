@@ -7,16 +7,11 @@
     --brand: #0a3364;
 
     --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-    --shadow-md: 0 10px 25px rgba(15, 23, 42, 0.10);
-
-    --radius: 14px;
     --radius-lg: 18px;
 
-    --page-pad: 20px; /* ✅ rovnaké ako na Home */
+    --page-pad: 20px;
 }
 
-
-/* ✅ najčastejší dôvod bielych pásov */
 html, body {
     margin: 0;
     padding: 0;
@@ -27,25 +22,18 @@ html, body {
 }
 
 /* ===== HERO / SLIDER (FULL BLEED) ===== */
-/* ✅ full-bleed aj keď máš okolo appky wrapper s paddingom */
 .info-hero {
     position: relative;
     width: 100vw;
-
-    /* ✅ FULL BLEED */
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-
-    /* ✅ odstráni medzeru medzi navbarom a hero (ak wrapper má padding) */
     margin-top: calc(-1 * var(--page-pad));
-
     height: 52vh;
     min-height: 380px;
     max-height: 395px;
     overflow: hidden;
     background: #0b1220;
 }
-
 
 .info-heroSlides {
     position: absolute;
@@ -121,7 +109,6 @@ html, body {
     max-width: 560px;
 }
 
-/* arrows */
 .info-nav {
     position: absolute;
     top: 50%;
@@ -149,7 +136,6 @@ html, body {
 .info-nav--left { left: 16px; }
 .info-nav--right { right: 16px; }
 
-/* dots */
 .info-dots {
     position: absolute;
     left: 50%;
@@ -249,7 +235,32 @@ html, body {
     line-height: 1.65;
 }
 
+.info-list--ordered {
+    margin-bottom: 14px;
+}
+
 .info-list li { margin: 6px 0; }
+
+.info-scenario {
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #fbfdff;
+}
+
+.info-scenario h4 {
+    margin: 0 0 6px;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.info-scenario p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
 
 .info-aside {
     display: grid;
@@ -301,14 +312,33 @@ html, body {
 
 .info-miniList li { margin: 6px 0; }
 
-/* Responsive */
+.info-ctaCol {
+    display: grid;
+    gap: 8px;
+}
+
+.info-btn {
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: var(--brand);
+    color: #fff;
+    font-weight: 700;
+    padding: 9px 12px;
+    cursor: pointer;
+}
+
+.info-btn--ghost {
+    background: #eff4fb;
+    color: var(--brand);
+    border-color: #c5d3e6;
+}
+
 @media (max-width: 900px) {
     .info-title { font-size: 30px; }
     .info-grid { grid-template-columns: 1fr; }
     .info-card { margin: 0 14px; }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .info-heroSlide { transition: none; }
 }

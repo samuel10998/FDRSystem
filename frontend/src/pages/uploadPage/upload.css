@@ -75,6 +75,7 @@
 }
 
 .btn-upload {
+    margin-top: 40px;
     background: #0b2545;
     color: #fff;
     border: none;
@@ -84,6 +85,16 @@
     cursor: pointer;
     transition: background 0.2s ease;
 }
+
+.btn-sync {
+    margin-top: 40px;
+}
+
+.btn-uploadMain {
+    margin-top: 40px;
+}
+
+
 
 .btn-upload:disabled {
     background: #aac0d0;

@@ -58,7 +58,10 @@ public class RegistrationController {
         }
 
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-            auditLogService.log(null, "REGISTER_FAIL", null, request, "email_exists=" + req.getEmail());
+            Long actorId = auditLogService.findUserIdByEmail(req.getEmail());
+            String emailHash = auditLogService.emailHash(req.getEmail());
+            auditLogService.logWithActorId(actorId, "REGISTER_FAIL", actorId, request, "email_exists_hash=" + emailHash);
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("A user with that email address already exists.");
         }
@@ -80,7 +83,6 @@ public class RegistrationController {
         user.setRoles(Collections.singletonList(roleRepository.findByName("ROLE_USER")));
         user.setProfilePicture(DEFAULT_AVATAR);
 
-        // ✅ default, ak nepríde z frontendu
         DeviceRequest dr = (req.getDeviceRequest() != null)
                 ? req.getDeviceRequest()
                 : DeviceRequest.HAS_OWN_DEVICE;
@@ -89,8 +91,13 @@ public class RegistrationController {
 
         userRepository.save(user);
 
-        auditLogService.log(null, "REGISTER_SUCCESS", user.getId(), request,
-                "email=" + user.getEmail() + ", deviceRequest=" + dr.name());
+        auditLogService.logWithActorId(
+                user.getId(),
+                "REGISTER_SUCCESS",
+                user.getId(),
+                request,
+                "emailHash=" + auditLogService.emailHash(user.getEmail()) + ", deviceRequest=" + dr.name()
+        );
 
         userService.sendRegistrationConfirmationEmail(user);
         return ResponseEntity.ok("User registered successfully.");
@@ -132,11 +139,13 @@ public class RegistrationController {
                     roleNames,
                     authenticatedUser.getId()
             );
+            long expiresAt = jwtService.extractExpiration(jwt).getTime();
 
             auditLogService.log(authentication, "LOGIN_SUCCESS", authenticatedUser.getId(), request, null);
 
             Map<String, Object> response = Map.of(
                     "token", jwt,
+                    "expiresAt", expiresAt,
                     "user", Map.of(
                             "id", authenticatedUser.getId(),
                             "name", authenticatedUser.getName(),
@@ -147,10 +156,58 @@ public class RegistrationController {
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException ex) {
-            auditLogService.log(null, "LOGIN_FAIL", null, request, "bad_credentials email=" + user.getEmail());
+            Long actorId = auditLogService.findUserIdByEmail(user.getEmail());
+            String emailHash = auditLogService.emailHash(user.getEmail());
+
+            auditLogService.logWithActorId(
+                    actorId,
+                    "LOGIN_FAIL",
+                    actorId,
+                    request,
+                    "bad_credentials emailHash=" + emailHash
+            );
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Invalid credentials"));
         }
+    }
+
+    /**
+     * Sliding session refresh:
+     * - valid Bearer token required
+     * - returns a brand new 30 min token
+     */
+    @PostMapping("/api/auth/refresh")
+    public ResponseEntity<Map<String, Object>> refreshToken(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+
+        User authenticatedUser = userRepository.findByEmail(authentication.getName())
+                .orElse(null);
+
+        if (authenticatedUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+
+        var roleNames = authenticatedUser.getRoles().stream()
+                .map(Role::getName)
+                .toList();
+
+        String jwt = jwtService.generateToken(
+                authenticatedUser.getEmail(),
+                roleNames,
+                authenticatedUser.getId()
+        );
+
+        long expiresAt = jwtService.extractExpiration(jwt).getTime();
+
+        return ResponseEntity.ok(Map.of(
+                "token", jwt,
+                "expiresAt", expiresAt
+        ));
     }
 
     @GetMapping("/confirm-email")

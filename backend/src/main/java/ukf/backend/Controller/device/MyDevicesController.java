@@ -31,7 +31,7 @@ public class MyDevicesController {
                         "id", d.getId(),
                         "deviceId", d.getDeviceId(),
                         "pairedAt", d.getPairedAt(),
-                        "deviceKeyPlain", d.getDeviceKeyPlain()
+                        "deviceKeyPlain", d.getDeviceKeyPlain() == null ? "" : d.getDeviceKeyPlain()
                 ))
                 .toList();
 

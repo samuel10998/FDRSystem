@@ -23,11 +23,11 @@ import {
 
 import "./FlightDetails.css";
 
-/** QUICK TUNING (you can move this later to backend / config) */
+/** QUICK TUNING of THRESHOLD values */
 const THRESHOLDS = {
-    temperatureC: 55,
+    temperatureC: 40,
     turbulenceG: 0.25,
-    speedKn: 160,
+    speedKn: 149,
     altitudeM: 3000
 };
 
@@ -541,7 +541,27 @@ export default function FlightDetails() {
                 {records.length > 0 && (
                     <div className="charts-grid">
                         <div className="chart-card">
-                            <div className="block-title">Trends (Temp / Pressure / Altitude)</div>
+                            <div className="block-title">Trends (Pressure / Altitude)</div>
+                            <div className="chart-wrap">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={records}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis
+                                            dataKey="time"
+                                            tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
+                                        />
+                                        <YAxis />
+                                        <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="pressureHpa" name="Tlak (hPa)" stroke="#10b981" dot={false} />
+                                        <Line type="monotone" dataKey="altitudeM" name="Výška (m)" stroke="#3b82f6" dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        <div className="chart-card">
+                            <div className="block-title">Temperature</div>
                             <div className="chart-wrap">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={records}>
@@ -554,27 +574,6 @@ export default function FlightDetails() {
                                         <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
                                         <Legend />
                                         <Line type="monotone" dataKey="temperatureC" name="Teplota (°C)" stroke="#f59e0b" dot={false} />
-                                        <Line type="monotone" dataKey="pressureHpa" name="Tlak (hPa)" stroke="#10b981" dot={false} />
-                                        <Line type="monotone" dataKey="altitudeM" name="Výška (m)" stroke="#3b82f6" dot={false} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-
-                        <div className="chart-card">
-                            <div className="block-title">Turbulence</div>
-                            <div className="chart-wrap">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={records}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis
-                                            dataKey="time"
-                                            tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
-                                        />
-                                        <YAxis />
-                                        <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="turbulenceG" name="Turbulencia (G)" stroke="#8b5cf6" dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
@@ -594,6 +593,25 @@ export default function FlightDetails() {
                                         <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
                                         <Legend />
                                         <Line type="monotone" dataKey="speedKn" name="Rýchlosť (kn)" stroke="#ec4899" dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        <div className="chart-card chart-card--full">
+                            <div className="block-title">Turbulence</div>
+                            <div className="chart-wrap">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={records}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis
+                                            dataKey="time"
+                                            tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
+                                        />
+                                        <YAxis />
+                                        <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="turbulenceG" name="Turbulencia (G)" stroke="#8b5cf6" dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>

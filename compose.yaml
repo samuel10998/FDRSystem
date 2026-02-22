@@ -65,7 +65,7 @@ services:
     networks:
       - spring-network
     healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/liveness | grep -q '\"status\":\"UP\"'" ]
       interval: 10s
       timeout: 5s
       retries: 10

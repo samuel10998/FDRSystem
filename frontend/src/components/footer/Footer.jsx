@@ -16,13 +16,13 @@ const Footer = () => {
 
             <div className="social-icons">
                 <a href="https://www.fpvai.ukf.sk/sk/" target="_blank" rel="noreferrer">
-                    <PiGlobe size={22} />
+                    <PiGlobe size={20} />
                 </a>
                 <a href="https://www.facebook.com/fpvai.ukf" target="_blank" rel="noreferrer">
-                    <PiFacebookLogo size={22} />
+                    <PiFacebookLogo size={20} />
                 </a>
                 <a href="https://www.instagram.com/fpvai.ukf/" target="_blank" rel="noreferrer">
-                    <PiInstagramLogo size={22} />
+                    <PiInstagramLogo size={20} />
                 </a>
             </div>
 

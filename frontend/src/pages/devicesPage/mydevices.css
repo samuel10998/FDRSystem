@@ -1,156 +1,276 @@
-.mydevices-page{
-    padding: 24px;
-    max-width: 900px;
+.mydevices-page {
+    height: 100%;
+    padding: 22px 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.mydevices-shell {
+    width: min(1680px, calc(100vw - 32px));
+    max-width: 1680px;
+    min-height: 100%;
     margin: 0 auto;
+    background: #f5f7fb;
+    border: 1px solid #d6dce6;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(2, 6, 23, 0.06);
 }
 
-.mydevices-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
+.mydevices-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #d6dce6;
 }
 
-.mydevices-title{
-    margin:0;
-    font-size: 28px;
-    color:#0b2545;
+.mydevices-eyebrow {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: #5e6d87;
+    margin-bottom: 2px;
 }
 
-.mydevices-error{
-    color:#c00;
+.mydevices-title {
+    margin: 0;
+    font-size: 2rem;
+    color: #082451;
+}
+
+.mydevices-error {
+    color: #c00;
     margin-top: 10px;
 }
 
-.mydevices-loading{
+.mydevices-loading {
     margin-top: 12px;
 }
 
-.mydevices-msg{
+.mydevices-msg {
     white-space: pre-wrap;
-    background: rgba(2, 6, 23, 0.04);
-    border: 1px solid rgba(0,0,0,0.08);
+    background: #eef3ff;
+    border: 1px solid #c8d5f2;
+    color: #0f2549;
     padding: 12px;
     border-radius: 12px;
     margin-top: 12px;
 }
 
-.mydevices-empty{
+.mydevices-empty {
     margin-top: 14px;
-    color: rgba(2,6,23,0.7);
+    color: rgba(2, 6, 23, 0.7);
 }
 
-.mydevices-grid{
-    display:grid;
-    gap:12px;
+.mydevices-grid {
+    display: grid;
+    gap: 12px;
     margin-top: 14px;
 }
 
-.mydevices-card{
-    border: 1px solid rgba(0,0,0,0.12);
+.mydevices-card {
+    border: 1px solid #cfd7e5;
     border-radius: 14px;
     background: #fff;
     padding: 14px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 12px rgba(2, 6, 23, 0.06);
 }
 
-.mydevices-row{
-    display:flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 6px 0;
+.mydevices-row {
+    display: flex;
+    gap: 10px;
+    margin: 8px 0;
 }
 
-.mydevices-label{
+.mydevices-row--meta {
+    align-items: center;
+}
+
+.mydevices-label {
+    min-width: 90px;
     font-weight: 700;
-    color: rgba(2,6,23,0.75);
+    color: #334665;
 }
 
-.mydevices-value{
+.mydevices-value {
+    flex: 1;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    color: rgba(2,6,23,0.85);
+    color: #13233d;
 }
 
-.mydevices-actions{
-    display:flex;
-    gap:10px;
+.mydevices-actions {
+    display: flex;
+    gap: 10px;
     margin-top: 12px;
 }
 
-.mydevices-btn{
+.mydevices-btn {
     padding: 10px 12px;
     border-radius: 10px;
     border: none;
     cursor: pointer;
     font-weight: 700;
+    transition: all 0.2s ease;
 }
 
-.mydevices-btn:disabled{
+.mydevices-btn:disabled {
     cursor: not-allowed;
     opacity: 0.7;
 }
 
-.mydevices-btn--primary{
-    background: #0b2545;
-    color:#fff;
+.mydevices-btn--primary {
+    background: #123575;
+    color: #fff;
 }
 
-.mydevices-btn--primary:hover{
-    background: #082038;
+.mydevices-btn--primary:hover {
+    background: #0d2b60;
 }
 
-.mydevices-btn--secondary{
-    background:#fff;
-    border: 1px solid rgba(0,0,0,0.15);
-    color: rgba(2,6,23,0.85);
+.mydevices-btn--secondary {
+    background: #fff;
+    border: 1px solid #c5cfde;
+    color: #1e2f4f;
 }
 
-.mydevices-btn--secondary:hover{
-    background: rgba(2,6,23,0.04);
+.mydevices-btn--secondary:hover {
+    background: #f1f4f9;
 }
 
-/* ✅ Pairing panel */
-.mydevices-panel{
+/* Pairing panel */
+.mydevices-panel {
     margin-top: 16px;
     background: #fff;
-    border: 1px solid rgba(0,0,0,0.10);
+    border: 1px solid #cfd7e5;
     border-radius: 14px;
     padding: 14px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 12px rgba(2, 6, 23, 0.05);
 }
 
-.mydevices-panelTitle{
+.mydevices-panelTitle {
+    font-size: 1.4rem;
     font-weight: 800;
-    color: rgba(2,6,23,0.9);
+    color: #0a2247;
     margin-bottom: 6px;
 }
 
-.mydevices-panelHelp{
+.mydevices-panelHelp {
     font-size: 14px;
-    color: rgba(2,6,23,0.7);
+    color: #4f5f7c;
     margin-bottom: 12px;
 }
 
-.mydevices-pairForm{
-    display:flex;
-    gap:10px;
+.mydevices-pairForm {
+    display: flex;
+    gap: 10px;
 }
 
-.mydevices-input{
+.mydevices-input {
     flex: 1;
     padding: 10px 12px;
     border-radius: 10px;
-    border: 1px solid rgba(0,0,0,0.18);
+    border: 1px solid #c7d1e2;
     outline: none;
 }
 
-.mydevices-input:focus{
-    border-color: rgba(11,37,69,0.55);
-    box-shadow: 0 0 0 3px rgba(11,37,69,0.12);
+.mydevices-input:focus {
+    border-color: rgba(11, 37, 69, 0.55);
+    box-shadow: 0 0 0 3px rgba(11, 37, 69, 0.12);
 }
 
 .mydevices-btn--tiny {
     padding: 6px 10px;
     font-size: 0.85rem;
-    margin-left: 8px;
+    white-space: nowrap;
+}
+
+.mydevices-onetimeKey {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(180, 83, 9, 0.35);
+    background: rgba(251, 191, 36, 0.14);
+}
+
+.mydevices-onetimeTitle {
+    font-weight: 800;
+    color: #7c2d12;
+    margin-bottom: 4px;
+}
+
+.mydevices-onetimeHint {
+    color: #7c2d12;
+    font-size: 0.92rem;
+    margin-bottom: 8px;
+}
+
+.mydevices-row--key {
+    align-items: center;
+}
+
+.mydevices-inlineActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mydevices-panel--template {
+    margin-top: 12px;
+}
+
+.mydevices-downloadLink {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.mydevices-templateLinks {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mydevices-templateWarning {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #7c2d12;
+}
+
+@media (max-width: 768px) {
+    .mydevices-page {
+        min-height: auto;
+        padding: 12px;
+        overflow: visible;
+        display: block;
+    }
+
+    .mydevices-shell {
+        padding: 12px;
+    }
+
+    .mydevices-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mydevices-title {
+        font-size: 1.6rem;
+    }
+
+    .mydevices-pairForm {
+        flex-direction: column;
+    }
+
+    .mydevices-row--meta {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .mydevices-label {
+        min-width: 100%;
+    }
 }

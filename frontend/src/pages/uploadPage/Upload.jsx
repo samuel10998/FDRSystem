@@ -204,7 +204,7 @@ export default function Upload() {
                             {/* ✅ Cloud sync */}
                             <button
                                 type="button"
-                                className="btn-upload"
+                                className="btn-upload btn-sync"
                                 onClick={handleCloudSync}
                                 disabled={!token || syncing}
                                 title={!token ? "Najprv sa prihlás." : syncing ? "Syncujem…" : "Sync z cloudu"}
@@ -217,7 +217,7 @@ export default function Upload() {
 
                             <button
                                 type="submit"
-                                className="btn-upload"
+                                className="btn-upload btn-uploadMain"
                                 disabled={!token || uploading}
                                 title={!token ? "Najprv sa prihlás." : uploading ? "Nahrávam…" : "Upload"}
                             >

@@ -1,5 +1,7 @@
 # FDRSystem
 
+FDRSystem is a system for collecting, synchronizing, analyzing, and visualizing flight data from Flight Data Recorder (FDR) devices. The application allows you to upload logs (upload or cloud sync), process them into reports, and then display flight routes, graphs, and statistics in a clear web interface.
+
 If you want to run this app use **Docker Desktop** + for example **IntelliJ** (recommended).
 
 ## Requirements

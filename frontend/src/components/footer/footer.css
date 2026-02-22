@@ -4,9 +4,9 @@
     margin-top: auto;
     background-color: #00203FFF;
     color: #ADEFD1FF;
-    padding: 1rem 0;
+    padding: 0.9rem 0;
     width: 100%;
-    font-size: 85%;
+    font-size: 76.5%;
 }
 
 .footer-content {
@@ -39,8 +39,8 @@
 
 .social-icons {
     display: flex;
-    gap: 10px;
-    margin-top: 1rem;
+    gap: 9px;
+    margin-top: 0.9rem;
 }
 
 .social-icons a {

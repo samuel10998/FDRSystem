@@ -29,14 +29,14 @@ html, body, #root {
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 54px;
   z-index: 1000;
 }
 
 .content-wrapper {
   flex: 1 0 auto;
-  margin-top: 60px; /* výška navbaru */
-  padding: 20px;
+  margin-top: 54px; /* výška navbaru */
+  padding: 18px;
   background-color: #f6f6f6;
 }
 
@@ -45,21 +45,21 @@ html, body, #root {
   margin-top: auto;
   background-color: #00203f;
   color: #ffffff;
-  padding: 1.5rem 0;
+  padding: 1.35rem 0;
   width: 100%;
   text-align: center;
-  font-size: 0.95rem;
+  font-size: 0.855rem;
 }
 
 /* Odkazy vo footeri */
 .footer-links {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 
 .footer-links span {
   color: #ffffff;
   text-decoration: none;
-  margin: 0 1rem;
+  margin: 0 0.9rem;
   font-weight: bold;
   cursor: pointer;
 }
@@ -72,8 +72,8 @@ html, body, #root {
 .social-icons {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin: 0.5rem 0;
+  gap: 0.9rem;
+  margin: 0.45rem 0;
 }
 
 .social-icons a {
@@ -88,7 +88,7 @@ html, body, #root {
 /* Copyright text */
 .footer-copy {
   color: #aaaaaa;
-  font-size: 0.85rem;
+  font-size: 0.765rem;
 }
 
 /* Wrapper pre každú stránku */

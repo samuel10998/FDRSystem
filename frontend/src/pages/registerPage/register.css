@@ -205,7 +205,9 @@
     transform: scale(1.05);
 }
 
-
-
-
-
+.field-hint {
+    display: block;
+    margin-top: 0.35rem;
+    color: #4b5563;
+    font-size: 0.85rem;
+}

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -59,7 +60,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCreds(BadCredentialsException ex, HttpServletRequest req) {
-        // ex zámerne nepoužívame (nechceme leakovať detaily)
         return build(HttpStatus.UNAUTHORIZED, "Invalid credentials", req);
     }
 
@@ -98,11 +98,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MultipartException.class)
     public ResponseEntity<ApiError> handleMultipart(MultipartException ex, HttpServletRequest req) {
-        // zlé boundary / zle poslaný multipart / chýbajúce časti requestu
         return build(HttpStatus.BAD_REQUEST, "Invalid multipart request", req);
     }
 
-    // ---------- Spring response-status exceptions ----------
+    // ---------- Spring response-status / resources ----------
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
@@ -126,6 +125,12 @@ public class GlobalExceptionHandler {
                 : status.getReasonPhrase();
 
         return build(status, msg, req);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
+        // bežné napr. /favicon.ico, nech to nespadá do ERROR stacktrace fallbacku
+        return build(HttpStatus.NOT_FOUND, "Resource not found", req);
     }
 
     // ---------- Fallback ----------
