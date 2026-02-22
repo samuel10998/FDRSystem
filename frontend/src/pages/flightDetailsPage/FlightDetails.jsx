@@ -23,11 +23,11 @@ import {
 
 import "./FlightDetails.css";
 
-/** QUICK TUNING (you can move this later to backend / config) */
+/** QUICK TUNING of THRESHOLD values */
 const THRESHOLDS = {
-    temperatureC: 55,
+    temperatureC: 40,
     turbulenceG: 0.25,
-    speedKn: 160,
+    speedKn: 149,
     altitudeM: 3000
 };
 

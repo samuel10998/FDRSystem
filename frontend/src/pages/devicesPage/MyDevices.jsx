@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../api";
+import deviceTemplateIno from "../../assets/Device code template/Device_code_template.ino";
+import deviceTemplateReadme from "../../assets/Device code template/README.txt";
 import "./mydevices.css";
 
 export default function MyDevices() {
@@ -170,6 +172,34 @@ export default function MyDevices() {
                             {pairing ? "Párujem…" : "Spárovať"}
                         </button>
                     </form>
+                </div>
+
+                <div className="mydevices-panel mydevices-panel--template">
+                    <div className="mydevices-panelTitle">Device code template</div>
+                    <div className="mydevices-panelHelp">
+                        Stiahni súbory <code>Device_code_template.ino</code> a <code>README.txt</code>. Doplň svoje údaje
+                        (<code>WIFI_SSID</code>, <code>WIFI_PASSWORD</code>, <code>DEVICE_ID</code>, <code>DEVICE_KEY</code>) a nahraj kód
+                        do zariadenia.
+                    </div>
+
+                    <div className="mydevices-templateLinks">
+                        <a
+                            className="mydevices-btn mydevices-btn--primary mydevices-downloadLink"
+                            href={deviceTemplateIno}
+                            download="Device_code_template.ino"
+                        >
+                            Download Device_code_template.ino
+                        </a>
+                        <a
+                            className="mydevices-btn mydevices-btn--secondary mydevices-downloadLink"
+                            href={deviceTemplateReadme}
+                            download="README.txt"
+                        >
+                            Download README.txt
+                        </a>
+                    </div>
+
+                    <div className="mydevices-templateWarning">⚠️ DEVICE_KEY je citlivý údaj, nezdieľaj ho verejne.</div>
                 </div>
 
                 {loading && <p className="mydevices-loading">Načítavam…</p>}

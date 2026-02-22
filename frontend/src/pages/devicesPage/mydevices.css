@@ -219,6 +219,27 @@
     flex-wrap: wrap;
 }
 
+.mydevices-panel--template {
+    margin-top: 12px;
+}
+
+.mydevices-downloadLink {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.mydevices-templateLinks {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mydevices-templateWarning {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #7c2d12;
+}
+
 @media (max-width: 768px) {
     .mydevices-page {
         min-height: auto;
