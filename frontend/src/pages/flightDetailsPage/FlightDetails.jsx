@@ -26,7 +26,7 @@ import "./FlightDetails.css";
 /** QUICK TUNING of THRESHOLD values */
 const THRESHOLDS = {
     temperatureC: 40,
-    turbulenceG: 0.25,
+    turbulenceG: 0.7,
     speedKn: 149,
     altitudeM: 3000
 };
