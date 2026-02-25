@@ -4,6 +4,8 @@ FDRSystem is a system for collecting, synchronizing, analyzing, and visualizing 
 
 If you want to run this app use **Docker Desktop** + for example **IntelliJ** (recommended).
 
+And if you want to see how the application looks go to project-assets/Application_screenshots.
+
 ## Requirements
 - Docker Desktop (with Docker Compose)
 - (Optional) IntelliJ IDEA
@@ -74,7 +76,32 @@ Tip: If you want to reset the admin password on next start, set it to `true`, re
 
 ---
 
- **Cloud Inbox (Cloudflare Worker + R2) – NEW**
+## Frontend environment setup (important)
+
+Before starting the project, create a `.env` file **manually** inside the `frontend/` folder:
+
+**File:** `frontend/.env`
+
+```env
+REACT_APP_API_URL=http://localhost:8080
+```
+### Why this is required
+
+The `.env` file is intentionally ignored by Git and is not stored in the repository, so **every user must create it locally**.
+
+---
+
+### Also required in `frontend/package.json` 
+
+Make sure the `proxy` field exists at the top level of package.json file:
+
+```json
+{
+  "proxy": "http://backend:8080"
+}
+```
+---
+## **Cloud Inbox (Cloudflare Worker + R2) – NEW**
 
 This project supports cloud upload + sync via Cloudflare Worker + R2.
 

@@ -10,6 +10,11 @@ import helicopter1 from "../../assets/helicopter1.jpg";
 import cockpitHeli from "../../assets/cockpit_helicopter.jpg";
 import logo from "../../assets/Logo.png";
 
+// ✅ new showcase images (replace these files with your real screenshots if needed)
+import photo1 from "../../assets/photo1.png";
+import photo2 from "../../assets/photo2.png";
+import photo3 from "../../assets/photo3.png";
+
 const SLIDE_MS = 6500; // ~5–8s (zmeň podľa potreby)
 
 const SLIDES = [
@@ -64,6 +69,24 @@ const FEATURES = [
     },
 ];
 
+const SHOWCASE_ITEMS = [
+    {
+        img: photo1,
+        title: "Štatistika letu",
+        desc: "Kľúčové KPI na jednom mieste: vzdialenosť, trvanie letu, počet záznamov a max. rýchlosť.",
+    },
+    {
+        img: photo2,
+        title: "GPS mapa trasy",
+        desc: "Interaktívna mapa letu so štartom, koncom a priebehom celej trasy podľa GPS bodov.",
+    },
+    {
+        img: photo3,
+        title: "Grafy senzorov",
+        desc: "Časové grafy rýchlosti, turbulencie a ďalších veličín pre rýchlu aj detailnú analýzu.",
+    },
+];
+
 const WORKFLOW_STEPS = [
     "FDR zariadenie zaznamená letové údaje",
     "Upload alebo Cloud Sync odošle dáta do systému",
@@ -75,6 +98,7 @@ const WORKFLOW_STEPS = [
 export default function Home() {
     const navigate = useNavigate();
     const [index, setIndex] = useState(0);
+    const [activePreview, setActivePreview] = useState(null);
     const timerRef = useRef(null);
 
     const count = SLIDES.length;
@@ -92,6 +116,24 @@ export default function Home() {
         return () => timerRef.current && clearInterval(timerRef.current);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        const onKeyDown = (e) => {
+            if (e.key === "Escape") {
+                setActivePreview(null);
+            }
+        };
+
+        if (activePreview) {
+            document.body.classList.add("home-modalOpen");
+            window.addEventListener("keydown", onKeyDown);
+        }
+
+        return () => {
+            document.body.classList.remove("home-modalOpen");
+            window.removeEventListener("keydown", onKeyDown);
+        };
+    }, [activePreview]);
 
     const goPrev = () => {
         setIndex((i) => (i - 1 + count) % count);
@@ -205,6 +247,79 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* NEW: SHOWCASE SECTION */}
+            <section className="home-showcase" aria-labelledby="home-showcase-title">
+                <div className="home-showcaseCard">
+                    <div className="home-showcaseHeader">
+                        <div className="home-smallTitle">Ukážky z aplikácie</div>
+                        <h2 id="home-showcase-title">Analýza letu na 3 obrazovkách</h2>
+                        <p>
+                            Rýchly prehľad toho najdôležitejšieho: štatistika letu, GPS mapa trasy
+                            a grafy nameraných veličín.
+                        </p>
+                    </div>
+
+                    <div className="home-showcaseGrid">
+                        {SHOWCASE_ITEMS.map((item) => (
+                            <article key={item.title} className="home-showcaseItem">
+                                <button
+                                    type="button"
+                                    className="home-showcaseImageBtn"
+                                    onClick={() => setActivePreview(item)}
+                                    aria-label={`Zväčšiť ukážku: ${item.title}`}
+                                >
+                                    <div className="home-showcaseImageWrap">
+                                        <img className="home-showcaseImage" src={item.img} alt={item.title} />
+                                    </div>
+                                </button>
+                                <div className="home-showcaseBody">
+                                    <h3>{item.title}</h3>
+                                    <p>{item.desc}</p>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {activePreview && (
+                <div
+                    className="home-modalOverlay"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={activePreview.title}
+                    onClick={() => setActivePreview(null)}
+                >
+                    <div
+                        className="home-modalFrame"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            className="home-modalClose"
+                            onClick={() => setActivePreview(null)}
+                            aria-label="Zavrieť náhľad"
+                            title="Zavrieť"
+                        >
+                            ×
+                        </button>
+
+                        <div className="home-modalImageWrap">
+                            <img
+                                src={activePreview.img}
+                                alt={activePreview.title}
+                                className="home-modalImage"
+                            />
+                        </div>
+
+                        <div className="home-modalMeta">
+                            <h3>{activePreview.title}</h3>
+                            <p>{activePreview.desc}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <section className="home-overview" aria-labelledby="home-workflow-title">
                 <div className="home-overviewCard">

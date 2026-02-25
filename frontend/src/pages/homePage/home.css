@@ -31,6 +31,10 @@ body {
     overflow-x: hidden;
 }
 
+body.home-modalOpen {
+    overflow: hidden;
+}
+
 .home {
     background: var(--bg);
     margin: 0;
@@ -225,13 +229,22 @@ body {
 }
 
 /* ===== CONTENT ===== */
-.home-intro {
+.home-intro,
+.home-showcase {
     display: flex;
     align-items: center;
+}
+
+.home-intro {
     padding: 28px 0 18px;
 }
 
+.home-showcase {
+    padding: 0 0 18px;
+}
+
 .home-introCard,
+.home-showcaseCard,
 .home-overviewCard {
     max-width: 1200px;
     width: 100%;
@@ -264,7 +277,8 @@ body {
 }
 
 .home-introText h2,
-.home-overviewCard h2 {
+.home-overviewCard h2,
+.home-showcaseHeader h2 {
     margin: 0 0 10px;
     font-size: 26px;
     font-weight: 850;
@@ -272,13 +286,25 @@ body {
     color: var(--text);
 }
 
-.home-overviewCard h2 {
+.home-overviewCard h2,
+.home-showcaseHeader h2 {
     font-size: 30px;
     line-height: 1.2;
 }
 
+.home-smallTitle {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
 .home-introText p,
-.home-cloudBox p {
+.home-cloudBox p,
+.home-showcaseHeader p,
+.home-showcaseBody p {
     margin: 0 0 12px;
     color: var(--muted);
     line-height: 1.65;
@@ -330,38 +356,199 @@ body {
     padding-left: 30px;
 }
 
+/* ===== NEW SHOWCASE ===== */
+.home-showcaseHeader {
+    margin-bottom: 14px;
+}
+
+.home-showcaseHeader p {
+    max-width: 850px;
+    margin-bottom: 0;
+}
+
+.home-showcaseGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.home-showcaseItem {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.home-showcaseImageBtn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+}
+
+.home-showcaseImageBtn:focus-visible {
+    outline: 2px solid #0b5ea8;
+    outline-offset: 2px;
+}
+
+.home-showcaseImageWrap {
+    height: 210px;
+    background: #e2e8f0;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+}
+
+.home-showcaseImage {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #ffffff;
+}
+
+.home-modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(2, 6, 23, 0.58);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.home-modalFrame {
+    width: min(95vw, 1960px);
+    max-height: 92vh;
+    border-radius: 20px;
+    background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: 0 30px 60px rgba(2, 6, 23, 0.45);
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 1fr auto;
+}
+
+.home-modalClose {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f172a;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    z-index: 2;
+}
+
+.home-modalClose:hover {
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(2, 6, 23, 0.2);
+}
+
+.home-modalClose:active {
+    transform: translateY(1px);
+}
+
+.home-modalImageWrap {
+    min-height: 0;
+    padding: 20px 20px 10px;
+    display: grid;
+    place-items: center;
+}
+
+.home-modalImage {
+    max-width: 100%;
+    max-height: calc(92vh - 120px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid #dbe4f0;
+    background: #ffffff;
+}
+
+.home-modalMeta {
+    padding: 10px 20px 18px;
+    border-top: 1px solid #e2e8f0;
+    background: rgba(255, 255, 255, 0.92);
+}
+
+.home-modalMeta h3 {
+    margin: 0;
+    color: #0b5ea8;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.home-modalMeta p {
+    margin: 6px 0 0;
+    color: #475569;
+    font-size: 14px;
+}
+
+.home-showcaseBody {
+    padding: 14px;
+}
+
+.home-showcaseBody h3 {
+    margin: 0 0 8px;
+    color: #0b5ea8;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+.home-showcaseBody p {
+    margin-bottom: 0;
+}
+
 .home-overview {
     padding: 0 0 40px;
 }
 
 .home-workflowList {
-    margin: 8px 0 0;
-    padding: 0;
+    margin: 10px 0 0;
+    padding: 14px 16px 14px 30px;
     list-style: none;
     display: grid;
     gap: 10px;
+    border: 1px solid #dbe6f4;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f8fbff 0%, #f4f8fd 100%);
 }
 
 .home-workflowList li {
     position: relative;
-    padding: 10px 12px 10px 38px;
-    border: 1px solid #dbe6f4;
-    border-radius: 12px;
-    background: #f9fbff;
+    padding: 0 0 0 24px;
     color: #15314f;
     font-size: 15px;
     line-height: 1.55;
-    font-weight: 600;
+    font-weight: 650;
 }
 
 .home-workflowList li::before {
     content: "•";
     position: absolute;
-    left: 14px;
-    top: 8px;
+    left: 0;
+    top: 0;
     color: var(--brand);
-    font-size: 24px;
-    line-height: 1;
+    font-size: 22px;
+    line-height: 1.1;
 }
 
 .home-cloudBox {
@@ -386,6 +573,16 @@ body {
     min-width: 220px;
 }
 
+@media (max-width: 980px) {
+    .home-showcaseGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-showcaseImageWrap {
+        height: 260px;
+    }
+}
+
 @media (max-width: 900px) {
     .home-title {
         font-size: 30px;
@@ -406,13 +603,47 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .home-overviewCard h2 {
+    .home-overviewCard h2,
+    .home-showcaseHeader h2 {
         font-size: 24px;
+    }
+
+    .home-workflowList {
+        padding: 12px 12px 12px 24px;
     }
 
     .home-workflowList li {
         font-size: 14px;
-        padding-left: 34px;
+        padding-left: 22px;
+    }
+
+    .home-showcaseImageWrap {
+        height: 220px;
+    }
+
+    .home-showcaseBody h3 {
+        font-size: 22px;
+    }
+
+    .home-modalOverlay {
+        padding: 10px;
+    }
+
+    .home-modalFrame {
+        width: 100%;
+        max-height: 95vh;
+    }
+
+    .home-modalImageWrap {
+        padding: 14px 14px 8px;
+    }
+
+    .home-modalImage {
+        max-height: calc(95vh - 120px);
+    }
+
+    .home-modalMeta h3 {
+        font-size: 18px;
     }
 }
 
