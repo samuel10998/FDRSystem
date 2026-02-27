@@ -26,6 +26,19 @@ static const char* WORKER_UPLOAD_PATH = "/upload";
 static const char* DEVICE_ID  = "[PASTE HERE DEV_ID ADMIN GAVE YOU]";  // YOUR DEVICE ID NEEDED NEEDED FOR CLOUD SYNC TO WORK !!
 static const char* DEVICE_KEY = "[PASTE HERE DEV_KEY YOU RECEIVED FROM ADMIN]";  // YOUR DEVICE_KEY NEEDED FOR CLOUD SYNC TO WORK !!
 
+// ===================== BUZZER (Active module) =====================
+// Active buzzer module: VCC->5V, GND->GND, I/O->D25
+static const int BUZZER_PIN = 25;
+// podľa modulu "Low Level" je pravdepodobne LOW = ON
+static const bool BUZZER_ACTIVE_LOW = true;
+static const uint32_t BUZZ_DURATION_MS = 5000UL; // 1x 5 sekúnd
+
+// ===================== ALERT THRESHOLDS =====================
+static const float SPEED_ALERT_KN     = 140.0f;
+static const float TURB_ALERT         = 0.7f;
+static const float ALT_DROP_ALERT_M   = 70.0f;
+static const uint32_t ALT_WINDOW_MS   = 10000UL; // 10 s
+
 // ===================== GPS (ESP32 UART1) =====================
 // GPS (TX) -> ESP RX = D16
 // GPS (RX) -> ESP TX = D17
@@ -51,7 +64,7 @@ const uint16_t LOG_INTERVAL_MS = 200;
 unsigned long  lastLogMs = 0;
 
 // ===================== post-fix stabilization window =====================
-const uint32_t WARMUP_MS = 30000; // 30s namiesto 15s
+const uint32_t WARMUP_MS = 30000; // 30s GPS stabilization
 bool           gpsReady = false;
 bool           loggingActive = false;
 unsigned long  fixTimeMs = 0;
@@ -60,12 +73,11 @@ int            lastCountdownSec = -1;
 // ===================== NEW: ARMED state =====================
 bool armed = false;
 
-// ===================== Auto START/STOP (Variant A) =====================
-const float START_SPEED_KN = 3.0f;   // START logovania
+// ===================== Auto START/STOP =====================
 const float KEEP_SPEED_KN  = 1.0f;   // po safe okne keď je >1, určite pokračuj
 const float ZERO_SPEED_KN  = 0.2f;   // "0-ish" (kvôli šumu GPS)
 
-const uint32_t SAFE_AFTER_START_MS = 5UL * 60UL * 1000UL; // 5 min od START
+const uint32_t SAFE_AFTER_START_MS = 8UL * 60UL * 1000UL; // 8 min od START
 const uint32_t STOP_ZERO_MS        = 15UL * 1000UL;       // 15 sec 0-ish pre STOP
 
 unsigned long flightStartMs = 0;
@@ -91,7 +103,7 @@ static bool sdBusy = false;
 const float PRESSURE_OFFSET_HPA = 0.0f;
 const float QNH_OFFSET_HPA      = 21.0f;
 
-// ===================== NEW: Baro altitude fix using p0 + GPS offset =====================
+// ===================== Baro altitude fix using p0 + GPS offset =====================
 bool  baroRefReady = false;
 float p0_hpa = NAN;
 
@@ -151,7 +163,7 @@ void gpsEnableGGA_RMC_only(){
   uint8_t on2 [3] = {0xF0, 0x04, 1}; sendUBX(0x06,0x01, on2 , 3);
 }
 
-// ===================== NEW: Cloud chunking =====================
+// ===================== Cloud chunking =====================
 static const size_t CHUNK_TARGET_BYTES = 16 * 1024; // 16KB (MVP)
 String flightId = "";
 uint32_t chunkNo = 0;
@@ -167,7 +179,6 @@ String pad6(uint32_t n) {
 }
 
 String genFlightId() {
-  // prefer GPS date+time if valid
   if (gps.date.isValid() && gps.time.isValid()) {
     char b[32];
     snprintf(b, sizeof(b), "F_%04d%02d%02d_%02d%02d%02d",
@@ -175,7 +186,6 @@ String genFlightId() {
              gps.time.hour(), gps.time.minute(), gps.time.second());
     return String(b);
   }
-  // fallback random
   uint32_t r = (uint32_t)esp_random();
   char b[32];
   snprintf(b, sizeof(b), "F_RAND_%08lx", (unsigned long)r);
@@ -201,7 +211,7 @@ bool uploadToWorker(const String& fId, uint32_t cNo, const String& payload) {
   String url = String(WORKER_BASE) + WORKER_UPLOAD_PATH;
 
   WiFiClientSecure client;
-  client.setInsecure(); // MVP: TLS without cert validation
+  client.setInsecure(); // MVP
 
   HTTPClient http;
   if (!http.begin(client, url)) return false;
@@ -236,8 +246,6 @@ bool writeOutboxFile(const String& fId, uint32_t cNo, const String& payload) {
   if (!SD.exists("/outbox")) SD.mkdir("/outbox");
 
   String fn = "/outbox/" + fId + "_" + pad6(cNo) + ".log";
-
-  // FIX: aby sa nikdy neappendovalo do existujúceho súboru
   if (SD.exists(fn)) SD.remove(fn);
 
   File f = SD.open(fn, FILE_WRITE);
@@ -257,7 +265,7 @@ void trySendOutbox() {
   if (WiFi.status() != WL_CONNECTED) return;
 
   unsigned long now = millis();
-  if (now - lastOutboxTryMs < 5000) return; // nepreťažuj
+  if (now - lastOutboxTryMs < 5000) return;
   lastOutboxTryMs = now;
 
   File dir = SD.open("/outbox");
@@ -266,22 +274,18 @@ void trySendOutbox() {
   File f = dir.openNextFile();
   if (!f) { dir.close(); return; }
 
-  // entryName býva často len "F_....log" bez "/outbox/"
   String entryName = String(f.name());
 
-  // FIX: zostav FULL PATH tak, aby mazanie bolo vždy správne
   String fullPath;
   if (entryName.startsWith("/outbox/")) fullPath = entryName;
   else if (entryName.startsWith("outbox/")) fullPath = "/" + entryName;
-  else if (entryName.startsWith("/")) fullPath = entryName; // fallback
+  else if (entryName.startsWith("/")) fullPath = entryName;
   else fullPath = String("/outbox/") + entryName;
 
-  // base filename na parsing (bez priečinkov)
   String base = fullPath;
   int slash = base.lastIndexOf('/');
   if (slash >= 0) base = base.substring(slash + 1);
 
-  // načítaj payload (rezervuj kapacitu, menej fragmentácie)
   String payload;
   payload.reserve(f.size() + 1);
   while (f.available()) payload += (char)f.read();
@@ -289,7 +293,6 @@ void trySendOutbox() {
   f.close();
   dir.close();
 
-  // parse filename: <flightId>_<chunk>.log
   int us = base.lastIndexOf('_');
   int dot = base.lastIndexOf('.');
   if (us < 0 || dot < 0 || dot < us) {
@@ -323,16 +326,13 @@ void flushChunkIfNeeded(bool force) {
   String payload = chunkBuf;
   chunkBuf = "";
 
-  // vždy najprv uložiť na SD do outboxu
   if (sdHealthy) {
     if (!writeOutboxFile(flightId, chunkNo, payload)) {
       Serial.println("[Outbox] write failed (still continuing)");
     }
   }
 
-  // potom skúsiť poslať hneď
   if (uploadToWorker(flightId, chunkNo, payload)) {
-    // ak upload prešiel a outbox súbor existuje, zmaž ho
     String fn = "/outbox/" + flightId + "_" + pad6(chunkNo) + ".log";
     deleteOutboxFile(fn);
   }
@@ -367,7 +367,6 @@ String buildTsvLine(const char* tBuf,
   String s;
   s.reserve(220);
 
-  // presne ako tvoj pôvodný SD write (zarovnanie cez dvojité taby)
   s += tBuf;                 s += '\t';
   s += String(lat, 6);       s += '\t';
   s += String(lng, 6);       s += '\t';
@@ -381,7 +380,7 @@ String buildTsvLine(const char* tBuf,
   s += String(az_g, 3);      s += '\t';
 
   s += String(turbulence, 3); s += '\t';
-  s += '\t'; // extra tab pred uhlami (presne ako u teba)
+  s += '\t';
 
   s += String(angX, 2);      s += '\t';
   s += String(angY, 2);      s += '\t';
@@ -391,6 +390,102 @@ String buildTsvLine(const char* tBuf,
   s += '\n';
 
   return s;
+}
+
+// ===================== BUZZER: 1x continuous 5s =====================
+bool buzzerActive = false;
+unsigned long buzzerEndMs = 0;
+
+void buzzerWrite(bool on) {
+  if (BUZZER_ACTIVE_LOW) {
+    digitalWrite(BUZZER_PIN, on ? LOW : HIGH);
+  } else {
+    digitalWrite(BUZZER_PIN, on ? HIGH : LOW);
+  }
+}
+
+void buzzerStop() {
+  buzzerActive = false;
+  buzzerEndMs = 0;
+  buzzerWrite(false);
+}
+
+void buzzerTriggerOnce() {
+  if (buzzerActive) return; // ak už práve bzučí, nespúšťaj znova
+  buzzerActive = true;
+  buzzerEndMs = millis() + BUZZ_DURATION_MS;
+  buzzerWrite(true);
+}
+
+void buzzerUpdate() {
+  if (!buzzerActive) return;
+  unsigned long now = millis();
+  if ((long)(now - buzzerEndMs) >= 0) {
+    buzzerStop();
+  }
+}
+
+// ===================== ALT DROP ring buffer (10s window) =====================
+static const uint16_t ALT_SAMPLES_BACK = (uint16_t)(ALT_WINDOW_MS / LOG_INTERVAL_MS); // 10000/200=50
+static const uint16_t ALT_BUF_N = 60; // > 50
+float altBuf[ALT_BUF_N];
+uint16_t altIdx = 0;
+uint32_t altCount = 0;
+
+// ===================== alert latch states =====================
+bool speedAlertLatched = false;
+bool turbAlertLatched  = false;
+bool altAlertLatched   = false;
+
+// ===================== last computed values =====================
+float lastSpeedKn = 0.0f;
+float lastTurbulence = 0.0f;
+float lastAltM = 0.0f;
+
+void updateAltBuffer(float altM) {
+  altBuf[altIdx] = altM;
+  altIdx = (altIdx + 1) % ALT_BUF_N;
+  altCount++;
+}
+
+bool getAltBack(float &outAltBack) {
+  if (altCount < ALT_SAMPLES_BACK) return false;
+  uint16_t back = ALT_SAMPLES_BACK;
+  uint16_t pos = (altIdx + ALT_BUF_N - back) % ALT_BUF_N;
+  outAltBack = altBuf[pos];
+  return true;
+}
+
+void evaluateAlerts() {
+  // SPEED alert
+  bool speedNow = (lastSpeedKn >= SPEED_ALERT_KN);
+  if (speedNow && !speedAlertLatched) {
+    Serial.println(F("[ALERT] SPEED"));
+    buzzerTriggerOnce();
+  }
+  speedAlertLatched = speedNow;
+
+  // TURB alert
+  bool turbNow = (lastTurbulence >= TURB_ALERT);
+  if (turbNow && !turbAlertLatched) {
+    Serial.println(F("[ALERT] TURB"));
+    buzzerTriggerOnce();
+  }
+  turbAlertLatched = turbNow;
+
+  // ALT DROP alert
+  bool altNow = false;
+  float altBack = 0.0f;
+  if (getAltBack(altBack)) {
+    float drop = altBack - lastAltM; // positive = drop
+    altNow = (drop >= ALT_DROP_ALERT_M);
+    if (altNow && !altAlertLatched) {
+      Serial.print(F("[ALERT] ALT DROP "));
+      Serial.println(drop, 1);
+      buzzerTriggerOnce();
+    }
+  }
+  altAlertLatched = altNow;
 }
 
 // ===================== SAVE LOCATION (SD + Cloud buffer) =====================
@@ -432,7 +527,12 @@ bool saveLocation(float ax_g, float ay_g, float az_g,
   float tempC = bmp280.readTemperature();
   float speedKn = gps.speed.knots();
 
-  // 1) build TSV line
+  lastSpeedKn = speedKn;
+  lastTurbulence = turbulence;
+  lastAltM = alt;
+
+  updateAltBuffer(alt);
+
   String line = buildTsvLine(
     tBuf,
     gps.location.lat(), gps.location.lng(),
@@ -443,16 +543,15 @@ bool saveLocation(float ax_g, float ay_g, float az_g,
     speedKn
   );
 
-  // 2) write to SD
   dataFile.print(line);
   dataFile.close();
 
-  // 3) echo to Serial
   Serial.print(line);
 
-  // 4) append to cloud chunk buffer + flush if needed
   chunkBuf += line;
   flushChunkIfNeeded(false);
+
+  evaluateAlerts();
 
   sdBusy = false;
   return true;
@@ -465,9 +564,16 @@ void startFlightSession() {
   flightStartMs = millis();
   zeroStartMs = 0;
 
+  // reset buffers and alert latches for a new session
+  altIdx = 0;
+  altCount = 0;
+  speedAlertLatched = false;
+  turbAlertLatched = false;
+  altAlertLatched = false;
+  buzzerStop();
+
   Serial.println(F("[Flight] START logging"));
 
-  // set baro reference
   float p_station = bmp280.readPressure() / 100.0f + PRESSURE_OFFSET_HPA;
   p0_hpa = p_station;
   baroRefReady = true;
@@ -479,7 +585,6 @@ void startFlightSession() {
     gpsAlt0Ready = false;
   }
 
-  // start flight session for cloud
   flightId = genFlightId();
   chunkNo = 0;
   chunkBuf = "";
@@ -490,34 +595,32 @@ void startFlightSession() {
 
 void stopFlightSession() {
   Serial.println(F("[Flight] STOP logging"));
-  flushChunkIfNeeded(true); // flush last partial chunk
+  flushChunkIfNeeded(true);
 
   loggingActive = false;
-  // pripravené na ďalší let bez reštartu
   armed = true;
 
   flightStartMs = 0;
   zeroStartMs = 0;
+
+  buzzerStop();
 }
 
 void setup() {
   Serial.begin(115200);
   delay(300);
 
-  // WiFi
+  pinMode(BUZZER_PIN, OUTPUT);
+  buzzerWrite(false);
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
-  // GPS UART
   ss.begin(GPSBaud, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 
-  // SD
   if (!initSD()) { Serial.println(F("! SD card error")); while (true) delay(1000); }
-
-  // BMP
   if (!bmp280.begin(0x76)) { Serial.println(F("! BMP280 not found")); while (true) delay(1000); }
 
-  // MPU
   mpu.initialize();
 
   Serial.println(F("Configuring GPS (5Hz @9600, GGA+RMC)…"));
@@ -528,6 +631,10 @@ void setup() {
 
 void loop() {
   ensureWiFi();
+
+  // keep buzzer timing alive
+  buzzerUpdate();
+
   if (WiFi.status() == WL_CONNECTED) {
     static bool once = false;
     if (!once) {
@@ -569,7 +676,7 @@ void loop() {
     gpsReady   = true;
     fixTimeMs  = millis();
     lastCountdownSec = -1;
-    Serial.println(F("FIX OK – stabilizing before ARM…"));
+    Serial.println(F("FIX OK – stabilizing before AUTO-START…"));
   }
 
   // warm-up countdown -> ARMED
@@ -578,16 +685,18 @@ void loop() {
     if (elapsed < WARMUP_MS) {
       int remainSec = (int)((WARMUP_MS - elapsed + 999) / 1000);
       if (remainSec != lastCountdownSec) {
-        Serial.print(F("Stabilizing GPS… ")); Serial.print(remainSec); Serial.println(F(" s"));
+        Serial.print(F("Stabilizing GPS… "));
+        Serial.print(remainSec);
+        Serial.println(F(" s"));
         lastCountdownSec = remainSec;
       }
     } else {
       armed = true;
-      Serial.println(F("GPS stabilized – ARMED (waiting for takeoff speed)"));
+      Serial.println(F("GPS stabilized – ARMED (auto-start enabled)"));
     }
   }
 
-  // altitude baseline (keď už logujeme, alebo aj keď nie - nech sa chytí)
+  // altitude baseline
   if (!gpsAlt0Ready && gps.altitude.isValid()) {
     gpsAlt0_m = gps.altitude.meters();
     gpsAlt0Ready = true;
@@ -595,24 +704,18 @@ void loop() {
 
   float speedKn = gps.speed.isValid() ? gps.speed.knots() : 0.0f;
 
-  // ===== START: keď sme ARMED a ešte nelogujeme =====
+  // ===== START: auto after warm-up =====
   if (armed && !loggingActive) {
-    // (voliteľne) live info do Serial bez SD logovania
-    // Serial.print("[Live] speedKn="); Serial.println(speedKn, 2);
-
-    if (gps.speed.isValid() && speedKn >= START_SPEED_KN) {
-      startFlightSession();
-    }
+    startFlightSession();
   }
 
-  // ===== STOP: Variant A =====
+  // ===== STOP: after safe window + 15s 0-ish speed =====
   if (loggingActive && gps.speed.isValid()) {
     unsigned long now = millis();
 
-    // po prvých 5 min od START môže prísť STOP
     if ((now - flightStartMs) >= SAFE_AFTER_START_MS) {
       if (speedKn > KEEP_SPEED_KN) {
-        zeroStartMs = 0; // let pokračuje
+        zeroStartMs = 0;
       } else {
         if (speedKn <= ZERO_SPEED_KN) {
           if (zeroStartMs == 0) zeroStartMs = now;
@@ -626,7 +729,7 @@ void loop() {
     }
   }
 
-  // log every ~200 ms (len keď LOGGING)
+  // log every ~200 ms (only when LOGGING)
   if (loggingActive && (millis() - lastLogMs) >= LOG_INTERVAL_MS) {
     if (saveLocation(ax_g, ay_g, az_g, angleX, angleY, angleZ)) {
       lastLogMs += LOG_INTERVAL_MS;
