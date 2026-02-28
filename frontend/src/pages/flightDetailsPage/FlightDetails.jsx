@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../api";
 
@@ -21,6 +21,8 @@ import {
     ResponsiveContainer
 } from "recharts";
 
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import "./FlightDetails.css";
 
 /** QUICK TUNING of THRESHOLD values */
@@ -210,6 +212,8 @@ export default function FlightDetails() {
 
     // safety expand
     const [eventsOpen, setEventsOpen] = useState(false);
+    const [exportingPdf, setExportingPdf] = useState(false);
+    const reportExportRef = useRef(null);
 
     useEffect(() => {
         let alive = true;
@@ -321,6 +325,60 @@ export default function FlightDetails() {
         return events;
     }, [records, samplePeriodSec]);
 
+    async function handleExportPdf() {
+        if (!reportExportRef.current || exportingPdf) return;
+
+        try {
+            setExportingPdf(true);
+            const target = reportExportRef.current;
+
+            await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            await new Promise((resolve) => setTimeout(resolve, 350));
+
+            const canvas = await html2canvas(target, {
+                scale: 2,
+                backgroundColor: "#ffffff",
+                useCORS: true,
+                logging: false,
+                ignoreElements: (el) => el.classList?.contains("no-pdf"),
+                windowWidth: document.documentElement.scrollWidth,
+                windowHeight: document.documentElement.scrollHeight
+            });
+
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+            }
+
+            const safeName = String(flight?.name || "flight")
+                .toLowerCase()
+                .replace(/[^a-z0-9_-]+/gi, "-")
+                .replace(/^-+|-+$/g, "");
+
+            pdf.save(`flight-report-${safeName || "flight"}.pdf`);
+        } catch (err) {
+            console.error("Export PDF error:", err);
+            alert("Nepodarilo sa exportovať PDF report.");
+        } finally {
+            setExportingPdf(false);
+        }
+    }
+
     function onRouteClick(e) {
         const clicked = [e.latlng.lat, e.latlng.lng];
         let best = null;
@@ -353,271 +411,283 @@ export default function FlightDetails() {
         <section className="flight-details">
             {/* ONE BIG REPORT CONTAINER */}
             <div className="report">
-                <div className="report-header">
-                    <div>
-                        <div className="report-title">Flight Report</div>
-                        <div className="report-subtitle">{flight.name}</div>
-
-                        <div className="meta-grid">
-                            <div className="meta-item">
-                                <span className="meta-label">Start</span>
-                                <span className="meta-value">{new Date(flight.startTime).toLocaleString()}</span>
-                            </div>
-                            <div className="meta-item">
-                                <span className="meta-label">End</span>
-                                <span className="meta-value">{new Date(flight.endTime).toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="kpi-row">
-                        <div className="kpi">
-                            <div className="kpi-label">Distance</div>
-                            <div className="kpi-value">{distanceText}</div>
-                        </div>
-                        <div className="kpi">
-                            <div className="kpi-label">Duration</div>
-                            <div className="kpi-value">{durationText}</div>
-                        </div>
-                        <div className="kpi">
-                            <div className="kpi-label">Records</div>
-                            <div className="kpi-value">{recordsText}</div>
-                        </div>
-                        <div className="kpi">
-                            <div className="kpi-label">Max Speed</div>
-                            <div className="kpi-value">
-                                {maxObserved.maxSpeedKn == null ? "—" : `${fmt(maxObserved.maxSpeedKn, 1)} kn`}
-                            </div>
-                        </div>
-                    </div>
+                <div className="report-actions no-pdf">
+                    <button
+                        className="export-pdf-button"
+                        onClick={handleExportPdf}
+                        disabled={exportingPdf}
+                    >
+                        {exportingPdf ? "Exportujem…" : "Export PDF"}
+                    </button>
                 </div>
 
-                {/* REPORT SECTIONS */}
-                <div className="report-grid">
-                    {/* Safety events detected */}
-                    <div className="section section--full">
-                        <div className="section-header">
-                            <div>Safety events detected</div>
+                <div ref={reportExportRef} className="export-capture">
+                    <div className="report-header">
+                        <div>
+                            <div className="report-title">Flight Report</div>
+                            <div className="report-subtitle">{flight.name}</div>
 
-                            <button
-                                className="safety-button"
-                                onClick={() => safetyCount > 0 && setEventsOpen(v => !v)}
-                                title={safetyCount === 0 ? "No events" : "Click to view details"}
-                            >
+                            <div className="meta-grid">
+                                <div className="meta-item">
+                                    <span className="meta-label">Start</span>
+                                    <span className="meta-value">{new Date(flight.startTime).toLocaleString()}</span>
+                                </div>
+                                <div className="meta-item">
+                                    <span className="meta-label">End</span>
+                                    <span className="meta-value">{new Date(flight.endTime).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="kpi-row">
+                            <div className="kpi">
+                                <div className="kpi-label">Distance</div>
+                                <div className="kpi-value">{distanceText}</div>
+                            </div>
+                            <div className="kpi">
+                                <div className="kpi-label">Duration</div>
+                                <div className="kpi-value">{durationText}</div>
+                            </div>
+                            <div className="kpi">
+                                <div className="kpi-label">Records</div>
+                                <div className="kpi-value">{recordsText}</div>
+                            </div>
+                            <div className="kpi">
+                                <div className="kpi-label">Max Speed</div>
+                                <div className="kpi-value">
+                                    {maxObserved.maxSpeedKn == null ? "—" : `${fmt(maxObserved.maxSpeedKn, 1)} kn`}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* REPORT SECTIONS */}
+                    <div className="report-grid">
+                        {/* Safety events detected */}
+                        <div className="section section--full">
+                            <div className="section-header">
+                                <div>Safety events detected</div>
+
+                                <button
+                                    className="safety-button"
+                                    onClick={() => safetyCount > 0 && setEventsOpen(v => !v)}
+                                    title={safetyCount === 0 ? "No events" : "Click to view details"}
+                                >
                 <span className={safetyBadgeClass}>
                   {safetyCount === 0 ? "NONE" : safetyCount}
                 </span>
-                            </button>
+                                </button>
+                            </div>
+
+                            {safetyCount > 0 && eventsOpen && (
+                                <div className="section-body">
+                                    <ul className="events-list">
+                                        {safetyEvents.map(ev => (
+                                            <li key={ev.id} className="event-item">
+                                                <div className="event-title">
+                                                    {ev.title} <span className="event-time">({ev.time})</span>
+                                                </div>
+                                                <div className="event-detail">{ev.detail}</div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
 
-                        {safetyCount > 0 && eventsOpen && (
+                        {/* Max Observed */}
+                        <div className="section">
+                            <div className="section-header">Max Observed</div>
                             <div className="section-body">
-                                <ul className="events-list">
-                                    {safetyEvents.map(ev => (
-                                        <li key={ev.id} className="event-item">
-                                            <div className="event-title">
-                                                {ev.title} <span className="event-time">({ev.time})</span>
-                                            </div>
-                                            <div className="event-detail">{ev.detail}</div>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="kv-row">
+                                    <div className="kv-key">Max Altitude</div>
+                                    <div className="kv-val">{maxObserved.maxAltitudeM == null ? "—" : `${fmt(maxObserved.maxAltitudeM, 0)} m`}</div>
+                                </div>
+                                <div className="kv-row">
+                                    <div className="kv-key">Max Speed</div>
+                                    <div className="kv-val">{maxObserved.maxSpeedKn == null ? "—" : `${fmt(maxObserved.maxSpeedKn, 1)} kn`}</div>
+                                </div>
+                                <div className="kv-row">
+                                    <div className="kv-key">Max Temperature</div>
+                                    <div className="kv-val">{maxObserved.maxTempC == null ? "—" : `${fmt(maxObserved.maxTempC, 1)} °C`}</div>
+                                </div>
+                                <div className="kv-row">
+                                    <div className="kv-key">Max Turbulence</div>
+                                    <div className="kv-val">{maxObserved.maxTurbG == null ? "—" : `${fmt(maxObserved.maxTurbG, 3)} G`}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Statistics */}
+                        {stats && (
+                            <div className="section section--wide">
+                                <div className="section-header">Statistics (Min / Max / Avg)</div>
+                                <div className="section-body">
+                                    <table className="stats-table">
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Min</th>
+                                            <th>Max</th>
+                                            <th>Avg</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Temperature (°C)</td>
+                                            <td>{fmt(stats.minTemperatureC, 1)}</td>
+                                            <td>{fmt(stats.maxTemperatureC, 1)}</td>
+                                            <td>{fmt(stats.avgTemperatureC, 1)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Pressure (hPa)</td>
+                                            <td>{fmt(stats.minPressureHpa, 1)}</td>
+                                            <td>{fmt(stats.maxPressureHpa, 1)}</td>
+                                            <td>{fmt(stats.avgPressureHpa, 1)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Altitude (m)</td>
+                                            <td>{fmt(stats.minAltitudeM, 1)}</td>
+                                            <td>{fmt(stats.maxAltitudeM, 1)}</td>
+                                            <td>{fmt(stats.avgAltitudeM, 1)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Turbulence (G)</td>
+                                            <td>{fmt(stats.minTurbulenceG, 3)}</td>
+                                            <td>{fmt(stats.maxTurbulenceG, 3)}</td>
+                                            <td>{fmt(stats.avgTurbulenceG, 3)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Speed (kn)</td>
+                                            <td>{fmt(stats.minSpeedKn, 1)}</td>
+                                            <td>{fmt(stats.maxSpeedKn, 1)}</td>
+                                            <td>{fmt(stats.avgSpeedKn, 1)}</td>
+                                        </tr>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td>Duration</td>
+                                            <td colSpan="3">{durationText}</td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Max Observed */}
-                    <div className="section">
-                        <div className="section-header">Max Observed</div>
-                        <div className="section-body">
-                            <div className="kv-row">
-                                <div className="kv-key">Max Altitude</div>
-                                <div className="kv-val">{maxObserved.maxAltitudeM == null ? "—" : `${fmt(maxObserved.maxAltitudeM, 0)} m`}</div>
-                            </div>
-                            <div className="kv-row">
-                                <div className="kv-key">Max Speed</div>
-                                <div className="kv-val">{maxObserved.maxSpeedKn == null ? "—" : `${fmt(maxObserved.maxSpeedKn, 1)} kn`}</div>
-                            </div>
-                            <div className="kv-row">
-                                <div className="kv-key">Max Temperature</div>
-                                <div className="kv-val">{maxObserved.maxTempC == null ? "—" : `${fmt(maxObserved.maxTempC, 1)} °C`}</div>
-                            </div>
-                            <div className="kv-row">
-                                <div className="kv-key">Max Turbulence</div>
-                                <div className="kv-val">{maxObserved.maxTurbG == null ? "—" : `${fmt(maxObserved.maxTurbG, 3)} G`}</div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* MAP */}
+                    {pathPositions.length > 0 && (
+                        <div className="report-block no-pdf">
+                            <div className="block-title">Route Map</div>
+                            <MapContainer className="flight-map" center={startPos} zoom={15}>
+                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                <Polyline positions={pathPositions} eventHandlers={{ click: onRouteClick }} />
+                                <Marker position={startPos} icon={startIcon}>
+                                    <Popup>Štart letu</Popup>
+                                </Marker>
+                                <Marker position={endPos} icon={endIcon}>
+                                    <Popup>Koniec letu</Popup>
+                                </Marker>
 
-                    {/* Statistics */}
-                    {stats && (
-                        <div className="section section--wide">
-                            <div className="section-header">Statistics (Min / Max / Avg)</div>
-                            <div className="section-body">
-                                <table className="stats-table">
-                                    <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Min</th>
-                                        <th>Max</th>
-                                        <th>Avg</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td>Temperature (°C)</td>
-                                        <td>{fmt(stats.minTemperatureC, 1)}</td>
-                                        <td>{fmt(stats.maxTemperatureC, 1)}</td>
-                                        <td>{fmt(stats.avgTemperatureC, 1)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pressure (hPa)</td>
-                                        <td>{fmt(stats.minPressureHpa, 1)}</td>
-                                        <td>{fmt(stats.maxPressureHpa, 1)}</td>
-                                        <td>{fmt(stats.avgPressureHpa, 1)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Altitude (m)</td>
-                                        <td>{fmt(stats.minAltitudeM, 1)}</td>
-                                        <td>{fmt(stats.maxAltitudeM, 1)}</td>
-                                        <td>{fmt(stats.avgAltitudeM, 1)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Turbulence (G)</td>
-                                        <td>{fmt(stats.minTurbulenceG, 3)}</td>
-                                        <td>{fmt(stats.maxTurbulenceG, 3)}</td>
-                                        <td>{fmt(stats.avgTurbulenceG, 3)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Speed (kn)</td>
-                                        <td>{fmt(stats.minSpeedKn, 1)}</td>
-                                        <td>{fmt(stats.maxSpeedKn, 1)}</td>
-                                        <td>{fmt(stats.avgSpeedKn, 1)}</td>
-                                    </tr>
-                                    </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <td>Duration</td>
-                                        <td colSpan="3">{durationText}</td>
-                                    </tr>
-                                    </tfoot>
-                                </table>
+                                {clickPos && clickRecord && (
+                                    <Popup position={clickPos} onClose={() => setClickPos(null)}>
+                                        <div className="route-popup">
+                                            <p><strong>Čas:</strong> {clickRecord.time}</p>
+                                            <p><strong>Teplota:</strong> {fmt(clickRecord.temperatureC, 1)} °C</p>
+                                            <p><strong>Tlak:</strong> {fmt(clickRecord.pressureHpa, 1)} hPa</p>
+                                            <p><strong>Výška:</strong> {fmt(clickRecord.altitudeM, 0)} m</p>
+                                            <p><strong>Turbulencia:</strong> {fmt(clickRecord.turbulenceG, 3)} G</p>
+                                            <p><strong>Rýchlosť:</strong> {fmt(clickRecord.speedKn, 1)} kn</p>
+                                        </div>
+                                    </Popup>
+                                )}
+                            </MapContainer>
+                        </div>
+                    )}
+
+                    {/* CHARTS */}
+                    {records.length > 0 && (
+                        <div className="charts-grid">
+                            <div className="chart-card">
+                                <div className="block-title">Trends (Pressure / Altitude)</div>
+                                <div className="chart-wrap">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={records}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis
+                                                dataKey="time"
+                                                tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
+                                            />
+                                            <YAxis />
+                                            <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="pressureHpa" name="Tlak (hPa)" stroke="#10b981" dot={false} isAnimationActive={false} />
+                                            <Line type="monotone" dataKey="altitudeM" name="Výška (m)" stroke="#3b82f6" dot={false} isAnimationActive={false} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            <div className="chart-card">
+                                <div className="block-title">Temperature</div>
+                                <div className="chart-wrap">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={records}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis
+                                                dataKey="time"
+                                                tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
+                                            />
+                                            <YAxis />
+                                            <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="temperatureC" name="Teplota (°C)" stroke="#f59e0b" dot={false} isAnimationActive={false} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            <div className="chart-card chart-card--full">
+                                <div className="block-title">Speed</div>
+                                <div className="chart-wrap">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={records}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis
+                                                dataKey="time"
+                                                tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
+                                            />
+                                            <YAxis />
+                                            <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="speedKn" name="Rýchlosť (kn)" stroke="#ec4899" dot={false} isAnimationActive={false} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            <div className="chart-card chart-card--full">
+                                <div className="block-title">Turbulence</div>
+                                <div className="chart-wrap">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={records}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis
+                                                dataKey="time"
+                                                tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
+                                            />
+                                            <YAxis />
+                                            <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="turbulenceG" name="Turbulencia (G)" stroke="#8b5cf6" dot={false} isAnimationActive={false} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
                         </div>
                     )}
                 </div>
-
-                {/* MAP */}
-                {pathPositions.length > 0 && (
-                    <div className="report-block">
-                        <div className="block-title">Route Map</div>
-                        <MapContainer className="flight-map" center={startPos} zoom={15}>
-                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <Polyline positions={pathPositions} eventHandlers={{ click: onRouteClick }} />
-                            <Marker position={startPos} icon={startIcon}>
-                                <Popup>Štart letu</Popup>
-                            </Marker>
-                            <Marker position={endPos} icon={endIcon}>
-                                <Popup>Koniec letu</Popup>
-                            </Marker>
-
-                            {clickPos && clickRecord && (
-                                <Popup position={clickPos} onClose={() => setClickPos(null)}>
-                                    <div className="route-popup">
-                                        <p><strong>Čas:</strong> {clickRecord.time}</p>
-                                        <p><strong>Teplota:</strong> {fmt(clickRecord.temperatureC, 1)} °C</p>
-                                        <p><strong>Tlak:</strong> {fmt(clickRecord.pressureHpa, 1)} hPa</p>
-                                        <p><strong>Výška:</strong> {fmt(clickRecord.altitudeM, 0)} m</p>
-                                        <p><strong>Turbulencia:</strong> {fmt(clickRecord.turbulenceG, 3)} G</p>
-                                        <p><strong>Rýchlosť:</strong> {fmt(clickRecord.speedKn, 1)} kn</p>
-                                    </div>
-                                </Popup>
-                            )}
-                        </MapContainer>
-                    </div>
-                )}
-
-                {/* CHARTS */}
-                {records.length > 0 && (
-                    <div className="charts-grid">
-                        <div className="chart-card">
-                            <div className="block-title">Trends (Pressure / Altitude)</div>
-                            <div className="chart-wrap">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={records}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis
-                                            dataKey="time"
-                                            tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
-                                        />
-                                        <YAxis />
-                                        <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="pressureHpa" name="Tlak (hPa)" stroke="#10b981" dot={false} />
-                                        <Line type="monotone" dataKey="altitudeM" name="Výška (m)" stroke="#3b82f6" dot={false} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-
-                        <div className="chart-card">
-                            <div className="block-title">Temperature</div>
-                            <div className="chart-wrap">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={records}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis
-                                            dataKey="time"
-                                            tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
-                                        />
-                                        <YAxis />
-                                        <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="temperatureC" name="Teplota (°C)" stroke="#f59e0b" dot={false} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-
-                        <div className="chart-card chart-card--full">
-                            <div className="block-title">Speed</div>
-                            <div className="chart-wrap">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={records}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis
-                                            dataKey="time"
-                                            tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
-                                        />
-                                        <YAxis />
-                                        <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="speedKn" name="Rýchlosť (kn)" stroke="#ec4899" dot={false} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-
-                        <div className="chart-card chart-card--full">
-                            <div className="block-title">Turbulence</div>
-                            <div className="chart-wrap">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={records}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis
-                                            dataKey="time"
-                                            tickFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()}
-                                        />
-                                        <YAxis />
-                                        <Tooltip labelFormatter={(v) => parseTimeOnly(v).toLocaleTimeString()} />
-                                        <Legend />
-                                        <Line type="monotone" dataKey="turbulenceG" name="Turbulencia (G)" stroke="#8b5cf6" dot={false} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </section>
     );
